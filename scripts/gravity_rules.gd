@@ -123,10 +123,10 @@ static func score_groups(groups: Array, cascade_level: int = 1) -> int:
 		total += group_points(int(group["count"]))
 	return total * maxi(1,cascade_level)
 
-static func rotate_preview(board: Array, clockwise: bool) -> Dictionary:
-	# Exact deterministic preview: same rotate -> settle -> pop loop as gameplay.
-	# No points are paid until the real rotation is performed.
-	var after: Array = settle(rotate(board,clockwise).board).board
+static func resolve_preview(board: Array) -> Dictionary:
+	# Pure equivalent of game._resolve_cascades(), for tests and previews.
+	# Drop results can be resolved directly; rotations settle first.
+	var after: Array = copy_board(board)
 	var total: int = 0
 	var popped: int = 0
 	var cascades: int = 0
@@ -142,6 +142,17 @@ static func rotate_preview(board: Array, clockwise: bool) -> Dictionary:
 		popped += hits.size()
 		after = settle(erase_matches(after,hits)).board
 	return {"score":total,"removed":popped,"chains":cascades,"board":after}
+
+static func rotate_preview(board: Array, clockwise: bool) -> Dictionary:
+	return resolve_preview(settle(rotate(board,clockwise).board).board)
+
+static func drop_preview(board: Array, piece: Array, left_col: int) -> Dictionary:
+	var result: Dictionary = drop(board,piece,left_col)
+	if not result.get("valid",false):
+		return {"valid":false}
+	var resolved: Dictionary = resolve_preview(result.board)
+	resolved["valid"] = true
+	return resolved
 
 static func erase_matches(board: Array, matches: Array) -> Array:
 	var result: Array = copy_board(board)
