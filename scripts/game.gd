@@ -593,7 +593,7 @@ func _booster_symbol(id: String, center: Vector2) -> void:
 
 func _draw_boosters() -> void:
 	for i in range(BOOSTERS.size()):
-		var id := BOOSTERS[i]
+		var id: String = BOOSTERS[i]
 		var x := 28+i*96
 		var active: bool = targeting == id or (id == "star" and star_remaining>0)
 		_box(Rect2(x,1118,86,109),Color("#2d426e") if active else Color("#1d3055"),20,Color("#ffd772") if active else Color("#364e79"),2)
