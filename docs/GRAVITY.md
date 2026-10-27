@@ -19,7 +19,7 @@ Po zakończeniu testów możesz ponownie przełączyć **Current branch → main
 - **75%** podstawowych losowań to pary dwóch kulek; ok. **15%** — trójki, **10%** — pojedyncza kulka. Gęsta plansza preferuje pojedyncze kulki.
 - Widać aktualny kształt oraz dwa następne (podgląd).
 - Kliknij **kolumnę na planszy**, w której kształt ma spaść. Kulki nie pozostają sklejone; opadają do swoich kolumn.
-- Po zrzuceniu można wybrać **obrót w lewo**, **obrót w prawo** lub **DALEJ**. Jeden opcjonalny obrót na zrzut.
+- Po zrzuceniu można wybierać **obrót w lewo** lub **obrót w prawo** dowolną liczbę razy. Każdy obrót uruchamia grawitację i ewentualne kaskady. Dopiero **DALEJ** zrzuca następny kształt. To wersja eksperymentalna bez limitu obrotów.
 - Obrót obraca zawartość planszy o 90°, a następnie kulki opadają zgodnie z ekranową grawitacją. Kolorowe grupy **3+ sąsiadujących bokami kulek** znikają, a pozostałe spadają.
 - Kolejne połączenia uruchamiają kaskady. Gracz powinien zrozumieć, jak obrót może je wywołać.
 - 3 życia na rundę. Jeśli nowego kształtu nie da się zrzucić, traci się życie, a plansza częściowo się opróżnia.
@@ -28,6 +28,7 @@ Po zakończeniu testów możesz ponownie przełączyć **Current branch → main
 ## Zakres i ograniczenia
 
 - Interfejs, zasady obrotu, grawitacja, dopasowania, kaskady, 7 języków interfejsu, rekord i demonstracyjne życie.
+- Obroty są na razie **nielimitowane** (hipoteza do sprawdzenia). Wielokrotne kręcenie może nadmiernie ułatwiać grę — oceniamy to w testach.
 - To **prototyp oceny przyjemności z gry**. Nie zawiera jeszcze wspomagaczy Bomba / Spin / Laser / Undo / STAR MODE, nie ma AdMob ani docelowych animacji i audio.
 - Fizyka jest **deterministyczna na siatce** (żadne losowe kolizje Rigidbody). Animacje przedstawiają obrót po łuku i opadanie.
 - Nie uruchomiono jeszcze testów we własnym silniku Godot w środowisku tworzenia. Testy logiczne należy uruchomić na maszynie z Godot 4.7.2 i sprawdzić błędy konsoli.
