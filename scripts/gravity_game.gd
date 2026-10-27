@@ -10,13 +10,13 @@ const COLORS := [Color("#ff7096"),Color("#55dcad"),Color("#62b5ff")]
 const SAVE_FILE := "user://pop_drop_gravity.json"
 const LOCALES := ["pl","en","es","pt","de","fr","ru"]
 const TR := {
-	"pl":{"score":"WYNIK","best":"REKORD","move":"RUCH","drop":"DOTKNIJ KOLUMNĘ, ABY ZRZUCIĆ","turn":"OBRÓĆ PLANSZĘ LUB GRAJ DALEJ","left":"W LEWO","right":"W PRAWO","skip":"DALEJ","next":"NASTĘPNE","ready":"3 TEGO SAMEGO KOLORU = POP!","over":"KONIEC RUNDY","again":"ZAGRAJ PONOWNIE","rescue":"TEST: +1 ŻYCIE","lost":"STRATA ŻYCIA","rotate_controls":"OBRACAJ PRZYCISKAMI PONIŻEJ","rotate_help":"SPRÓBUJ OBRÓCIĆ PLANSZĘ","charge":"GRUPA","hint":"Wybierz kolumnę dla spadającego kształtu"},
-	"en":{"score":"SCORE","best":"BEST","move":"MOVE","drop":"TAP A COLUMN TO DROP","turn":"ROTATE OR KEEP GOING","left":"LEFT","right":"RIGHT","skip":"NEXT","next":"UP NEXT","ready":"3 SAME-COLOUR BALLS = POP!","over":"GAME OVER","again":"PLAY AGAIN","rescue":"TEST: +1 LIFE","lost":"LIFE LOST","rotate_controls":"ROTATE WITH THE BUTTONS BELOW","rotate_help":"ROTATE TO MAKE ROOM","charge":"GROUP","hint":"Choose a column for the falling piece"},
-	"es":{"score":"PUNTOS","best":"RÉCORD","move":"JUGADA","drop":"TOCA UNA COLUMNA PARA SOLTAR","turn":"GIRA O CONTINÚA","left":"IZQUIERDA","right":"DERECHA","skip":"SEGUIR","next":"SIGUIENTES","ready":"3 BOLAS DEL MISMO COLOR = POP!","over":"FIN DEL JUEGO","again":"JUGAR OTRA VEZ","rescue":"PRUEBA: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USA LOS BOTONES PARA GIRAR","rotate_help":"GIRA PARA HACER ESPACIO","charge":"GRUPO","hint":"Elige una columna para las bolas"},
-	"pt":{"score":"PONTOS","best":"RECORDE","move":"JOGADA","drop":"TOQUE NA COLUNA PARA SOLTAR","turn":"GIRE OU CONTINUE","left":"ESQUERDA","right":"DIREITA","skip":"SEGUIR","next":"PRÓXIMAS","ready":"3 BOLAS DA MESMA COR = POP!","over":"FIM DE JOGO","again":"JOGAR DE NOVO","rescue":"TESTE: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USE OS BOTÕES PARA GIRAR","rotate_help":"GIRE PARA ABRIR ESPAÇO","charge":"GRUPO","hint":"Escolha uma coluna para jogar"},
-	"de":{"score":"PUNKTE","best":"REKORD","move":"ZUG","drop":"SPALTE ANTIPPEN ZUM FALLEN","turn":"DREHEN ODER WEITER","left":"LINKS","right":"RECHTS","skip":"WEITER","next":"ALS NÄCHSTES","ready":"3 GLEICHE FARBEN = POP!","over":"SPIEL VORBEI","again":"NOCHMAL SPIELEN","rescue":"TEST: +1 LEBEN","lost":"LEBEN VERLOREN","rotate_controls":"MIT DEN TASTEN UNTEN DREHEN","rotate_help":"DREHE FÜR MEHR PLATZ","charge":"GRUPPE","hint":"Wähle eine Spalte zum Einwerfen"},
-	"fr":{"score":"SCORE","best":"RECORD","move":"COUP","drop":"TOUCHE UNE COLONNE POUR LÂCHER","turn":"TOURNE OU CONTINUE","left":"GAUCHE","right":"DROITE","skip":"SUITE","next":"À SUIVRE","ready":"3 BILLES IDENTIQUES = POP!","over":"PARTIE FINIE","again":"REJOUER","rescue":"TEST : +1 VIE","lost":"VIE PERDUE","rotate_controls":"TOURNE AVEC LES BOUTONS","rotate_help":"TOURNE POUR LIBÉRER DE LA PLACE","charge":"GROUPE","hint":"Choisis une colonne pour les billes"},
-	"ru":{"score":"ОЧКИ","best":"РЕКОРД","move":"ХОД","drop":"НАЖМИ СТОЛБЕЦ ДЛЯ СБРОСА","turn":"ПОВЕРНИ ИЛИ ПРОДОЛЖИ","left":"ВЛЕВО","right":"ВПРАВО","skip":"ДАЛЕЕ","next":"СЛЕДУЮЩИЕ","ready":"3 ОДНОГО ЦВЕТА = POP!","over":"ИГРА ОКОНЧЕНА","again":"ИГРАТЬ СНОВА","rescue":"ТЕСТ: +1 ЖИЗНЬ","lost":"МИНУС ЖИЗНЬ","rotate_controls":"ПОВОРОТ КНОПКАМИ ВНИЗУ","rotate_help":"ПОВЕРНИ, ЧТОБЫ ОСВОБОДИТЬ МЕСТО","charge":"ГРУППА","hint":"Выбери столбец для шариков"}
+	"pl":{"score":"WYNIK","best":"REKORD","move":"RUCH","drop":"DOTKNIJ KOLUMNĘ, ABY ZRZUCIĆ","turn":"OBRÓĆ PLANSZĘ LUB GRAJ DALEJ","left":"W LEWO","right":"W PRAWO","skip":"DALEJ","next":"NASTĘPNE","ready":"GÓRNA LINIA = -1 ŻYCIE  •  POP PO OBROCIE","over":"KONIEC RUNDY","again":"ZAGRAJ PONOWNIE","rescue":"TEST: +1 ŻYCIE","lost":"STRATA ŻYCIA","rotate_controls":"OBRACAJ PRZYCISKAMI PONIŻEJ","rotate_help":"SPRÓBUJ OBRÓCIĆ PLANSZĘ","charge":"GRUPA","danger":"WYSOKOŚĆ","danger_soon":"UWAGA: GÓRNA LINIA!","overflow":"UTRATA ŻYCIA!","hint":"Wybierz kolumnę dla spadającego kształtu"},
+	"en":{"score":"SCORE","best":"BEST","move":"MOVE","drop":"TAP A COLUMN TO DROP","turn":"ROTATE OR KEEP GOING","left":"LEFT","right":"RIGHT","skip":"NEXT","next":"UP NEXT","ready":"TOP ROW = -1 LIFE  •  ROTATE TO POP","over":"GAME OVER","again":"PLAY AGAIN","rescue":"TEST: +1 LIFE","lost":"LIFE LOST","rotate_controls":"ROTATE WITH THE BUTTONS BELOW","rotate_help":"ROTATE TO MAKE ROOM","charge":"GROUP","danger":"HEIGHT","danger_soon":"CAREFUL: TOP ROW!","overflow":"LIFE LOST!","hint":"Choose a column for the falling piece"},
+	"es":{"score":"PUNTOS","best":"RÉCORD","move":"JUGADA","drop":"TOCA UNA COLUMNA PARA SOLTAR","turn":"GIRA O CONTINÚA","left":"IZQUIERDA","right":"DERECHA","skip":"SEGUIR","next":"SIGUIENTES","ready":"FILA SUPERIOR = -1 VIDA • GIRA PARA POP","over":"FIN DEL JUEGO","again":"JUGAR OTRA VEZ","rescue":"PRUEBA: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USA LOS BOTONES PARA GIRAR","rotate_help":"GIRA PARA HACER ESPACIO","charge":"GRUPO","danger":"ALTURA","danger_soon":"¡FILA SUPERIOR!","overflow":"¡VIDA PERDIDA!","hint":"Elige una columna para las bolas"},
+	"pt":{"score":"PONTOS","best":"RECORDE","move":"JOGADA","drop":"TOQUE NA COLUNA PARA SOLTAR","turn":"GIRE OU CONTINUE","left":"ESQUERDA","right":"DIREITA","skip":"SEGUIR","next":"PRÓXIMAS","ready":"LINHA SUPERIOR = -1 VIDA • GIRE PARA POP","over":"FIM DE JOGO","again":"JOGAR DE NOVO","rescue":"TESTE: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USE OS BOTÕES PARA GIRAR","rotate_help":"GIRE PARA ABRIR ESPAÇO","charge":"GRUPO","danger":"ALTURA","danger_soon":"CUIDADO: TOPO!","overflow":"VIDA PERDIDA!","hint":"Escolha uma coluna para jogar"},
+	"de":{"score":"PUNKTE","best":"REKORD","move":"ZUG","drop":"SPALTE ANTIPPEN ZUM FALLEN","turn":"DREHEN ODER WEITER","left":"LINKS","right":"RECHTS","skip":"WEITER","next":"ALS NÄCHSTES","ready":"OBERSTE REIHE = -1 LEBEN • DREHEN FÜR POP","over":"SPIEL VORBEI","again":"NOCHMAL SPIELEN","rescue":"TEST: +1 LEBEN","lost":"LEBEN VERLOREN","rotate_controls":"MIT DEN TASTEN UNTEN DREHEN","rotate_help":"DREHE FÜR MEHR PLATZ","charge":"GRUPPE","danger":"HÖHE","danger_soon":"ACHTUNG: OBERSTE REIHE!","overflow":"LEBEN VERLOREN!","hint":"Wähle eine Spalte zum Einwerfen"},
+	"fr":{"score":"SCORE","best":"RECORD","move":"COUP","drop":"TOUCHE UNE COLONNE POUR LÂCHER","turn":"TOURNE OU CONTINUE","left":"GAUCHE","right":"DROITE","skip":"SUITE","next":"À SUIVRE","ready":"LIGNE DU HAUT = -1 VIE • TOURNE POUR POP","over":"PARTIE FINIE","again":"REJOUER","rescue":"TEST : +1 VIE","lost":"VIE PERDUE","rotate_controls":"TOURNE AVEC LES BOUTONS","rotate_help":"TOURNE POUR LIBÉRER DE LA PLACE","charge":"GROUPE","danger":"HAUTEUR","danger_soon":"ATTENTION AU SOMMET!","overflow":"VIE PERDUE!","hint":"Choisis une colonne pour les billes"},
+	"ru":{"score":"ОЧКИ","best":"РЕКОРД","move":"ХОД","drop":"НАЖМИ СТОЛБЕЦ ДЛЯ СБРОСА","turn":"ПОВЕРНИ ИЛИ ПРОДОЛЖИ","left":"ВЛЕВО","right":"ВПРАВО","skip":"ДАЛЕЕ","next":"СЛЕДУЮЩИЕ","ready":"ВЕРХНИЙ РЯД = -1 ЖИЗНЬ • ПОВОРОТ = POP","over":"ИГРА ОКОНЧЕНА","again":"ИГРАТЬ СНОВА","rescue":"ТЕСТ: +1 ЖИЗНЬ","lost":"МИНУС ЖИЗНЬ","rotate_controls":"ПОВОРОТ КНОПКАМИ ВНИЗУ","rotate_help":"ПОВЕРНИ, ЧТОБЫ ОСВОБОДИТЬ МЕСТО","charge":"ГРУППА","danger":"ВЫСОТА","danger_soon":"ВНИМАНИЕ: ВЕРХ!","overflow":"МИНУС ЖИЗНЬ!","hint":"Выбери столбец для шариков"}
 }
 const LEFT_RECT := Rect2(35,1123,285,92)
 const RIGHT_RECT := Rect2(400,1123,285,92)
@@ -236,8 +236,10 @@ func _play_drop(column: int) -> void:
 	# No Next button: the next shape is ready immediately after this drop.
 	_advance_piece()
 	phase = "drop"
-	_refresh_targets()
-	_check_stuck()
+	_check_ceiling()
+	if phase == "drop":
+		_refresh_targets()
+		_check_stuck()
 	_flush_queued_input()
 	queue_redraw()
 
@@ -254,8 +256,10 @@ func _rotate_board(clockwise: bool) -> void:
 	await _animate_to(gravity.board,gravity.motions,0.19,"fall")
 	await _resolve_cascades()
 	phase = "drop"
-	_refresh_targets()
-	_check_stuck()
+	_check_ceiling()
+	if phase == "drop":
+		_refresh_targets()
+		_check_stuck()
 	_flush_queued_input()
 	queue_redraw()
 
@@ -310,6 +314,21 @@ func _could_recover_by_rotating(piece: Array) -> bool:
 			if Rules.any_drop(virtual,piece):
 				return true
 	return false
+
+func _check_ceiling() -> void:
+	# Reaching the clearly highlighted top row costs one life, even if there
+	# are other empty columns. Rotating can prevent the loss beforehand.
+	if not Rules.ceiling_reached(board):
+		return
+	lives -= 1
+	_praise(t("overflow"),Color("#ff879d"),1.3)
+	_shock(BOARD.position+Vector2(BOARD.size.x*0.5,CELL*0.5),2.5,Color("#ff6389"))
+	if lives <= 0:
+		phase = "over"
+	else:
+		# Remove the highest two occupied rows, settle and keep playing.
+		board = Rules.rescue(board)
+	queue_redraw()
 
 func _check_stuck() -> void:
 	if phase != "drop" or pieces.is_empty():
@@ -601,6 +620,13 @@ func _draw_board() -> void:
 			for m in preview.motions:
 				var pos: Vector2 = m["to"]
 				_ball(BOARD.position+(pos+Vector2(0.5,0.5))*CELL,CELL*0.33,int(m["color"]),0.50)
+	# The first row is the loss boundary. Warn before the player fills it.
+	var height_used: int = Rules.tallest_column(board)
+	var ceiling_color: Color = Color("#ff6480") if height_used >= 6 else Color("#b05c89")
+	draw_line(BOARD.position+Vector2(0,2),
+		BOARD.position+Vector2(BOARD.size.x,2),
+		Color(ceiling_color.r,ceiling_color.g,ceiling_color.b,0.60 if height_used < 6 else 0.95),
+		4.0 if height_used < 6 else 6.0,true)
 	# Tutorial: column and objective are always obvious without a manual.
 	if phase=="drop":
 		_center(t("drop"),360,302,15,Color("#def9ee"))
@@ -654,6 +680,11 @@ func _draw_pieces() -> void:
 		var next_value: int = Rules.group_points(maxi(3,amount+1))
 		var status: String = "%d  = %d    %d  = %d" % [amount,value,amount+1,next_value]
 		_text(t("charge")+" "+status,Vector2(301,953),16,Color("#ffe39b"))
+	var stack_height: int = Rules.tallest_column(board)
+	var warning_color: Color = Color("#ff7b9c") if stack_height >= 6 else Color("#abb9d5")
+	_text("%s %d/8" % [t("danger"),stack_height],Vector2(43,979),17,warning_color)
+	if stack_height >= 6:
+		_text(t("danger_soon"),Vector2(240,979),17,Color("#ff899f"))
 	_text(t("next"),Vector2(43,1004),16,Color("#9fb7dc"))
 	for i in range(3):
 		var rect: Rect2 = Rect2(45+i*216,1017,200,87)
@@ -693,7 +724,7 @@ func _draw_buttons() -> void:
 		_center(payoff,rect.get_center().x,rect.get_center().y+29,19,
 			Color("#4e3850") if projected > 0 else Color("#957b55"))
 	_center(t("rotate_controls"),360,1115,18,Color("#a9c6ec"))
-	_center(t("ready"),360,1251,18,Color("#a9c6ec"))
+	_center(t("ready"),360,1251,17,Color("#a9c6ec"))
 
 func _draw_game_over() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color(0.02,0.04,0.12,0.82))
