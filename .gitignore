@@ -1,0 +1,16 @@
+# Godot local editor/import cache
+.godot/
+.import/
+# Android builds and signing secrets
+build/
+dist/
+*.apk
+*.aab
+*.keystore
+*.jks
+*.p12
+*.env
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.swp
