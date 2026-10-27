@@ -21,11 +21,13 @@ Po zakończeniu testów możesz ponownie przełączyć **Current branch → main
 - **Dotknij kolumny** na planszy, żeby zrzucić kształt; spadnie do swoich kolumn. Następny kształt automatycznie wchodzi do gry — **przycisk „Dalej” został usunięty**.
 - **Dwa duże przyciski pod planszą** obracają planszę w lewo albo w prawo. Przesuwanie palcem po planszy nie wywołuje obrotu — plansza służy wyłącznie do zrzucania kulek.
 - Obracaj **ile chcesz, przed zrzutem lub po nim**, bez zużywania kształtów. Obroty mogą uruchamiać kaskady; gracz sam wybiera, kiedy znów coś zrzucić.
-- Start jest bardziej żywy: **20 kulek** w przygotowanym układzie (bez gotowego match-3).
-- Obrót obraca zawartość planszy o 90°, a następnie kulki opadają zgodnie z ekranową grawitacją. Kolorowe grupy **3+ sąsiadujących bokami kulek** znikają, a pozostałe spadają.
-- Kolejne połączenia uruchamiają kaskady. Gracz powinien zrozumieć, jak obrót może je wywołać.
+- Start jest bardziej żywy: **20 kulek**, w tym celowo przygotowana grupa **czterech jednakowych**, którą można rozbudować do pięciu.
+- **Zrzut tylko buduje skupiska** — nie kasuje żadnych kulek, nawet gdy pięć identycznych już się styka.
+- **Dopiero obrót uruchamia POP.** Obrót przemieszcza kulki o 90°, następnie opadają zgodnie z grawitacją i pękają grupy **5+ kulek tego samego koloru stykających się bokami**. Mniejsze grupy (3/5, 4/5) nie wybuchają, tylko zachęcają do dołożenia kolejnych.
+- Grupa 5 daje **320 pkt**, 6 daje **560**, 7 daje **900**, 8 daje **1400**. Większe punktują jeszcze więcej. Każdy poziom kaskady mnoży wypłatę. Dwie oddzielne grupy po pięć liczą się oddzielnie, nie jak dziesiątka.
+- Na planszy wyróżniona jest największa rosnąca grupa; obok podglądu kształtów pojawia się **3/5, 4/5 lub punktacja gotowej grupy**. Na przyciskach obrotu widać przewidywany wynik danej rotacji (z uwzględnieniem grawitacji i kaskad). To podgląd, nie gwarancja zachowania już zbudowanego skupiska po obrocie.
 - Większe figury nie są sklejone po zrzucie: liczy się **ile kulek, w których kolumnach i w jakiej kolejności** spada. Dzięki temu S i Z z identycznymi kolorami mogą dać dwa różne układy na planszy. Generator nie powinien podawać czterech kulek, które same bez pomocy planszy automatycznie eksplodują.
-- 3 życia na rundę. Nie tracisz życia, jeśli kształt nie mieści się w danej chwili, **ale obrót mógłby zrobić dla niego miejsce**. Życie tracisz dopiero gdy żadne z przetestowanych położeń po obrocie nie daje możliwości zrzutu.
+- **Jak przegrać:** górny rząd planszy to czerwona linia zagrożenia. **Dotknięcie jej kulką po zrzucie lub obrocie kosztuje 1 życie**, a plansza otrzymuje częściowy ratunek. Gra ostrzega już przy wysokości 6/8 i pokazuje aktualną wysokość. Wciąż można także stracić życie za całkowity brak możliwego zrzutu mimo obrotów. Po utracie trzeciego życia runda się kończy.
 - Po 3. utraconym życiu pojawia się **TEST: +1 ŻYCIE**. To przycisk demonstracyjny, **nie reklama**. Reklam jeszcze nie zintegrowano.
 
 ## Zakres i ograniczenia
@@ -68,8 +70,15 @@ Animacje są częścią gałęzi `gravity-prototype` (nie `main`). Zastosowano *
 
 1. Zrzuć kształt na wysoką kolumnę: obserwuj smugę i iskry przy lądowaniu.
 2. Obróć w lewo i prawo: wszystkie kulki powinny wykonać ćwierćokrąg, po czym opaść.
-3. Ułóż grupę 3+ identycznych kulek: powinny rozświetlić się *przed* eksplozją, a wynik powinien policzyć się płynnie.
+3. Ułóż grupę **3**, potem **4** kulek — nic nie powinno wybuchnąć. Dołóż piątą, a następnie obróć planszę: jeśli po obrocie nadal tworzą grupę 5+, powinny zapulsować i wybuchnąć.
 4. Wywołaj kaskadę: obserwuj osobne wybuchy i mnożnik `×2`, `×3`.
 5. Podczas animacji szybko naciśnij kolejny obrót: powinien wykonać się automatycznie po zakończeniu aktualnego.
 
 **Status walidacji:** sprawdzono strukturę pliku i zapisy w GitHubie, ale w środowisku implementacji nie było uruchamialnego silnika Godot. Należy uruchomić projekt klawiszem F5 i sprawdzić konsolę oraz płynność na docelowym telefonie.
+
+## Eksperyment: 5 do POP + ryzyko przegranej
+
+- Testowana hipoteza: gracz będzie dłużej zbierać jeden kolor, gdy nagroda zaczyna się od **5** zamiast **3**.
+- Ponieważ próg wzrósł, dopracowano start, aby na planszy od razu było widać grupę 4/5 i brakujące miejsce na piątą kulkę.
+- Reguła jest centralnie definiowana przez `POP_THRESHOLD = 5` w `scripts/gravity_rules.gd`. Gra i symulacja obu przycisków obrotu korzystają z tej samej reguły.
+- Wdrożono testy reguł pięciu kulek, wypłat, obrotów, rozdzielonych grup i górnej linii przegranej. **Testy nie zostały jeszcze uruchomione w Godot**.
