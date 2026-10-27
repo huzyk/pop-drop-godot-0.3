@@ -16,7 +16,7 @@ Po zakończeniu testów możesz ponownie przełączyć **Current branch → main
 ## Zasady do przetestowania
 
 - Plansza 8 × 8; 3 kolory, z góry spada **jeden mały kształt**.
-- Generator oferuje **18 układów**: 1 pojedynczą kulkę, 2 pary, 6 trójek i 9 czwórek (linie, rogi L/J, kwadrat, T, schodki). Przy luźnej planszy docelowa proporcja rozmiarów to około **8% / 46% / 32% / 14%** dla 1 / 2 / 3 / 4 kulek. Gęstsza plansza preferuje mniejsze układy, a gdy dany rozmiar się nie mieści, generator szuka mniejszego.
+- Generator używa teraz **12 celowo dobranych sylwetek**: 1 pojedyncza kulka, 2 pary, 3 trójki, 6 czwórek (linia, kwadrat, L, T, **S, Z**). Przy luźnej planszy udziały rozmiarów to około **6% / 34% / 31% / 29%** (1/2/3/4 kulki). Czwórki trafiają się dużo częściej, a S i Z są dodatkowo promowane wśród czwórek. Ostatnie 5 sylwetek jest lekko wyciszanych w losowaniu, żeby tace nie wyglądały stale tak samo. Gęsta plansza preferuje mniejsze układy.
 - Widać aktualny kształt oraz dwa następne (podgląd).
 - **Dotknij kolumny** na planszy, żeby zrzucić kształt; spadnie do swoich kolumn. Następny kształt automatycznie wchodzi do gry — **przycisk „Dalej” został usunięty**.
 - **Dwa duże przyciski pod planszą** obracają planszę w lewo albo w prawo. Przesuwanie palcem po planszy nie wywołuje obrotu — plansza służy wyłącznie do zrzucania kulek.
@@ -24,7 +24,7 @@ Po zakończeniu testów możesz ponownie przełączyć **Current branch → main
 - Start jest bardziej żywy: **20 kulek** w przygotowanym układzie (bez gotowego match-3).
 - Obrót obraca zawartość planszy o 90°, a następnie kulki opadają zgodnie z ekranową grawitacją. Kolorowe grupy **3+ sąsiadujących bokami kulek** znikają, a pozostałe spadają.
 - Kolejne połączenia uruchamiają kaskady. Gracz powinien zrozumieć, jak obrót może je wywołać.
-- Większe figury nie są sklejone po zrzucie: liczy się **ile kulek i w których kolumnach** trafia na planszę. Generator nie powinien podawać czterech kulek, które same bez pomocy planszy automatycznie eksplodują.
+- Większe figury nie są sklejone po zrzucie: liczy się **ile kulek, w których kolumnach i w jakiej kolejności** spada. Dzięki temu S i Z z identycznymi kolorami mogą dać dwa różne układy na planszy. Generator nie powinien podawać czterech kulek, które same bez pomocy planszy automatycznie eksplodują.
 - 3 życia na rundę. Nie tracisz życia, jeśli kształt nie mieści się w danej chwili, **ale obrót mógłby zrobić dla niego miejsce**. Życie tracisz dopiero gdy żadne z przetestowanych położeń po obrocie nie daje możliwości zrzutu.
 - Po 3. utraconym życiu pojawia się **TEST: +1 ŻYCIE**. To przycisk demonstracyjny, **nie reklama**. Reklam jeszcze nie zintegrowano.
 
