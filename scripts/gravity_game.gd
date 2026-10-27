@@ -25,6 +25,7 @@ const RESCUE_RECT := Rect2(104,821,512,79)
 
 var board: Array = []
 var pieces: Array = []
+var recent_shapes: Array = [] # remembers silhouettes, not ball colours
 var rng := RandomNumberGenerator.new()
 var language: String = "en"
 var phase: String = "drop" # drop, anim, over
@@ -85,6 +86,7 @@ func new_game() -> void:
 	revives = 0
 	chain_depth = 0
 	pieces = []
+	recent_shapes.clear()
 	motion.clear()
 	flash.clear()
 	fx.clear()
@@ -92,7 +94,9 @@ func new_game() -> void:
 	animating = false
 	phase = "drop"
 	for i in range(3):
-		pieces.append(Rules.next_piece(rng,board))
+		var piece: Array = Rules.next_piece(rng,board,recent_shapes)
+		pieces.append(piece)
+		_remember_shape(piece)
 	queue_redraw()
 
 func _process(delta: float) -> void:
@@ -138,7 +142,8 @@ func _gui_input(event: InputEvent) -> void:
 			revives += 1 # Explicit test reward, NOT an ad callback.
 			lives = 1
 			board = Rules.rescue(board)
-			pieces[0] = Rules.next_piece(rng,board)
+			pieces[0] = Rules.next_piece(rng,board,recent_shapes)
+			_remember_shape(pieces[0])
 			phase = "drop"
 			_praise("+1 ♥",Color("#ff9bb7"),1.2)
 			queue_redraw()
@@ -190,9 +195,16 @@ func _rotate_board(clockwise: bool) -> void:
 	_check_stuck()
 	queue_redraw()
 
+func _remember_shape(piece: Array) -> void:
+	recent_shapes.append(Rules.piece_shape_id(piece))
+	while recent_shapes.size() > 5:
+		recent_shapes.pop_front()
+
 func _advance_piece() -> void:
 	pieces.pop_front()
-	pieces.append(Rules.next_piece(rng,board))
+	var next: Array = Rules.next_piece(rng,board,recent_shapes)
+	pieces.append(next)
+	_remember_shape(next)
 
 func _could_recover_by_rotating(piece: Array) -> bool:
 	# A player may rotate without dropping. Do not take a life if
@@ -225,7 +237,8 @@ func _check_stuck() -> void:
 		phase = "over"
 	else:
 		board = Rules.rescue(board)
-		pieces[0] = Rules.next_piece(rng,board)
+		pieces[0] = Rules.next_piece(rng,board,recent_shapes)
+		_remember_shape(pieces[0])
 		if not Rules.any_drop(board,pieces[0]):
 			# Let the next input recover the board; no recursive losses.
 			board = Rules.empty_board()
