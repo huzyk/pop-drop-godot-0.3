@@ -359,8 +359,6 @@ func _apply_target(at: Vector2i) -> void:
   return
  if kind == "rainbow" and board[at.y][at.x] == -1:
   return
- charges[kind] -= 1
- targeting = ""
  var remove := {}
  if kind == "bomb":
   for y in range(maxi(0,at.y-1),mini(8,at.y+2)):
@@ -382,7 +380,14 @@ func _apply_target(at: Vector2i) -> void:
  for p in remove.values():
   if board[p.y][p.x] != -1:
    count += 1
-   board[p.y][p.x] = -1
+ # Never consume a booster when the selected area contains no bubbles.
+ if count == 0:
+  _toast(t("use_tile"))
+  return
+ charges[kind] -= 1
+ targeting = ""
+ for p in remove.values():
+  board[p.y][p.x] = -1
  var follow: Dictionary = Rules.resolve_after_booster(board)
  board = follow.board
  count += int(follow.removed)
