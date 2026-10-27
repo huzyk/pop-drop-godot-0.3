@@ -5,30 +5,31 @@ const EMPTY := -1
 const COLOR_COUNT := 3
 
 const SHAPES_BY_SIZE := [
-	# One bead.
+	# Twelve recognisable silhouettes. The Z and S are intentionally separate.
+	# 1 single
 	[[Vector2i(0,0)]],
-	# Two beads: flat pair or vertical stack.
+	# 2 pairs: horizontal, vertical
 	[[Vector2i(0,0),Vector2i(1,0)],
 	 [Vector2i(0,0),Vector2i(0,1)]],
-	# Three beads: bar, tower, and both mirrored corners.
+	# 3 triples: horizontal, vertical, corner
 	[[Vector2i(0,0),Vector2i(1,0),Vector2i(2,0)],
 	 [Vector2i(0,0),Vector2i(0,1),Vector2i(0,2)],
-	 [Vector2i(0,0),Vector2i(1,0),Vector2i(0,1)],
-	 [Vector2i(0,0),Vector2i(1,0),Vector2i(1,1)],
-	 [Vector2i(0,0),Vector2i(0,1),Vector2i(1,1)],
-	 [Vector2i(1,0),Vector2i(0,1),Vector2i(1,1)]],
-	# Four beads: lines, square, L/J, T, S/Z, mirrored T.
+	 [Vector2i(0,0),Vector2i(1,0),Vector2i(0,1)]],
+	# 4 balls: bar, square, L, T, S, Z
 	[[Vector2i(0,0),Vector2i(1,0),Vector2i(2,0),Vector2i(3,0)],
-	 [Vector2i(0,0),Vector2i(0,1),Vector2i(0,2),Vector2i(0,3)],
 	 [Vector2i(0,0),Vector2i(1,0),Vector2i(0,1),Vector2i(1,1)],
 	 [Vector2i(0,0),Vector2i(0,1),Vector2i(0,2),Vector2i(1,2)],
-	 [Vector2i(1,0),Vector2i(1,1),Vector2i(1,2),Vector2i(0,2)],
 	 [Vector2i(0,0),Vector2i(1,0),Vector2i(2,0),Vector2i(1,1)],
-	 [Vector2i(0,1),Vector2i(1,1),Vector2i(2,1),Vector2i(1,0)],
-	 [Vector2i(0,0),Vector2i(1,0),Vector2i(1,1),Vector2i(2,1)],
-	 [Vector2i(1,0),Vector2i(2,0),Vector2i(0,1),Vector2i(1,1)]]
+	 [Vector2i(1,0),Vector2i(2,0),Vector2i(0,1),Vector2i(1,1)],
+	 [Vector2i(0,0),Vector2i(1,0),Vector2i(1,1),Vector2i(2,1)]]
 ]
 
+static func piece_shape_id(piece: Array) -> String:
+	# Colours do not affect shape identity; this keeps consecutive previews varied.
+	var result: String = ""
+	for bead in piece:
+		result += "%d:%d;" % [int(bead[0]),int(bead[1])]
+	return result
 
 static func empty_board() -> Array:
 	var result: Array = []
@@ -150,26 +151,27 @@ static func any_drop(board: Array, piece: Array) -> bool:
 static func choose_piece_size(rng: RandomNumberGenerator, board: Array) -> int:
 	var density: float = float(filled(board)) / float(SIZE*SIZE)
 	var roll: float = rng.randf()
-	# Keep the game moving: bigger drops are common early, rare when packed.
+	# Four-ball silhouettes now show up often enough to learn to recognise them.
+	# Once the board fills, small pieces remain available as lifelines.
 	if density > 0.72:
-		if roll < 0.30:
+		if roll < 0.24:
 			return 1
-		if roll < 0.85:
+		if roll < 0.79:
 			return 2
 		return 3
 	if density > 0.55:
-		if roll < 0.16:
+		if roll < 0.12:
 			return 1
-		if roll < 0.68:
+		if roll < 0.54:
 			return 2
-		if roll < 0.95:
+		if roll < 0.88:
 			return 3
 		return 4
-	if roll < 0.08:
+	if roll < 0.06:
 		return 1
-	if roll < 0.54:
+	if roll < 0.40:
 		return 2
-	if roll < 0.86:
+	if roll < 0.71:
 		return 3
 	return 4
 
@@ -177,7 +179,11 @@ static func make_piece(rng: RandomNumberGenerator, board: Array, desired_size: i
 	var piece_size: int = desired_size if desired_size > 0 else choose_piece_size(rng,board)
 	piece_size = clampi(piece_size,1,4)
 	var shapes: Array = SHAPES_BY_SIZE[piece_size-1]
-	var shape: Array = shapes[rng.randi_range(0,shapes.size()-1)]
+	var shape_index: int = rng.randi_range(0,shapes.size()-1)
+	# Highlight S and Z more frequently than other 4-ball silhouettes.
+	if piece_size == 4 and rng.randf() < 0.48:
+		shape_index = rng.randi_range(4,5)
+	var shape: Array = shapes[shape_index]
 	var primary: int = rng.randi_range(0,COLOR_COUNT-1)
 	# A piece must not create a 3-of-a-kind POP on an empty board.
 	# Test the actual settled landing, not just the outline of the shape:
@@ -197,7 +203,7 @@ static func make_piece(rng: RandomNumberGenerator, board: Array, desired_size: i
 		fallback.append([p.x,p.y,(primary+i)%COLOR_COUNT])
 	return fallback
 
-static func next_piece(rng: RandomNumberGenerator, board: Array) -> Array:
+static func next_piece(rng: RandomNumberGenerator, board: Array, avoid_shapes: Array = []) -> Array:
 	# Select the size BEFORE ranking the candidates. Otherwise the lookahead
 	# consistently prefers big pieces and overrides the intended distribution.
 	var desired_size: int = choose_piece_size(rng,board)
@@ -219,6 +225,9 @@ static func next_piece(rng: RandomNumberGenerator, board: Array) -> Array:
 			# Reward useful opportunities but don't always select the widest
 			# or shortest outline: meaningful variety matters to the player.
 			var rating: float = float(mini(playable,6))*0.25 + float(mini(useful,7))*1.0 + rng.randf_range(-2.5,2.5)
+			# A new silhouette is worth more than one more easy clear.
+			if avoid_shapes.has(piece_shape_id(candidate)):
+				rating -= 10.0
 			if rating > highest:
 				highest = rating
 				best = candidate
