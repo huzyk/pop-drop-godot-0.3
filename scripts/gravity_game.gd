@@ -618,7 +618,7 @@ func _draw_pieces() -> void:
 			max_x = maxi(max_x,int(b[0]))
 			max_y = maxi(max_y,int(b[1]))
 		# Keep even the tallest 4-ball towers inside the preview tile.
-		var step: float = minf(32.0,55.0/float(maxi(1,max_y)),135.0/float(maxi(1,max_x)))
+		var step: float = minf(32.0,minf(55.0/float(maxi(1,max_y)),135.0/float(maxi(1,max_x))))
 		var radius: float = minf(15.0,step*0.47)
 		var left: float = rect.get_center().x-float(max_x-min_x)*step*0.5
 		var top: float = rect.get_center().y-float(max_y-min_y)*step*0.5
