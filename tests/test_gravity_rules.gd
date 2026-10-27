@@ -58,6 +58,20 @@ func _initialize() -> void:
 	assert(Rules.find_matches(mixed).is_empty())
 	checks += 1
 
+	# The faster opening must be busy but not already auto-cleared.
+	var opening: Array = Rules.empty_board()
+	for x in range(8):
+		opening[7][x] = [0,0,2,1,1,0,2,2][x]
+		opening[6][x] = [1,2,0,2,0,2,1,0][x]
+	for ball in [[0,5,2],[3,5,0],[5,5,1],[7,5,1]]:
+		opening[ball[1]][ball[0]] = ball[2]
+	assert(Rules.filled(opening) == 20)
+	assert(Rules.find_matches(opening).is_empty())
+	# Rotating is a meaningful action without first dropping another shape.
+	var clockwise_opening: Array = Rules.settle(Rules.rotate(opening,true).board).board
+	assert(Rules.find_matches(clockwise_opening).size() >= 3)
+	checks += 3
+
 	var random: RandomNumberGenerator = RandomNumberGenerator.new()
 	random.seed = 20261027
 	# Generate hundreds of actual turns, not just isolated shapes.
