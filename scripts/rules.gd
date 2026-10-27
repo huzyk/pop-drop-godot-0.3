@@ -135,6 +135,15 @@ static func make_piece(shape_id: int, colors: Array) -> Array:
 		result.append([pos.x,pos.y,colors[i]])
 	return result
 
+static func intrinsic_matches(piece: Array) -> Array:
+	# A shape with three adjacent beads of one colour would pop on its own.
+	# Such pre-solved pieces are not allowed in the tray.
+	var standalone: Array = empty_board()
+	for bead in piece:
+		standalone[int(bead[1])][int(bead[0])] = int(bead[2])
+	return find_matches(standalone)
+
+
 static func make_candidate(rng: RandomNumberGenerator, board: Array, color_count: int = BASE_COLORS) -> Array:
 	var density: float = float(count_filled(board)) / float(SIZE*SIZE)
 	var roll: float = rng.randf()
@@ -161,7 +170,23 @@ static func make_candidate(rng: RandomNumberGenerator, board: Array, color_count
 	var colors: Array = []
 	for _p in SHAPES[shape_id]:
 		colors.append(dominant if rng.randf() < 0.82 else rng.randi_range(0,color_count-1))
-	return make_piece(shape_id,colors)
+	var piece: Array = make_piece(shape_id,colors)
+	# Repair groups that would explode BEFORE touching any existing board balls.
+	# Preserve same-colour pairs: they help the player plan very easy clears.
+	for _repair in range(8):
+		var internal: Array = intrinsic_matches(piece)
+		if internal.is_empty():
+			return piece
+		var affected: Vector2i = internal[rng.randi_range(0,internal.size()-1)]
+		for bead in piece:
+			if int(bead[0]) == affected.x and int(bead[1]) == affected.y:
+				var next_color: int = (int(bead[2]) + rng.randi_range(1,color_count-1)) % color_count
+				bead[2] = next_color
+				break
+	# Guaranteed fallback even after unlucky re-rolls.
+	for i in range(piece.size()):
+		piece[i][2] = (dominant+i) % color_count
+	return piece
 
 static func evaluate_candidate(board: Array, piece: Array) -> Dictionary:
 	# Evaluate every legal landing spot, and keep a concrete move for lookahead.
