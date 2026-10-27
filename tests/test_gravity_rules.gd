@@ -64,14 +64,19 @@ func _initialize() -> void:
 	var opening: Array = Rules.empty_board()
 	for x in range(8):
 		opening[7][x] = [-1,0,0,0,0,1,2,2][x]
-		opening[6][x] = [1,2,1,2,1,2,1,0][x]
-	for ball in [[0,5,2],[3,5,0],[5,5,1],[7,5,1],[6,5,2]]:
-		opening[ball[1]][ball[0]] = ball[2]
+		opening[6][x] = [-1,1,2,1,2,0,1,0][x]
+		opening[5][x] = [-1,-1,2,0,1,2,0,1][x]
 	assert(Rules.filled(opening) == 20)
 	assert(Rules.find_matches(opening).is_empty())
 	# The opening is four connected balls from a charged five-ball group.
 	assert(Rules.find_groups(opening,4).size() == 1)
 	assert(Rules.find_matches(opening).is_empty())
+	assert(opening == Rules.settle(opening).board,
+		"Starter must have no floating balls or unreachable bottom gaps")
+	var first_goal: Dictionary = Rules.drop(opening,[[0,0,0]],0)
+	assert(first_goal.valid)
+	assert(Rules.find_matches(first_goal.board).size() == 5,
+		"The open first column must really complete the first 5/5 target")
 	var clockwise_opening: Array = Rules.settle(Rules.rotate(opening,true).board).board
 	assert(Rules.find_matches(clockwise_opening).is_empty())
 	checks += 4
