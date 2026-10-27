@@ -202,6 +202,7 @@ func _gui_input(event: InputEvent) -> void:
 			pieces[0] = Rules.next_piece(rng,board,recent_shapes)
 			_remember_shape(pieces[0])
 			phase = "drop"
+			_refresh_targets()
 			_praise("+1 ♥",Color("#ff9bb7"),1.2)
 			queue_redraw()
 		return
