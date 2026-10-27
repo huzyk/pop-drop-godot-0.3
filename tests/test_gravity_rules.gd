@@ -74,6 +74,61 @@ func _initialize() -> void:
 
 	var random: RandomNumberGenerator = RandomNumberGenerator.new()
 	random.seed = 20261027
+	# The previous immediate POP on drop is now only a POSSIBLE target:
+	# dropping is a banking action; the real action cashing it in is rotation.
+	var saved_group: Array = Rules.empty_board()
+	saved_group[7][1] = 0
+	saved_group[7][2] = 0
+	var prepared: Dictionary = Rules.drop(saved_group,[[0,0,0]],3)
+	assert(prepared.valid and Rules.find_matches(prepared.board).size() == 3)
+	assert(Rules.group_points(3) == 100)
+	var projected: Dictionary = Rules.rotate_preview(prepared.board,true)
+	assert(int(projected["score"]) == 100)
+	assert(int(projected["removed"]) == 3)
+	assert(int(projected["chains"]) == 1)
+	# The preview must NEVER mutate the pending board, so the player
+	# can choose to keep stacking rather than cash out now.
+	assert(Rules.find_matches(prepared.board).size() == 3)
+	checks += 5
+
+	# Rewards are nonlinear. A large cluster is worth more than
+	# splitting the same number of balls into smaller groups.
+	var expected: Array = [100,180,320,560,900,1400]
+	for i in range(expected.size()):
+		assert(Rules.group_points(i+3) == expected[i])
+	assert(Rules.group_points(9) > Rules.group_points(8))
+	var group_of_six: Array = Rules.empty_board()
+	for x in range(6):
+		group_of_six[7][x] = 1
+	var six_groups: Array = Rules.find_groups(group_of_six)
+	assert(six_groups.size() == 1 and int(six_groups[0]["count"]) == 6)
+	assert(Rules.score_groups(six_groups) == 560)
+	assert(Rules.score_groups(six_groups,3) == 1680)
+	checks += 10
+
+	# Two disconnected triples are two 100-point groups, not one 560.
+	var separate: Array = Rules.empty_board()
+	for x in range(3):
+		separate[7][x] = 0
+		separate[7][x+5] = 0
+	var separate_groups: Array = Rules.find_groups(separate)
+	assert(separate_groups.size() == 2)
+	assert(Rules.score_groups(separate_groups) == 200)
+	assert(Rules.find_matches(separate).size() == 6)
+	checks += 3
+
+	# Clear, fair loss boundary: reaching row zero means a life is at risk.
+	var tower: Array = Rules.empty_board()
+	for y in range(8):
+		tower[y][4] = 2
+	assert(Rules.ceiling_reached(tower))
+	assert(Rules.tallest_column(tower) == 8)
+	var rescued: Array = Rules.rescue(tower)
+	assert(not Rules.ceiling_reached(rescued))
+	assert(Rules.tallest_column(rescued) == 6)
+	assert(not Rules.ceiling_reached(prepared.board))
+	checks += 5
+
 	# All piece templates have the expected size and valid unique positions.
 	var shapes_checked: int = 0
 	for piece_size in range(1,5):
