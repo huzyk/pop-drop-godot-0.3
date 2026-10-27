@@ -75,3 +75,10 @@ Fonty Clear Sans (Copyright © Intel 2013) — Apache 2.0. Teksty licencji w `fo
 - `generate_tray_plan` zwraca także pozycje do testowania kolejnych ruchów. Nie są widoczne dla gracza; to narzędzie walidacji generatora.
 - Testy GDScript obejmują 90 losowanych zestawów na trzech rodzajach plansz.
 - Mechanika nadal wymaga testów odczuć i kalibracji czasu rund. Projekt nie zawiera prawdziwych reklam i nie powinien być jeszcze publikowany.
+
+
+## Poprawka reguł (27.10.2026)
+
+Wcześniej trzy jednakowe kulki wygenerowane **w jednym kształcie** mogły od razu zniknąć po dowolnym umieszczeniu, nawet na pustej planszy. To sprawiało, że wybór miejsca nie miał znaczenia. Generator `make_candidate` w `scripts/rules.gd` teraz wykrywa i usuwa takie samodzielnie punktujące układy (zachowując pary kolorów). Test GDScript sprawdza kandydatów i tace, aby problem nie powracał. Próg 3 stykających się kulek nadal obowiązuje po ułożeniu na planszy.
+
+Ważne: zmiana została zapisana w GitHubie, ale testów GDScript nie uruchomiono jeszcze w rzeczywistym silniku Godot. Na komputerze pobierz aktualizację przez Fetch/Pull i uruchom F5.
