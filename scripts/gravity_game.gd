@@ -178,6 +178,7 @@ func _rotate_board(clockwise: bool) -> void:
 	var gravity: Dictionary = Rules.settle(board)
 	await _animate_to(gravity.board,gravity.motions,0.42,"fall")
 	await _resolve_cascades()
+	phase = "rotate"
 	_finish_turn()
 
 func _finish_turn() -> void:
