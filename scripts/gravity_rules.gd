@@ -257,9 +257,9 @@ static func make_piece(rng: RandomNumberGenerator, board: Array, desired_size: i
 		shape_index = rng.randi_range(4,5)
 	var shape: Array = shapes[shape_index]
 	var primary: int = rng.randi_range(0,COLOR_COUNT-1)
-	# A piece must not create a 3-of-a-kind POP on an empty board.
-	# Test the actual settled landing, not just the outline of the shape:
-	# individual beads split apart when dropped.
+	# No piece has five beads, so it cannot clear itself on an empty board.
+	# Still validate its actual settled footprint: separate beads fall into
+	# their columns instead of remaining a rigid tetromino.
 	for attempt in range(12):
 		var piece: Array = []
 		for p in shape:
@@ -268,7 +268,7 @@ static func make_piece(rng: RandomNumberGenerator, board: Array, desired_size: i
 		var landed: Dictionary = drop(empty_board(),piece,0)
 		if landed.get("valid",false) and find_matches(landed.board).is_empty():
 			return piece
-	# At most two beads share any one colour: no automatic POP is possible.
+	# Defensive colour fallback (normal 1–4 bead pieces need no fallback).
 	var fallback: Array = []
 	for i in range(shape.size()):
 		var p: Vector2i = shape[i]
