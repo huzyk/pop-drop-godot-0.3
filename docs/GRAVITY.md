@@ -52,3 +52,24 @@ Test sprawdza zrzucanie pionowych i poziomych par, sprawdzanie legalnych ruchów
 ## Co oceniamy
 
 Najpierw oceń, **czy wiesz przed ruchem, co chcesz osiągnąć**. Następnie, czy obrót daje satysfakcję i czy rozgrywka jest łatwa. Dopiero gdy te trzy rzeczy zadziałają, warto inwestować we wspomagacze, reklamowe ratunki i grafikę.
+
+## Efekty wizualne — aktualizacja 27.10.2026
+
+Animacje są częścią gałęzi `gravity-prototype` (nie `main`). Zastosowano **proceduralny system efektów bez tekstur i zewnętrznych assetów**:
+
+- **Obrót:** łuk 90° z wygładzonym ruchem kulek, trzema świetlnymi echami, podświetleniem obręczy i subtelnym ruchem planszy.
+- **Zrzut/opad:** przyspieszony optycznie lot ze smugami; po zatrzymaniu wybuchają krótkie iskry i pojawia się fala uderzeniowa.
+- **POP:** 0,18–0,21 s napięcia (rozświetlanie i pęcznienie połączonych kulek), eksplozja kolorowych iskier, rozchodzący się pierścień, błysk, drgnięcie planszy i unoszące się punkty; kaskady wzmacniają efekty.
+- **Interfejs:** płynne naliczanie wyniku, sprężyste komunikaty i lekkie świetlne drobiny w tle.
+- **Responsywność:** w czasie animacji zapamiętywany jest jeden ostatni klik obrotu/zrzutu i wykonywany po zakończeniu sekwencji; gracz nie musi klikać ponownie. Logika punktów, spadania i generatora pozostaje bez zmian.
+- **Budżet wydajności:** maksymalnie 220 iskier, 14 fal i 10 wyskakujących punktacji równocześnie.
+
+### Ręczny test po Pull
+
+1. Zrzuć kształt na wysoką kolumnę: obserwuj smugę i iskry przy lądowaniu.
+2. Obróć w lewo i prawo: wszystkie kulki powinny wykonać ćwierćokrąg, po czym opaść.
+3. Ułóż grupę 3+ identycznych kulek: powinny rozświetlić się *przed* eksplozją, a wynik powinien policzyć się płynnie.
+4. Wywołaj kaskadę: obserwuj osobne wybuchy i mnożnik `×2`, `×3`.
+5. Podczas animacji szybko naciśnij kolejny obrót: powinien wykonać się automatycznie po zakończeniu aktualnego.
+
+**Status walidacji:** sprawdzono strukturę pliku i zapisy w GitHubie, ale w środowisku implementacji nie było uruchamialnego silnika Godot. Należy uruchomić projekt klawiszem F5 i sprawdzić konsolę oraz płynność na docelowym telefonie.
