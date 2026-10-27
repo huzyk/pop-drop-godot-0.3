@@ -112,7 +112,7 @@ static func drop(board: Array, piece: Array, left_col: int) -> Dictionary:
 			return {"valid":false}
 		var color: int = int(bead[2])
 		result[landing][x] = color
-		motions.append({"from":Vector2(x,-2.0-float(bead[1])),"to":Vector2(x,landing),"color":color})
+		motions.append({"from":Vector2(x,-float(piece.size()+1)+float(bead[1])),"to":Vector2(x,landing),"color":color})
 	return {"valid":true,"board":result,"motions":motions}
 
 static func any_drop(board: Array, piece: Array) -> bool:
