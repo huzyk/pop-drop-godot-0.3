@@ -7,14 +7,16 @@ func _initialize() -> void:
 	assert(Rules.filled(board) == 0)
 	checks += 1
 
-	# Two balls on the floor are a visible target; a third completes a POP.
+	# Three and four touching balls are NOT enough now. Five are needed.
 	board[7][0] = 0
 	board[7][1] = 0
 	assert(Rules.find_matches(board).is_empty())
 	var landing: Dictionary = Rules.drop(board,[[0,0,0]],2)
 	assert(landing.valid)
 	assert(landing.board[7][2] == 0)
-	assert(Rules.find_matches(landing.board).size() == 3)
+	assert(Rules.find_matches(landing.board).is_empty())
+	assert(Rules.find_groups(landing.board,3).size() == 1)
+	assert(Rules.POP_THRESHOLD == 5)
 	checks += 1
 
 	# A vertical pair should enter one column, never overlap.
@@ -61,16 +63,18 @@ func _initialize() -> void:
 	# The faster opening must be busy but not already auto-cleared.
 	var opening: Array = Rules.empty_board()
 	for x in range(8):
-		opening[7][x] = [0,0,2,1,1,0,2,2][x]
-		opening[6][x] = [1,2,0,2,0,2,1,0][x]
-	for ball in [[0,5,2],[3,5,0],[5,5,1],[7,5,1]]:
+		opening[7][x] = [-1,0,0,0,0,1,2,2][x]
+		opening[6][x] = [1,2,1,2,1,2,1,0][x]
+	for ball in [[0,5,2],[3,5,0],[5,5,1],[7,5,1],[6,5,2]]:
 		opening[ball[1]][ball[0]] = ball[2]
 	assert(Rules.filled(opening) == 20)
 	assert(Rules.find_matches(opening).is_empty())
-	# Rotating is a meaningful action without first dropping another shape.
+	# The opening is four connected balls from a charged five-ball group.
+	assert(Rules.find_groups(opening,4).size() == 1)
+	assert(Rules.find_matches(opening).is_empty())
 	var clockwise_opening: Array = Rules.settle(Rules.rotate(opening,true).board).board
-	assert(Rules.find_matches(clockwise_opening).size() >= 3)
-	checks += 3
+	assert(Rules.find_matches(clockwise_opening).is_empty())
+	checks += 4
 
 	var random: RandomNumberGenerator = RandomNumberGenerator.new()
 	random.seed = 20261027
@@ -79,23 +83,25 @@ func _initialize() -> void:
 	var saved_group: Array = Rules.empty_board()
 	saved_group[7][1] = 0
 	saved_group[7][2] = 0
-	var prepared: Dictionary = Rules.drop(saved_group,[[0,0,0]],3)
-	assert(prepared.valid and Rules.find_matches(prepared.board).size() == 3)
-	assert(Rules.group_points(3) == 100)
+	# Place a three-ball piece beside a pair: now five connected.
+	var prepared: Dictionary = Rules.drop(saved_group,[[0,0,0],[1,0,0],[2,0,0]],3)
+	assert(prepared.valid and Rules.find_matches(prepared.board).size() == 5)
+	assert(Rules.group_points(3) == 0 and Rules.group_points(4) == 0)
+	assert(Rules.group_points(5) == 320)
 	var projected: Dictionary = Rules.rotate_preview(prepared.board,true)
-	assert(int(projected["score"]) == 100)
-	assert(int(projected["removed"]) == 3)
+	assert(int(projected["score"]) == 320)
+	assert(int(projected["removed"]) == 5)
 	assert(int(projected["chains"]) == 1)
 	# The preview must NEVER mutate the pending board, so the player
 	# can choose to keep stacking rather than cash out now.
-	assert(Rules.find_matches(prepared.board).size() == 3)
-	checks += 5
+	assert(Rules.find_matches(prepared.board).size() == 5)
+	checks += 7
 
 	# Rewards are nonlinear. A large cluster is worth more than
 	# splitting the same number of balls into smaller groups.
-	var expected: Array = [100,180,320,560,900,1400]
+	var expected: Array = [320,560,900,1400]
 	for i in range(expected.size()):
-		assert(Rules.group_points(i+3) == expected[i])
+		assert(Rules.group_points(i+5) == expected[i])
 	assert(Rules.group_points(9) > Rules.group_points(8))
 	var group_of_six: Array = Rules.empty_board()
 	for x in range(6):
@@ -106,15 +112,15 @@ func _initialize() -> void:
 	assert(Rules.score_groups(six_groups,3) == 1680)
 	checks += 10
 
-	# Two disconnected triples are two 100-point groups, not one 560.
+	# Two disconnected groups of five score 2*320, not a single 10-ball prize.
 	var separate: Array = Rules.empty_board()
-	for x in range(3):
-		separate[7][x] = 0
-		separate[7][x+5] = 0
+	for y in range(3,8):
+		separate[y][0] = 0
+		separate[y][7] = 0
 	var separate_groups: Array = Rules.find_groups(separate)
 	assert(separate_groups.size() == 2)
-	assert(Rules.score_groups(separate_groups) == 200)
-	assert(Rules.find_matches(separate).size() == 6)
+	assert(Rules.score_groups(separate_groups) == 640)
+	assert(Rules.find_matches(separate).size() == 10)
 	checks += 3
 
 	# Clear, fair loss boundary: reaching row zero means a life is at risk.
@@ -208,11 +214,7 @@ func _initialize() -> void:
 			continue
 		var result: Dictionary = Rules.drop(simulation,piece,possible[random.randi_range(0,possible.size()-1)])
 		simulation = result.board
-		for depth in range(20):
-			var hits: Array = Rules.find_matches(simulation)
-			if hits.is_empty():
-				break
-			simulation = Rules.settle(Rules.erase_matches(simulation,hits)).board
+		# Holding a cluster after a drop is allowed; no automatic POP here.
 		var direction: bool = random.randi_range(0,1) == 1
 		simulation = Rules.settle(Rules.rotate(simulation,direction).board).board
 		for depth in range(20):
