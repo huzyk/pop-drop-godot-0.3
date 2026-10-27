@@ -16,6 +16,7 @@ func _initialize() -> void:
 	assert(landing.board[7][2] == 0)
 	assert(Rules.find_matches(landing.board).is_empty())
 	assert(Rules.find_groups(landing.board,3).size() == 1)
+	assert(Rules.resolve_preview(landing.board)["score"] == 0)
 	assert(Rules.POP_THRESHOLD == 5)
 	checks += 1
 
@@ -81,16 +82,23 @@ func _initialize() -> void:
 	assert(tutorial_drop.valid)
 	assert(Rules.find_matches(tutorial_drop.board).size() >= 5,
 		"Scripted two-ball starter must finish the goal at column 0")
-	assert(int(Rules.rotate_preview(tutorial_drop.board,true)["score"]) >= 320,
-		"Clockwise rotation must successfully cash in the starter reward")
+	var instant_opening: Dictionary = Rules.drop_preview(opening,[[0,0,0],[1,0,1]],0)
+	assert(instant_opening.valid)
+	assert(int(instant_opening["score"]) == 320,
+		"Completing the first 5-ball target must POP immediately on drop")
+	assert(int(instant_opening["removed"]) == 5)
+	assert(int(instant_opening["chains"]) == 1)
+	assert(Rules.find_matches(instant_opening["board"]).is_empty())
+	assert(Rules.find_groups(opening,4).size() == 1,
+		"Previewing the first POP must never modify the existing board")
 	var clockwise_opening: Array = Rules.settle(Rules.rotate(opening,true).board).board
 	assert(Rules.find_matches(clockwise_opening).is_empty())
 	checks += 4
 
 	var random: RandomNumberGenerator = RandomNumberGenerator.new()
 	random.seed = 20261027
-	# The previous immediate POP on drop is now only a POSSIBLE target:
-	# dropping is a banking action; the real action cashing it in is rotation.
+	# POP is automatic after BOTH drops and rotations. All 5-ball shapes
+	# count, including non-straight contiguous clusters.
 	var saved_group: Array = Rules.empty_board()
 	saved_group[7][1] = 0
 	saved_group[7][2] = 0
@@ -99,14 +107,23 @@ func _initialize() -> void:
 	assert(prepared.valid and Rules.find_matches(prepared.board).size() == 5)
 	assert(Rules.group_points(3) == 0 and Rules.group_points(4) == 0)
 	assert(Rules.group_points(5) == 320)
-	var projected: Dictionary = Rules.rotate_preview(prepared.board,true)
+	var projected: Dictionary = Rules.drop_preview(saved_group,[[0,0,0],[1,0,0],[2,0,0]],3)
+	assert(projected.valid)
 	assert(int(projected["score"]) == 320)
 	assert(int(projected["removed"]) == 5)
 	assert(int(projected["chains"]) == 1)
-	# The preview must NEVER mutate the pending board, so the player
-	# can choose to keep stacking rather than cash out now.
+	assert(Rules.find_matches(projected["board"]).is_empty())
+	# An alternate L-shaped group of five must score as well.
+	var bent: Array = Rules.empty_board()
+	for x in range(3):
+		bent[7][x] = 0
+	for x in range(1,3):
+		bent[6][x] = 0
+	assert(Rules.find_groups(bent).size() == 1)
+	assert(int(Rules.resolve_preview(bent)["score"]) == 320)
+	# Pure previews cannot mutate the board that the player is seeing.
 	assert(Rules.find_matches(prepared.board).size() == 5)
-	checks += 7
+	checks += 10
 
 	# Rewards are nonlinear. A large cluster is worth more than
 	# splitting the same number of balls into smaller groups.
@@ -225,14 +242,14 @@ func _initialize() -> void:
 			continue
 		var result: Dictionary = Rules.drop(simulation,piece,possible[random.randi_range(0,possible.size()-1)])
 		simulation = result.board
-		# Holding a cluster after a drop is allowed; no automatic POP here.
+		# Simulate EXACT player order: drop -> auto-POP -> (optional) rotate -> POP.
+		var after_drop: Dictionary = Rules.resolve_preview(simulation)
+		simulation = after_drop["board"]
+		assert(Rules.find_matches(simulation).is_empty())
 		var direction: bool = random.randi_range(0,1) == 1
-		simulation = Rules.settle(Rules.rotate(simulation,direction).board).board
-		for depth in range(20):
-			var hits: Array = Rules.find_matches(simulation)
-			if hits.is_empty():
-				break
-			simulation = Rules.settle(Rules.erase_matches(simulation,hits)).board
+		var after_rotation: Dictionary = Rules.rotate_preview(simulation,direction)
+		simulation = after_rotation["board"]
+		assert(Rules.find_matches(simulation).is_empty())
 		assert(Rules.filled(simulation) <= 64)
 		checks += 1
 	print("POP DROP Gravity rules OK: ",checks," checks")
