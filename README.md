@@ -41,8 +41,8 @@ Gra wybiera język systemowy spośród siedmiu, a w prawym górnym rogu można g
 ## Generator i balans
 
 - Plansza 8×8, start z kilkoma parami kolorowych kulek.
-- Generator buduje **3 kształty** i analizuje **18 kandydatów na każdy slot** pod kątem wolnych pozycji, potencjalnych dopasowań i kaskad.
-- Wybiera z kilku dobrych kandydatów, więc zestawy nie są zawsze identyczne.
+- Generator buduje **3 kształty** i analizuje **18 kandydatów na każdy slot**; od wersji 0.3.1 planuje legalną sekwencję trzech kolejnych ruchów, a nie każdy element osobno.
+- Wybiera z kilku dobrych kandydatów, więc zestawy nie są zawsze identyczne. W zwykłych sytuacjach każdy z trzech kształtów pasuje też do **obecnej** planszy. Przy wyjątkowo pełnej planszy możliwa jest porażka i ratunek.
 - Na początku są 3 kolory, po 36 położonych kształtach dochodzi czwarty.
 - Prostsze kształty częściej pojawiają się przy zagęszczonej planszy.
 - **Nie ma narzuconego czasu zgonu ani ukrytego pogarszania układów po reklamacie lub reklamie**. Czas rund i częstotliwość komunikatów wymagają dostrojenia na realnych testerach.
@@ -53,7 +53,7 @@ Gra wybiera język systemowy spośród siedmiu, a w prawym górnym rogu można g
 
 **Jeszcze nie:** rzeczywisty AdMob, ekran zarządzania zgodami (UMP), finalna oprawa i udźwiękowienie, telemetria retencji, walidacja Android AAB, rzetelna kalibracja na graczach.
 
-**Uwaga o testach:** do projektu dołączono `tests/test_model.py`, zawierający niezależny model reguł w Pythonie. Testuje 500 losowych przebiegów, kaskady, grawitację, STAR i kompletność tłumaczeń. To NIE oznacza, że Godot został automatycznie uruchomiony w tym środowisku — **przy pierwszym imporcie i F5 trzeba jeszcze sprawdzić działanie samego silnika**. Test logiki modelu: `python tests/test_model.py`. Dodatkowy, bezpośredni test GDScript uruchomisz po instalacji silnika poleceniem `godot --headless --path . --script res://tests/test_rules.gd` (nie uruchomiono go w środowisku tworzenia paczki).
+**Uwaga o testach:** do projektu dołączono `tests/test_model.py`, zawierający niezależny model reguł w Pythonie. Testuje 500 losowych przebiegów, kaskady, grawitację, STAR i kompletność tłumaczeń. To NIE oznacza, że Godot został automatycznie uruchomiony w tym środowisku — **przy pierwszym imporcie i F5 trzeba jeszcze sprawdzić działanie samego silnika**. Test logiki modelu: `python tests/test_model.py`. Dodatkowy, bezpośredni test GDScript (w tym sprawdzanie trzyruchowych planów na planszach pustej, startowej i gęstej) uruchomisz po instalacji silnika poleceniem `godot --headless --path . --script res://tests/test_rules.gd`. Ten test wymaga uruchomienia Godot na Twoim komputerze — nie został jeszcze zweryfikowany w samym silniku. Zmianę 0.3.1 zapisano bezpośrednio w GitHubie.
 
 ## Gdzie edytować
 
@@ -67,3 +67,11 @@ Gra wybiera język systemowy spośród siedmiu, a w prawym górnym rogu można g
 ## Licencje assetów
 
 Fonty Clear Sans (Copyright © Intel 2013) — Apache 2.0. Teksty licencji w `fonts/`. Pozostałe elementy gry zostały napisane od zera na potrzeby tego projektu.
+
+
+## Aktualizacja 0.3.1 — generator
+
+- Generator testuje hipotetyczne położenie pierwszego i drugiego kształtu, zanim dobierze następny. Dzięki temu nie rozdaje trzech elementów ocenianych na niezmienionej planszy.
+- `generate_tray_plan` zwraca także pozycje do testowania kolejnych ruchów. Nie są widoczne dla gracza; to narzędzie walidacji generatora.
+- Testy GDScript obejmują 90 losowanych zestawów na trzech rodzajach plansz.
+- Mechanika nadal wymaga testów odczuć i kalibracji czasu rund. Projekt nie zawiera prawdziwych reklam i nie powinien być jeszcze publikowany.
