@@ -1,3 +1,11 @@
+# POP DROP Gravity — osobny prototyp
+
+**Jesteś na gałęzi `gravity-prototype`.** W Godot klawisz **F5** uruchamia nową scenę z kulkami zrzucanymi od góry, jednym opcjonalnym obrotem w prawo lub lewo i grawitacją. Stara mechanika opisana poniżej jest zachowana na gałęzi `main`, ale **nie jest** uruchamiana w tej gałęzi.
+
+**Instrukcja i nowe reguły:** [docs/GRAVITY.md](docs/GRAVITY.md).
+
+---
+
 # POP DROP — grywalny prototyp Godot 0.3
 
 **Własny projekt gry**, napisany w GDScript. Wersja do testów na komputerze i późniejszego przeniesienia na Androida. Nie jest to kod ze znalezionych szablonów Unity/GitHub.
