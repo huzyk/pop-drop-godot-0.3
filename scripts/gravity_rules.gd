@@ -40,6 +40,22 @@ static func empty_board() -> Array:
 		result.append(row)
 	return result
 
+static func ceiling_reached(board: Array) -> bool:
+	# One shared, visible game-over boundary: the top row of the grid.
+	for color in board[0]:
+		if color != EMPTY:
+			return true
+	return false
+
+static func tallest_column(board: Array) -> int:
+	var tallest: int = 0
+	for x in range(SIZE):
+		for y in range(SIZE):
+			if board[y][x] != EMPTY:
+				tallest = maxi(tallest,SIZE-y)
+				break
+	return tallest
+
 static func copy_board(board: Array) -> Array:
 	var result: Array = []
 	for row in board:
