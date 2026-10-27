@@ -24,6 +24,17 @@ func _initialize() -> void:
 
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 20261026
+	# Regression: a tray piece cannot contain its own pop of 3+ matching beads.
+	# A 3-bead monochrome line is exactly the previous broken behaviour.
+	var broken_piece: Array = Rules.make_piece(3,[0,0,0])
+	assert(Rules.intrinsic_matches(broken_piece).size() == 3)
+	for count in [3,4]:
+		for sample in range(250):
+			var candidate: Array = Rules.make_candidate(rng,starter,count)
+			assert(Rules.intrinsic_matches(candidate).is_empty(),
+				"Generated a piece that can clear without board interaction")
+			checks += 1
+	
 	for sample_board in [Rules.empty_board(),starter,dense]:
 		for i in range(30):
 			var plan: Dictionary = Rules.generate_tray_plan(sample_board,rng)
@@ -33,6 +44,8 @@ func _initialize() -> void:
 			for slot in range(3):
 				var piece: Array = plan.tray[slot]
 				assert(piece.size() >= 1 and piece.size() <= 4)
+				assert(Rules.intrinsic_matches(piece).is_empty(),
+					"Tray must not contain a self-clearing piece")
 				# Every offered piece must be playable on the current real board.
 				assert(Rules.any_placement(sample_board,piece))
 				var landing: Vector2i = plan.anchors[slot]
