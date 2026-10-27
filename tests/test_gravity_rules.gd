@@ -86,8 +86,28 @@ func _initialize() -> void:
 				assert(not occupied.has(position))
 				occupied[position] = true
 			shapes_checked += 1
-	assert(shapes_checked >= 15)
+	assert(shapes_checked == 12)
 	checks += shapes_checked
+
+	# Both zigzags are different playable drop shapes, not just preview art.
+	# Colours intentionally stay in the same sequence for a fair comparison.
+	var s_outline: Array = Rules.SHAPES_BY_SIZE[3][4]
+	var z_outline: Array = Rules.SHAPES_BY_SIZE[3][5]
+	var s_piece: Array = []
+	var z_piece: Array = []
+	var tones: Array = [0,1,2,0]
+	for i in range(4):
+		var sp: Vector2i = s_outline[i]
+		var zp: Vector2i = z_outline[i]
+		s_piece.append([sp.x,sp.y,tones[i]])
+		z_piece.append([zp.x,zp.y,tones[i]])
+	assert(Rules.piece_shape_id(s_piece) != Rules.piece_shape_id(z_piece))
+	var s_result: Dictionary = Rules.drop(Rules.empty_board(),s_piece,2)
+	var z_result: Dictionary = Rules.drop(Rules.empty_board(),z_piece,2)
+	assert(s_result.valid and z_result.valid)
+	assert(s_result.board != z_result.board,
+		"Z and S must produce different arrangements, even with identical colours")
+	checks += 3
 
 	# Newly offered pieces may not clear themselves on an empty board.
 	for piece_size in range(1,5):
@@ -99,6 +119,14 @@ func _initialize() -> void:
 			assert(Rules.find_matches(placed.board).is_empty())
 			checks += 1
 
+	# Generator must actually surface all six four-ball silhouettes.
+	var four_seen: Dictionary = {}
+	for sample in range(500):
+		var quad: Array = Rules.make_piece(random,Rules.empty_board(),4)
+		four_seen[Rules.piece_shape_id(quad)] = true
+	assert(four_seen.size() == 6,"All six four-ball silhouettes should occur")
+	checks += 6
+
 	# Test that the size distribution is not distorted toward four-ball pieces.
 	var size_counts: Array = [0,0,0,0]
 	for sample in range(900):
@@ -106,7 +134,7 @@ func _initialize() -> void:
 		size_counts[sampled_size-1] += 1
 	assert(size_counts[1] > size_counts[3])
 	assert(size_counts[2] > size_counts[3])
-	assert(size_counts[3] > 75)
+	assert(size_counts[3] > 170 and size_counts[3] < 365)
 	checks += 3
 
 	# Generate hundreds of actual turns, not just isolated shapes.
