@@ -4,6 +4,32 @@ const SIZE := 8
 const EMPTY := -1
 const COLOR_COUNT := 3
 
+const SHAPES_BY_SIZE := [
+	# One bead.
+	[[Vector2i(0,0)]],
+	# Two beads: flat pair or vertical stack.
+	[[Vector2i(0,0),Vector2i(1,0)],
+	 [Vector2i(0,0),Vector2i(0,1)]],
+	# Three beads: bar, tower, and both mirrored corners.
+	[[Vector2i(0,0),Vector2i(1,0),Vector2i(2,0)],
+	 [Vector2i(0,0),Vector2i(0,1),Vector2i(0,2)],
+	 [Vector2i(0,0),Vector2i(1,0),Vector2i(0,1)],
+	 [Vector2i(0,0),Vector2i(1,0),Vector2i(1,1)],
+	 [Vector2i(0,0),Vector2i(0,1),Vector2i(1,1)],
+	 [Vector2i(1,0),Vector2i(0,1),Vector2i(1,1)]],
+	# Four beads: lines, square, L/J, T, S/Z, mirrored T.
+	[[Vector2i(0,0),Vector2i(1,0),Vector2i(2,0),Vector2i(3,0)],
+	 [Vector2i(0,0),Vector2i(0,1),Vector2i(0,2),Vector2i(0,3)],
+	 [Vector2i(0,0),Vector2i(1,0),Vector2i(0,1),Vector2i(1,1)],
+	 [Vector2i(0,0),Vector2i(0,1),Vector2i(0,2),Vector2i(1,2)],
+	 [Vector2i(1,0),Vector2i(1,1),Vector2i(1,2),Vector2i(0,2)],
+	 [Vector2i(0,0),Vector2i(1,0),Vector2i(2,0),Vector2i(1,1)],
+	 [Vector2i(0,1),Vector2i(1,1),Vector2i(2,1),Vector2i(1,0)],
+	 [Vector2i(0,0),Vector2i(1,0),Vector2i(1,1),Vector2i(2,1)],
+	 [Vector2i(1,0),Vector2i(2,0),Vector2i(0,1),Vector2i(1,1)]]
+]
+
+
 static func empty_board() -> Array:
 	var result: Array = []
 	for y in range(SIZE):
@@ -121,64 +147,85 @@ static func any_drop(board: Array, piece: Array) -> bool:
 			return true
 	return false
 
-static func make_piece(rng: RandomNumberGenerator, board: Array) -> Array:
+static func choose_piece_size(rng: RandomNumberGenerator, board: Array) -> int:
 	var density: float = float(filled(board)) / float(SIZE*SIZE)
 	var roll: float = rng.randf()
-	var shape: Array
-	if density > 0.78 or roll < 0.10:
-		shape = [Vector2i(0,0)]
-	elif roll < 0.85:
-		if rng.randf() < 0.50:
-			shape = [Vector2i(0,0),Vector2i(0,1)]
-		else:
-			shape = [Vector2i(0,0),Vector2i(1,0)]
-	else:
-		var triple: int = rng.randi_range(0,2)
-		if triple == 0:
-			shape = [Vector2i(0,0),Vector2i(1,0),Vector2i(0,1)]
-		elif triple == 1:
-			shape = [Vector2i(0,0),Vector2i(0,1),Vector2i(0,2)]
-		else:
-			shape = [Vector2i(0,0),Vector2i(1,0),Vector2i(2,0)]
+	# Keep the game moving: bigger drops are common early, rare when packed.
+	if density > 0.72:
+		if roll < 0.30:
+			return 1
+		if roll < 0.85:
+			return 2
+		return 3
+	if density > 0.55:
+		if roll < 0.16:
+			return 1
+		if roll < 0.68:
+			return 2
+		if roll < 0.95:
+			return 3
+		return 4
+	if roll < 0.08:
+		return 1
+	if roll < 0.54:
+		return 2
+	if roll < 0.86:
+		return 3
+	return 4
+
+static func make_piece(rng: RandomNumberGenerator, board: Array, desired_size: int = 0) -> Array:
+	var piece_size: int = desired_size if desired_size > 0 else choose_piece_size(rng,board)
+	piece_size = clampi(piece_size,1,4)
+	var shapes: Array = SHAPES_BY_SIZE[piece_size-1]
+	var shape: Array = shapes[rng.randi_range(0,shapes.size()-1)]
 	var primary: int = rng.randi_range(0,COLOR_COUNT-1)
-	var piece: Array = []
-	for p in shape:
-		var color: int = primary if rng.randf() < 0.55 else rng.randi_range(0,COLOR_COUNT-1)
-		piece.append([p.x,p.y,color])
-	# No pre-made triple that explodes without consulting the existing board.
-	if piece.size() >= 3:
-		var all_same: bool = true
-		for bead in piece:
-			if int(bead[2]) != int(piece[0][2]):
-				all_same = false
-		if all_same:
-			piece[-1][2] = (int(piece[-1][2])+1) % COLOR_COUNT
-	return piece
+	# A piece must not create a 3-of-a-kind POP on an empty board.
+	# Test the actual settled landing, not just the outline of the shape:
+	# individual beads split apart when dropped.
+	for attempt in range(12):
+		var piece: Array = []
+		for p in shape:
+			var color: int = primary if rng.randf() < 0.58 else rng.randi_range(0,COLOR_COUNT-1)
+			piece.append([p.x,p.y,color])
+		var landed: Dictionary = drop(empty_board(),piece,0)
+		if landed.get("valid",false) and find_matches(landed.board).is_empty():
+			return piece
+	# At most two beads share any one colour: no automatic POP is possible.
+	var fallback: Array = []
+	for i in range(shape.size()):
+		var p: Vector2i = shape[i]
+		fallback.append([p.x,p.y,(primary+i)%COLOR_COUNT])
+	return fallback
 
 static func next_piece(rng: RandomNumberGenerator, board: Array) -> Array:
-	var best: Array = []
-	var highest: float = -999999.0
-	# Friendly candidate search: most rounds should offer a reasonable POP.
-	for attempt in range(18):
-		var candidate: Array = make_piece(rng,board)
-		var playable: int = 0
-		var useful: int = 0
-		for col in range(SIZE):
-			var trial: Dictionary = drop(board,candidate,col)
-			if not trial.get("valid",false):
+	# Select the size BEFORE ranking the candidates. Otherwise the lookahead
+	# consistently prefers big pieces and overrides the intended distribution.
+	var desired_size: int = choose_piece_size(rng,board)
+	for target_size in range(desired_size,0,-1):
+		var best: Array = []
+		var highest: float = -999999.0
+		for attempt in range(20):
+			var candidate: Array = make_piece(rng,board,target_size)
+			var playable: int = 0
+			var useful: int = 0
+			for col in range(SIZE):
+				var trial: Dictionary = drop(board,candidate,col)
+				if not trial.get("valid",false):
+					continue
+				playable += 1
+				useful = maxi(useful,find_matches(trial.board).size())
+			if playable == 0:
 				continue
-			playable += 1
-			useful = maxi(useful,find_matches(trial.board).size())
-		if playable == 0:
-			continue
-		var rating: float = float(playable)*0.6 + float(mini(useful,7))*1.4 + rng.randf_range(-2.0,2.0)
-		if rating > highest:
-			highest = rating
-			best = candidate
-	if best.is_empty():
-		# When the board is jammed, life/rescue logic will handle the loss.
-		return [[0,0,rng.randi_range(0,COLOR_COUNT-1)]]
-	return best
+			# Reward useful opportunities but don't always select the widest
+			# or shortest outline: meaningful variety matters to the player.
+			var rating: float = float(mini(playable,6))*0.25 + float(mini(useful,7))*1.0 + rng.randf_range(-2.5,2.5)
+			if rating > highest:
+				highest = rating
+				best = candidate
+		if not best.is_empty():
+			return best
+	# Fully blocked: the life/rescue system handles the loss.
+	return [[0,0,rng.randi_range(0,COLOR_COUNT-1)]]
 
 static func rescue(board: Array) -> Array:
 	var result: Array = copy_board(board)
