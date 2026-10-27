@@ -10,17 +10,17 @@ const COLORS := [Color("#ff7096"),Color("#55dcad"),Color("#62b5ff")]
 const SAVE_FILE := "user://pop_drop_gravity.json"
 const LOCALES := ["pl","en","es","pt","de","fr","ru"]
 const TR := {
-	"pl":{"score":"WYNIK","best":"REKORD","move":"RUCH","drop":"DOTKNIJ KOLUMNY","turn":"OBRÓĆ PLANSZĘ LUB GRAJ DALEJ","left":"W LEWO","right":"W PRAWO","skip":"DALEJ","next":"NASTĘPNE","ready":"3 TEGO SAMEGO KOLORU = POP!","over":"KONIEC RUNDY","again":"ZAGRAJ PONOWNIE","rescue":"TEST: +1 ŻYCIE","lost":"STRATA ŻYCIA","hint":"Wybierz kolumnę dla spadającego kształtu"},
-	"en":{"score":"SCORE","best":"BEST","move":"MOVE","drop":"TAP A COLUMN","turn":"ROTATE OR KEEP GOING","left":"LEFT","right":"RIGHT","skip":"NEXT","next":"UP NEXT","ready":"3 SAME-COLOUR BALLS = POP!","over":"GAME OVER","again":"PLAY AGAIN","rescue":"TEST: +1 LIFE","lost":"LIFE LOST","hint":"Choose a column for the falling piece"},
-	"es":{"score":"PUNTOS","best":"RÉCORD","move":"JUGADA","drop":"TOCA UNA COLUMNA","turn":"GIRA O CONTINÚA","left":"IZQUIERDA","right":"DERECHA","skip":"SEGUIR","next":"SIGUIENTES","ready":"3 BOLAS DEL MISMO COLOR = POP!","over":"FIN DEL JUEGO","again":"JUGAR OTRA VEZ","rescue":"PRUEBA: +1 VIDA","lost":"VIDA PERDIDA","hint":"Elige una columna para las bolas"},
-	"pt":{"score":"PONTOS","best":"RECORDE","move":"JOGADA","drop":"TOQUE NA COLUNA","turn":"GIRE OU CONTINUE","left":"ESQUERDA","right":"DIREITA","skip":"SEGUIR","next":"PRÓXIMAS","ready":"3 BOLAS DA MESMA COR = POP!","over":"FIM DE JOGO","again":"JOGAR DE NOVO","rescue":"TESTE: +1 VIDA","lost":"VIDA PERDIDA","hint":"Escolha uma coluna para jogar"},
-	"de":{"score":"PUNKTE","best":"REKORD","move":"ZUG","drop":"SPALTE ANTIPPEN","turn":"DREHEN ODER WEITER","left":"LINKS","right":"RECHTS","skip":"WEITER","next":"ALS NÄCHSTES","ready":"3 GLEICHE FARBEN = POP!","over":"SPIEL VORBEI","again":"NOCHMAL SPIELEN","rescue":"TEST: +1 LEBEN","lost":"LEBEN VERLOREN","hint":"Wähle eine Spalte zum Einwerfen"},
-	"fr":{"score":"SCORE","best":"RECORD","move":"COUP","drop":"TOUCHE UNE COLONNE","turn":"TOURNE OU CONTINUE","left":"GAUCHE","right":"DROITE","skip":"SUITE","next":"À SUIVRE","ready":"3 BILLES IDENTIQUES = POP!","over":"PARTIE FINIE","again":"REJOUER","rescue":"TEST : +1 VIE","lost":"VIE PERDUE","hint":"Choisis une colonne pour les billes"},
-	"ru":{"score":"ОЧКИ","best":"РЕКОРД","move":"ХОД","drop":"ВЫБЕРИ СТОЛБЕЦ","turn":"ПОВЕРНИ ИЛИ ПРОДОЛЖИ","left":"ВЛЕВО","right":"ВПРАВО","skip":"ДАЛЕЕ","next":"СЛЕДУЮЩИЕ","ready":"3 ОДНОГО ЦВЕТА = POP!","over":"ИГРА ОКОНЧЕНА","again":"ИГРАТЬ СНОВА","rescue":"ТЕСТ: +1 ЖИЗНЬ","lost":"МИНУС ЖИЗНЬ","hint":"Выбери столбец для шариков"}
+	"pl":{"score":"WYNIK","best":"REKORD","move":"RUCH","drop":"DOTKNIJ = ZRZUT  •  PRZESUŃ = OBRÓT","turn":"OBRÓĆ PLANSZĘ LUB GRAJ DALEJ","left":"W LEWO","right":"W PRAWO","skip":"DALEJ","next":"NASTĘPNE","ready":"3 TEGO SAMEGO KOLORU = POP!","over":"KONIEC RUNDY","again":"ZAGRAJ PONOWNIE","rescue":"TEST: +1 ŻYCIE","lost":"STRATA ŻYCIA","swipe":"PRZESUŃ W LEWO / PRAWO, ABY OBRÓCIĆ","rotate_help":"SPRÓBUJ OBRÓCIĆ PLANSZĘ","hint":"Wybierz kolumnę dla spadającego kształtu"},
+	"en":{"score":"SCORE","best":"BEST","move":"MOVE","drop":"TAP TO DROP  •  SWIPE TO ROTATE","turn":"ROTATE OR KEEP GOING","left":"LEFT","right":"RIGHT","skip":"NEXT","next":"UP NEXT","ready":"3 SAME-COLOUR BALLS = POP!","over":"GAME OVER","again":"PLAY AGAIN","rescue":"TEST: +1 LIFE","lost":"LIFE LOST","swipe":"SWIPE LEFT / RIGHT TO ROTATE","rotate_help":"ROTATE TO MAKE ROOM","hint":"Choose a column for the falling piece"},
+	"es":{"score":"PUNTOS","best":"RÉCORD","move":"JUGADA","drop":"TOCA PARA SOLTAR • DESLIZA PARA GIRAR","turn":"GIRA O CONTINÚA","left":"IZQUIERDA","right":"DERECHA","skip":"SEGUIR","next":"SIGUIENTES","ready":"3 BOLAS DEL MISMO COLOR = POP!","over":"FIN DEL JUEGO","again":"JUGAR OTRA VEZ","rescue":"PRUEBA: +1 VIDA","lost":"VIDA PERDIDA","swipe":"DESLIZA A IZQUIERDA O DERECHA","rotate_help":"GIRA PARA HACER ESPACIO","hint":"Elige una columna para las bolas"},
+	"pt":{"score":"PONTOS","best":"RECORDE","move":"JOGADA","drop":"TOQUE PARA SOLTAR • DESLIZE PARA GIRAR","turn":"GIRE OU CONTINUE","left":"ESQUERDA","right":"DIREITA","skip":"SEGUIR","next":"PRÓXIMAS","ready":"3 BOLAS DA MESMA COR = POP!","over":"FIM DE JOGO","again":"JOGAR DE NOVO","rescue":"TESTE: +1 VIDA","lost":"VIDA PERDIDA","swipe":"DESLIZE PARA GIRAR","rotate_help":"GIRE PARA ABRIR ESPAÇO","hint":"Escolha uma coluna para jogar"},
+	"de":{"score":"PUNKTE","best":"REKORD","move":"ZUG","drop":"TIPPEN: FALLEN • WISCHEN: DREHEN","turn":"DREHEN ODER WEITER","left":"LINKS","right":"RECHTS","skip":"WEITER","next":"ALS NÄCHSTES","ready":"3 GLEICHE FARBEN = POP!","over":"SPIEL VORBEI","again":"NOCHMAL SPIELEN","rescue":"TEST: +1 LEBEN","lost":"LEBEN VERLOREN","swipe":"NACH LINKS / RECHTS WISCHEN","rotate_help":"DREHE FÜR MEHR PLATZ","hint":"Wähle eine Spalte zum Einwerfen"},
+	"fr":{"score":"SCORE","best":"RECORD","move":"COUP","drop":"TOUCHE : LÂCHER • GLISSE : TOURNER","turn":"TOURNE OU CONTINUE","left":"GAUCHE","right":"DROITE","skip":"SUITE","next":"À SUIVRE","ready":"3 BILLES IDENTIQUES = POP!","over":"PARTIE FINIE","again":"REJOUER","rescue":"TEST : +1 VIE","lost":"VIE PERDUE","swipe":"GLISSE POUR TOURNER","rotate_help":"TOURNE POUR LIBÉRER DE LA PLACE","hint":"Choisis une colonne pour les billes"},
+	"ru":{"score":"ОЧКИ","best":"РЕКОРД","move":"ХОД","drop":"НАЖМИ: СБРОС • СВАЙП: ПОВОРОТ","turn":"ПОВЕРНИ ИЛИ ПРОДОЛЖИ","left":"ВЛЕВО","right":"ВПРАВО","skip":"ДАЛЕЕ","next":"СЛЕДУЮЩИЕ","ready":"3 ОДНОГО ЦВЕТА = POP!","over":"ИГРА ОКОНЧЕНА","again":"ИГРАТЬ СНОВА","rescue":"ТЕСТ: +1 ЖИЗНЬ","lost":"МИНУС ЖИЗНЬ","swipe":"СВАЙП ВЛЕВО / ВПРАВО","rotate_help":"ПОВЕРНИ, ЧТОБЫ ОСВОБОДИТЬ МЕСТО","hint":"Выбери столбец для шариков"}
 }
-const LEFT_RECT := Rect2(34,1123,204,92)
-const SKIP_RECT := Rect2(258,1123,204,92)
-const RIGHT_RECT := Rect2(482,1123,204,92)
+const LEFT_RECT := Rect2(35,1123,285,92)
+const RIGHT_RECT := Rect2(400,1123,285,92)
+const SWIPE_DISTANCE := 72.0
 const RESTART_RECT := Rect2(104,722,512,84)
 const RESCUE_RECT := Rect2(104,821,512,79)
 
@@ -28,7 +28,7 @@ var board: Array = []
 var pieces: Array = []
 var rng := RandomNumberGenerator.new()
 var language: String = "en"
-var phase: String = "drop" # drop, rotate, anim, over
+var phase: String = "drop" # drop (tap or swipe), anim, over
 var score: int = 0
 var best: int = 0
 var moves: int = 0
@@ -48,6 +48,8 @@ var praise: String = ""
 var praise_timer: float = 0.0
 var hint_timer: float = 0.0
 var style_cache: Dictionary = {}
+var touch_start: Vector2 = Vector2.ZERO
+var touch_board: bool = false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -123,14 +125,18 @@ func _gui_input(event: InputEvent) -> void:
 		if BOARD.has_point(pt):
 			hover_column = int((pt.x-BOARD.position.x)/CELL)
 		queue_redraw()
-	if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed):
+	if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT):
 		return
 	var pt: Vector2 = _logical(event.position)
-	if Rect2(576,53,100,53).has_point(pt) and phase != "anim":
-		var index: int = LOCALES.find(language)
-		language = LOCALES[(index+1)%LOCALES.size()]
-		_save()
-		queue_redraw()
+	if event.pressed:
+		touch_start = pt
+		touch_board = BOARD.has_point(pt) and phase == "drop"
+		return
+	# Act on RELEASE so a swipe on the board cannot drop an unwanted piece.
+	var gesture: Vector2 = pt - touch_start
+	var started_on_board: bool = touch_board
+	touch_board = false
+	if phase == "anim":
 		return
 	if phase == "over":
 		if RESTART_RECT.has_point(pt):
@@ -144,16 +150,22 @@ func _gui_input(event: InputEvent) -> void:
 			_praise("+1 ♥",Color("#ff9bb7"),1.2)
 			queue_redraw()
 		return
-	if phase == "drop" and BOARD.has_point(pt):
-		var col: int = int((pt.x-BOARD.position.x)/CELL)
-		_play_drop(col)
-	elif phase == "rotate":
-		if LEFT_RECT.has_point(pt):
-			_rotate_board(false)
-		elif RIGHT_RECT.has_point(pt):
-			_rotate_board(true)
-		elif SKIP_RECT.has_point(pt):
-			_finish_turn()
+	if Rect2(576,53,100,53).has_point(pt):
+		var index: int = LOCALES.find(language)
+		language = LOCALES[(index+1)%LOCALES.size()]
+		_save()
+		queue_redraw()
+		return
+	if phase != "drop":
+		return
+	if started_on_board and absf(gesture.x) >= SWIPE_DISTANCE and absf(gesture.x) > absf(gesture.y)*1.25:
+		_rotate_board(gesture.x > 0.0)
+	elif started_on_board and gesture.length() <= 35.0 and BOARD.has_point(pt):
+		_play_drop(int((pt.x-BOARD.position.x)/CELL))
+	elif LEFT_RECT.has_point(pt):
+		_rotate_board(false)
+	elif RIGHT_RECT.has_point(pt):
+		_rotate_board(true)
 
 func _play_drop(column: int) -> void:
 	if phase != "drop":
@@ -165,40 +177,67 @@ func _play_drop(column: int) -> void:
 	phase = "anim"
 	moves += 1
 	chain_depth = 0
-	await _animate_to(result.board,result.motions,0.40,"fall")
+	await _animate_to(result.board,result.motions,0.19,"fall")
 	await _resolve_cascades()
-	phase = "rotate"
+	# No Next button: the next shape is ready immediately after this drop.
+	_advance_piece()
+	phase = "drop"
+	_check_stuck()
 	queue_redraw()
 
 func _rotate_board(clockwise: bool) -> void:
-	if phase != "rotate":
+	if phase != "drop":
 		return
 	phase = "anim"
 	spin_clockwise = clockwise
 	var turned: Dictionary = Rules.rotate(board,clockwise)
-	await _animate_to(turned.board,turned.motions,0.43,"spin")
+	await _animate_to(turned.board,turned.motions,0.22,"spin")
 	var gravity: Dictionary = Rules.settle(board)
-	await _animate_to(gravity.board,gravity.motions,0.42,"fall")
+	await _animate_to(gravity.board,gravity.motions,0.18,"fall")
 	await _resolve_cascades()
-	# Free rotation sandbox: the player chooses when to take the next piece.
-	# No automatic _finish_turn() here; repeated turns still settle and pop normally.
-	phase = "rotate"
+	phase = "drop"
+	_check_stuck()
 	queue_redraw()
 
-func _finish_turn() -> void:
-	if phase == "anim":
-		return
+func _advance_piece() -> void:
 	pieces.pop_front()
 	pieces.append(Rules.next_piece(rng,board))
-	phase = "drop"
-	if not Rules.any_drop(board,pieces[0]):
-		lives -= 1
-		_praise(t("lost"),Color("#ff8ca4"),1.2)
-		if lives <= 0:
-			phase = "over"
-		else:
-			board = Rules.rescue(board)
-			pieces[0] = Rules.next_piece(rng,board)
+
+func _could_recover_by_rotating(piece: Array) -> bool:
+	# A player may rotate without dropping. Do not take a life if
+	# there is still a viable path to place the currently offered piece.
+	for clockwise in [false,true]:
+		var virtual: Array = Rules.copy_board(board)
+		for quarter in range(4):
+			virtual = Rules.rotate(virtual,clockwise).board
+			virtual = Rules.settle(virtual).board
+			for cascade in range(20):
+				var hits: Array = Rules.find_matches(virtual)
+				if hits.is_empty():
+					break
+				virtual = Rules.settle(Rules.erase_matches(virtual,hits)).board
+			if Rules.any_drop(virtual,piece):
+				return true
+	return false
+
+func _check_stuck() -> void:
+	if phase != "drop" or pieces.is_empty():
+		return
+	if Rules.any_drop(board,pieces[0]):
+		return
+	if _could_recover_by_rotating(pieces[0]):
+		_praise(t("rotate_help"),Color("#ffe49c"),1.1)
+		return
+	lives -= 1
+	_praise(t("lost"),Color("#ff8ca4"),1.2)
+	if lives <= 0:
+		phase = "over"
+	else:
+		board = Rules.rescue(board)
+		pieces[0] = Rules.next_piece(rng,board)
+		if not Rules.any_drop(board,pieces[0]):
+			# Let the next input recover the board; no recursive losses.
+			board = Rules.empty_board()
 	queue_redraw()
 
 func _animate_to(next_board: Array, motions: Array, seconds: float, kind: String) -> void:
@@ -230,7 +269,7 @@ func _resolve_cascades() -> void:
 			_praise("GREAT!",Color("#92f2e2"),1.0)
 		else:
 			_praise("POP!",Color("#ffffff"),0.72)
-		await get_tree().create_timer(0.17).timeout
+		await get_tree().create_timer(0.08).timeout
 		for pt in hits:
 			_burst(pt,4)
 		board = Rules.erase_matches(board,hits)
@@ -239,9 +278,9 @@ func _resolve_cascades() -> void:
 		_save()
 		flash.clear()
 		queue_redraw()
-		await get_tree().create_timer(0.14).timeout
+		await get_tree().create_timer(0.05).timeout
 		var gravity: Dictionary = Rules.settle(board)
-		await _animate_to(gravity.board,gravity.motions,0.29,"fall")
+		await _animate_to(gravity.board,gravity.motions,0.17,"fall")
 
 func _burst(cell: Vector2i, count: int) -> void:
 	var center: Vector2 = BOARD.position+(Vector2(cell)+Vector2(0.5,0.5))*CELL
@@ -356,8 +395,6 @@ func _draw_board() -> void:
 	# Tutorial: column and objective are always obvious without a manual.
 	if phase=="drop":
 		_center(t("drop"),360,302,15,Color("#def9ee"))
-	elif phase=="rotate":
-		_center(t("turn"),360,302,15,Color("#ffe191"))
 
 func _draw_pieces() -> void:
 	_text("%s  %d" % [t("move"),moves+1],Vector2(41,952),18,Color("#b8caec"))
@@ -383,17 +420,17 @@ func _draw_pieces() -> void:
 			_ball(Vector2(left+b[0]*step,top+b[1]*step),15.5,int(b[2]))
 
 func _draw_buttons() -> void:
-	var enabled: bool = phase == "rotate"
+	var enabled: bool = phase == "drop"
 	for entry in [
 		{"rect":LEFT_RECT,"label":"↶  "+t("left"),"enabled":enabled},
-		{"rect":SKIP_RECT,"label":t("skip"),"enabled":enabled},
 		{"rect":RIGHT_RECT,"label":t("right")+"  ↷","enabled":enabled}
 	]:
 		var rect: Rect2 = entry.rect
 		_box(rect,Color("#ffcd6f") if entry.enabled else Color("#25365e"),
 			23,Color("#ffe6ae") if entry.enabled else Color("#354e7a"),2)
-		_center(entry.label,rect.get_center().x,rect.get_center().y+8,20,
+		_center(entry.label,rect.get_center().x,rect.get_center().y+8,23,
 			Color("#272446") if entry.enabled else Color("#778baa"))
+	_center(t("swipe"),360,1115,18,Color("#a9c6ec"))
 	_center(t("ready"),360,1251,18,Color("#a9c6ec"))
 
 func _draw_game_over() -> void:
