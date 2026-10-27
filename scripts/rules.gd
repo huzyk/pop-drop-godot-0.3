@@ -164,10 +164,14 @@ static func make_candidate(rng: RandomNumberGenerator, board: Array, color_count
  return make_piece(shape_id,colors)
 
 static func evaluate_candidate(board: Array, piece: Array) -> Dictionary:
+ # Evaluate every legal landing spot, and keep a concrete move for lookahead.
  var fit := 0
  var clears := 0
  var high := 0
  var best_chain := 0
+ var best_anchor := Vector2i(-1,-1)
+ var best_board: Array = []
+ var best_move_value := -1000000.0
  for y in range(SIZE):
   for x in range(SIZE):
    var at := Vector2i(x,y)
@@ -175,38 +179,82 @@ static func evaluate_candidate(board: Array, piece: Array) -> Dictionary:
     continue
    fit += 1
    var r: Dictionary = simulate(board,piece,at)
-   if r.removed > 0:
+   if int(r.removed) > 0:
     clears += 1
    high = maxi(high,int(r.removed))
    best_chain = maxi(best_chain,int(r.chains))
- return {"fits":fit,"clears":clears,"best":high,"chains":best_chain}
+   # A clear is useful because it frees space. Prefer cascades, too.
+   var value: float = float(r.removed)*3.0 + float(r.chains)*5.0 - float(count_filled(r.board))*0.08
+   if value > best_move_value:
+    best_move_value = value
+    best_anchor = at
+    best_board = r.board
+ return {"fits":fit,"clears":clears,"best":high,"chains":best_chain,
+  "anchor":best_anchor,"after":best_board}
 
-static func generate_tray(board: Array, rng: RandomNumberGenerator, color_count: int = 3) -> Array:
+
+static func generate_tray_plan(board: Array, rng: RandomNumberGenerator, color_count: int = 3) -> Dictionary:
+ # This is a FRIENDLY generator, not a timer or a forced-loss script.
+ # Each piece is evaluated on a plausible board AFTER playing the previous one.
+ # The returned anchors form a reproducible witness for a legal 3-piece sequence,
+ # except on a truly saturated board with no viable path.
  var chosen: Array = []
- var density: float = float(count_filled(board)) / 64.0
+ var anchors: Array = []
+ var virtual_board: Array = copy_board(board)
  for slot in range(3):
   var possibilities: Array = []
+  var density: float = float(count_filled(virtual_board)) / float(SIZE*SIZE)
   for _attempt in range(18):
-   var piece: Array = make_candidate(rng,board,color_count)
-   var assessment: Dictionary = evaluate_candidate(board,piece)
+   var piece: Array = make_candidate(rng,virtual_board,color_count)
+   # Keep the tray easy to understand: every offered piece should ALSO fit
+   # the current real board, not only a hypothetical future board.
+   if not any_placement(board,piece):
+    continue
+   var assessment: Dictionary = evaluate_candidate(virtual_board,piece)
    if assessment.fits == 0:
     continue
-   # Prefer multiple viable placements; encourage successes without guaranteeing them.
-   var score: float = minf(assessment.fits,24)*0.12 + minf(assessment.clears,12)*1.6 + minf(assessment.best,9)*1.0 + assessment.chains*2.5
+   # Don't knowingly close the very last gap before the final tray piece.
+   if slot < 2 and count_filled(assessment.after) == SIZE*SIZE:
+    continue
+   var rating: float = minf(assessment.fits,24)*0.12
+   rating += minf(assessment.clears,12)*1.6 + minf(assessment.best,9)*1.0
+   rating += assessment.chains*2.5
    if density > 0.55:
-    score += 7.0 if piece.size() <= 2 else -4.0
-   score += rng.randf_range(-2.5,2.5)
-   possibilities.append({"piece":piece,"score":score,"clears":assessment.clears})
+    rating += 7.0 if piece.size() <= 2 else -4.0
+   rating += rng.randf_range(-2.5,2.5)
+   possibilities.append({"piece":piece,"anchor":assessment.anchor,
+    "after":assessment.after,"score":rating})
   if possibilities.is_empty():
-   # An emergency single is still not guaranteed to save a fully occupied board.
-   var fallback: Array = make_piece(0,[rng.randi_range(0,color_count-1)])
-   chosen.append(fallback)
-   continue
+   # Try every colour as a 1-ball lifeline before admitting there is no plan.
+   for c in range(color_count):
+    var single: Array = make_piece(0,[c])
+    if not any_placement(board,single):
+     continue
+    var evaluation: Dictionary = evaluate_candidate(virtual_board,single)
+    if evaluation.fits == 0:
+     continue
+    if slot < 2 and count_filled(evaluation.after) == SIZE*SIZE:
+     continue
+    possibilities.append({"piece":single,"anchor":evaluation.anchor,
+     "after":evaluation.after,"score":float(evaluation.best)*3.0})
+  if possibilities.is_empty():
+   break
   possibilities.sort_custom(func(a,b): return a.score > b.score)
-  # Two friendly pieces + one more varied piece; avoid a perfectly solved tray.
-  var shortlist: int = mini(possibilities.size(), 4 if slot < 2 else 9)
+  var shortlist: int = mini(possibilities.size(), 3 if slot < 2 else 5)
   var selected: Dictionary = possibilities[rng.randi_range(0,shortlist-1)]
   chosen.append(selected.piece)
+  anchors.append(selected.anchor)
+  virtual_board = copy_board(selected.after)
+ return {"tray":chosen,"anchors":anchors}
+
+
+static func generate_tray(board: Array, rng: RandomNumberGenerator, color_count: int = 3) -> Array:
+ var result: Dictionary = generate_tray_plan(board,rng,color_count)
+ var chosen: Array = result.tray
+ # On a completely jammed board the life/rescue system takes over.
+ # Still supply three slots, so the UI always has a consistent tray.
+ while chosen.size() < 3:
+  chosen.append(make_piece(0,[rng.randi_range(0,color_count-1)]))
  return chosen
 
 static func rescue(board: Array) -> Array:
