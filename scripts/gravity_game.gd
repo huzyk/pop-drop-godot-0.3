@@ -10,13 +10,13 @@ const COLORS := [Color("#ff7096"),Color("#55dcad"),Color("#62b5ff")]
 const SAVE_FILE := "user://pop_drop_gravity.json"
 const LOCALES := ["pl","en","es","pt","de","fr","ru"]
 const TR := {
-	"pl":{"score":"WYNIK","best":"REKORD","move":"RUCH","drop":"DOTKNIJ KOLUMNĘ, ABY ZRZUCIĆ","turn":"OBRÓĆ PLANSZĘ LUB GRAJ DALEJ","left":"W LEWO","right":"W PRAWO","skip":"DALEJ","next":"NASTĘPNE","ready":"5 KULEK = POP PO OBROCIE  •  GÓRA = -1 ŻYCIE","over":"KONIEC RUNDY","again":"ZAGRAJ PONOWNIE","rescue":"TEST: +1 ŻYCIE","lost":"STRATA ŻYCIA","rotate_controls":"OBRACAJ PRZYCISKAMI PONIŻEJ","rotate_help":"SPRÓBUJ OBRÓCIĆ PLANSZĘ","charge":"GRUPA","danger":"WYSOKOŚĆ","danger_soon":"UWAGA: GÓRNA LINIA!","overflow":"UTRATA ŻYCIA!","hint":"Wybierz kolumnę dla spadającego kształtu"},
-	"en":{"score":"SCORE","best":"BEST","move":"MOVE","drop":"TAP A COLUMN TO DROP","turn":"ROTATE OR KEEP GOING","left":"LEFT","right":"RIGHT","skip":"NEXT","next":"UP NEXT","ready":"5 BALLS = POP ON ROTATION  •  TOP = -1 LIFE","over":"GAME OVER","again":"PLAY AGAIN","rescue":"TEST: +1 LIFE","lost":"LIFE LOST","rotate_controls":"ROTATE WITH THE BUTTONS BELOW","rotate_help":"ROTATE TO MAKE ROOM","charge":"GROUP","danger":"HEIGHT","danger_soon":"CAREFUL: TOP ROW!","overflow":"LIFE LOST!","hint":"Choose a column for the falling piece"},
-	"es":{"score":"PUNTOS","best":"RÉCORD","move":"JUGADA","drop":"TOCA UNA COLUMNA PARA SOLTAR","turn":"GIRA O CONTINÚA","left":"IZQUIERDA","right":"DERECHA","skip":"SEGUIR","next":"SIGUIENTES","ready":"5 BOLAS = POP AL GIRAR • ARRIBA = -1 VIDA","over":"FIN DEL JUEGO","again":"JUGAR OTRA VEZ","rescue":"PRUEBA: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USA LOS BOTONES PARA GIRAR","rotate_help":"GIRA PARA HACER ESPACIO","charge":"GRUPO","danger":"ALTURA","danger_soon":"¡FILA SUPERIOR!","overflow":"¡VIDA PERDIDA!","hint":"Elige una columna para las bolas"},
-	"pt":{"score":"PONTOS","best":"RECORDE","move":"JOGADA","drop":"TOQUE NA COLUNA PARA SOLTAR","turn":"GIRE OU CONTINUE","left":"ESQUERDA","right":"DIREITA","skip":"SEGUIR","next":"PRÓXIMAS","ready":"5 BOLAS = POP AO GIRAR • TOPO = -1 VIDA","over":"FIM DE JOGO","again":"JOGAR DE NOVO","rescue":"TESTE: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USE OS BOTÕES PARA GIRAR","rotate_help":"GIRE PARA ABRIR ESPAÇO","charge":"GRUPO","danger":"ALTURA","danger_soon":"CUIDADO: TOPO!","overflow":"VIDA PERDIDA!","hint":"Escolha uma coluna para jogar"},
-	"de":{"score":"PUNKTE","best":"REKORD","move":"ZUG","drop":"SPALTE ANTIPPEN ZUM FALLEN","turn":"DREHEN ODER WEITER","left":"LINKS","right":"RECHTS","skip":"WEITER","next":"ALS NÄCHSTES","ready":"5 KUGELN = POP BEIM DREHEN • OBEN = -1 LEBEN","over":"SPIEL VORBEI","again":"NOCHMAL SPIELEN","rescue":"TEST: +1 LEBEN","lost":"LEBEN VERLOREN","rotate_controls":"MIT DEN TASTEN UNTEN DREHEN","rotate_help":"DREHE FÜR MEHR PLATZ","charge":"GRUPPE","danger":"HÖHE","danger_soon":"ACHTUNG: OBERSTE REIHE!","overflow":"LEBEN VERLOREN!","hint":"Wähle eine Spalte zum Einwerfen"},
-	"fr":{"score":"SCORE","best":"RECORD","move":"COUP","drop":"TOUCHE UNE COLONNE POUR LÂCHER","turn":"TOURNE OU CONTINUE","left":"GAUCHE","right":"DROITE","skip":"SUITE","next":"À SUIVRE","ready":"5 BILLES = POP EN TOURNANT • HAUT = -1 VIE","over":"PARTIE FINIE","again":"REJOUER","rescue":"TEST : +1 VIE","lost":"VIE PERDUE","rotate_controls":"TOURNE AVEC LES BOUTONS","rotate_help":"TOURNE POUR LIBÉRER DE LA PLACE","charge":"GROUPE","danger":"HAUTEUR","danger_soon":"ATTENTION AU SOMMET!","overflow":"VIE PERDUE!","hint":"Choisis une colonne pour les billes"},
-	"ru":{"score":"ОЧКИ","best":"РЕКОРД","move":"ХОД","drop":"НАЖМИ СТОЛБЕЦ ДЛЯ СБРОСА","turn":"ПОВЕРНИ ИЛИ ПРОДОЛЖИ","left":"ВЛЕВО","right":"ВПРАВО","skip":"ДАЛЕЕ","next":"СЛЕДУЮЩИЕ","ready":"5 ШАРОВ = POP ПРИ ПОВОРОТЕ • ВЕРХ = -1 ЖИЗНЬ","over":"ИГРА ОКОНЧЕНА","again":"ИГРАТЬ СНОВА","rescue":"ТЕСТ: +1 ЖИЗНЬ","lost":"МИНУС ЖИЗНЬ","rotate_controls":"ПОВОРОТ КНОПКАМИ ВНИЗУ","rotate_help":"ПОВЕРНИ, ЧТОБЫ ОСВОБОДИТЬ МЕСТО","charge":"ГРУППА","danger":"ВЫСОТА","danger_soon":"ВНИМАНИЕ: ВЕРХ!","overflow":"МИНУС ЖИЗНЬ!","hint":"Выбери столбец для шариков"}
+	"pl":{"score":"WYNIK","best":"REKORD","move":"RUCH","drop":"DOTKNIJ KOLUMNĘ, ABY ZRZUCIĆ","turn":"OBRÓĆ PLANSZĘ LUB GRAJ DALEJ","left":"W LEWO","right":"W PRAWO","skip":"DALEJ","next":"NASTĘPNE","ready":"5 KULEK POŁĄCZONYCH BOKAMI = POP  •  GÓRA = -1 ŻYCIE","over":"KONIEC RUNDY","again":"ZAGRAJ PONOWNIE","rescue":"TEST: +1 ŻYCIE","lost":"STRATA ŻYCIA","rotate_controls":"OBRACAJ PRZYCISKAMI PONIŻEJ","rotate_help":"SPRÓBUJ OBRÓCIĆ PLANSZĘ","charge":"GRUPA","danger":"WYSOKOŚĆ","danger_soon":"UWAGA: GÓRNA LINIA!","overflow":"UTRATA ŻYCIA!","hint":"Wybierz kolumnę dla spadającego kształtu"},
+	"en":{"score":"SCORE","best":"BEST","move":"MOVE","drop":"TAP A COLUMN TO DROP","turn":"ROTATE OR KEEP GOING","left":"LEFT","right":"RIGHT","skip":"NEXT","next":"UP NEXT","ready":"5 TOUCHING BALLS = POP  •  TOP = -1 LIFE","over":"GAME OVER","again":"PLAY AGAIN","rescue":"TEST: +1 LIFE","lost":"LIFE LOST","rotate_controls":"ROTATE WITH THE BUTTONS BELOW","rotate_help":"ROTATE TO MAKE ROOM","charge":"GROUP","danger":"HEIGHT","danger_soon":"CAREFUL: TOP ROW!","overflow":"LIFE LOST!","hint":"Choose a column for the falling piece"},
+	"es":{"score":"PUNTOS","best":"RÉCORD","move":"JUGADA","drop":"TOCA UNA COLUMNA PARA SOLTAR","turn":"GIRA O CONTINÚA","left":"IZQUIERDA","right":"DERECHA","skip":"SEGUIR","next":"SIGUIENTES","ready":"5 BOLAS CONECTADAS = POP  •  ARRIBA = -1 VIDA","over":"FIN DEL JUEGO","again":"JUGAR OTRA VEZ","rescue":"PRUEBA: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USA LOS BOTONES PARA GIRAR","rotate_help":"GIRA PARA HACER ESPACIO","charge":"GRUPO","danger":"ALTURA","danger_soon":"¡FILA SUPERIOR!","overflow":"¡VIDA PERDIDA!","hint":"Elige una columna para las bolas"},
+	"pt":{"score":"PONTOS","best":"RECORDE","move":"JOGADA","drop":"TOQUE NA COLUNA PARA SOLTAR","turn":"GIRE OU CONTINUE","left":"ESQUERDA","right":"DIREITA","skip":"SEGUIR","next":"PRÓXIMAS","ready":"5 BOLAS CONECTADAS = POP  •  TOPO = -1 VIDA","over":"FIM DE JOGO","again":"JOGAR DE NOVO","rescue":"TESTE: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USE OS BOTÕES PARA GIRAR","rotate_help":"GIRE PARA ABRIR ESPAÇO","charge":"GRUPO","danger":"ALTURA","danger_soon":"CUIDADO: TOPO!","overflow":"VIDA PERDIDA!","hint":"Escolha uma coluna para jogar"},
+	"de":{"score":"PUNKTE","best":"REKORD","move":"ZUG","drop":"SPALTE ANTIPPEN ZUM FALLEN","turn":"DREHEN ODER WEITER","left":"LINKS","right":"RECHTS","skip":"WEITER","next":"ALS NÄCHSTES","ready":"5 VERBUNDENE KUGELN = POP  •  OBEN = -1 LEBEN","over":"SPIEL VORBEI","again":"NOCHMAL SPIELEN","rescue":"TEST: +1 LEBEN","lost":"LEBEN VERLOREN","rotate_controls":"MIT DEN TASTEN UNTEN DREHEN","rotate_help":"DREHE FÜR MEHR PLATZ","charge":"GRUPPE","danger":"HÖHE","danger_soon":"ACHTUNG: OBERSTE REIHE!","overflow":"LEBEN VERLOREN!","hint":"Wähle eine Spalte zum Einwerfen"},
+	"fr":{"score":"SCORE","best":"RECORD","move":"COUP","drop":"TOUCHE UNE COLONNE POUR LÂCHER","turn":"TOURNE OU CONTINUE","left":"GAUCHE","right":"DROITE","skip":"SUITE","next":"À SUIVRE","ready":"5 BILLES CONNECTÉES = POP  •  HAUT = -1 VIE","over":"PARTIE FINIE","again":"REJOUER","rescue":"TEST : +1 VIE","lost":"VIE PERDUE","rotate_controls":"TOURNE AVEC LES BOUTONS","rotate_help":"TOURNE POUR LIBÉRER DE LA PLACE","charge":"GROUPE","danger":"HAUTEUR","danger_soon":"ATTENTION AU SOMMET!","overflow":"VIE PERDUE!","hint":"Choisis une colonne pour les billes"},
+	"ru":{"score":"ОЧКИ","best":"РЕКОРД","move":"ХОД","drop":"НАЖМИ СТОЛБЕЦ ДЛЯ СБРОСА","turn":"ПОВЕРНИ ИЛИ ПРОДОЛЖИ","left":"ВЛЕВО","right":"ВПРАВО","skip":"ДАЛЕЕ","next":"СЛЕДУЮЩИЕ","ready":"5 СОЕДИНЁННЫХ ШАРОВ = POP  •  ВЕРХ = -1 ЖИЗНЬ","over":"ИГРА ОКОНЧЕНА","again":"ИГРАТЬ СНОВА","rescue":"ТЕСТ: +1 ЖИЗНЬ","lost":"МИНУС ЖИЗНЬ","rotate_controls":"ПОВОРОТ КНОПКАМИ ВНИЗУ","rotate_help":"ПОВЕРНИ, ЧТОБЫ ОСВОБОДИТЬ МЕСТО","charge":"ГРУППА","danger":"ВЫСОТА","danger_soon":"ВНИМАНИЕ: ВЕРХ!","overflow":"МИНУС ЖИЗНЬ!","hint":"Выбери столбец для шариков"}
 }
 const LEFT_RECT := Rect2(35,1123,285,92)
 const RIGHT_RECT := Rect2(400,1123,285,92)
@@ -120,8 +120,8 @@ func new_game() -> void:
 	phase = "drop"
 	for i in range(3):
 		# A legible first move: the red bead can fill the empty floor
-		# column and complete the visible 4/5 target. Afterwards the
-		# usual randomized shapes resume.
+		# column for an instant 5-POP. Afterwards the randomized
+		# shapes resume.
 		var piece: Array = [[0,0,0],[1,0,1]] if i == 0 else Rules.next_piece(rng,board,recent_shapes)
 		pieces.append(piece)
 		_remember_shape(piece)
@@ -234,8 +234,9 @@ func _play_drop(column: int) -> void:
 	moves += 1
 	chain_depth = 0
 	await _animate_to(result.board,result.motions,0.23,"drop")
-	# Players BANK their groups by dropping. Only rotating can trigger a POP.
-	# This creates an intentional choice between cashing in now and stacking.
+	# Matching 5+ touching balls POP immediately after any successful drop.
+	# Resolve every resulting cascade BEFORE checking overflow or advancing.
+	await _resolve_cascades()
 	# No Next button: the next shape is ready immediately after this drop.
 	_advance_piece()
 	phase = "drop"
@@ -250,7 +251,7 @@ func _rotate_board(clockwise: bool) -> void:
 	if phase != "drop":
 		return
 	phase = "anim"
-	chain_depth = 0 # Cascade multiplier is per rotation, not accumulated forever.
+	chain_depth = 0 # Each action has its own independent cascade multiplier.
 	spin_clockwise = clockwise
 	var turned: Dictionary = Rules.rotate(board,clockwise)
 	_shock(BOARD.get_center(),1.15,Color("#78d9ff"))
@@ -383,7 +384,7 @@ func _animate_to(next_board: Array, motions: Array, seconds: float, kind: String
 	queue_redraw()
 
 func _resolve_cascades() -> void:
-	# Called ONLY after the player rotates, never after a normal drop.
+	# Called after both a successful drop and a board rotation.
 	for depth in range(20):
 		var groups: Array = Rules.find_groups(board)
 		if groups.is_empty():
@@ -399,7 +400,7 @@ func _resolve_cascades() -> void:
 		pop_time = pop_length
 		if chain_depth >= 3 or largest >= 8:
 			_praise("AMAZING!",Color("#ffe58c"),1.30)
-		elif chain_depth >= 2 or largest >= 5 or groups.size() > 1:
+		elif chain_depth >= 2 or largest >= 7 or groups.size() > 1:
 			_praise("GREAT!",Color("#92f2e2"),1.0)
 		else:
 			_praise("POP!",Color("#ffffff"),0.72)
@@ -548,7 +549,10 @@ func _draw() -> void:
 	draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
 
 func _charged_cells() -> Array:
-	if pending_group.is_empty() or int(pending_group["count"]) < 3:
+	if pending_group.is_empty():
+		return []
+	var count: int = int(pending_group["count"])
+	if count < 3 or count >= Rules.POP_THRESHOLD:
 		return []
 	return pending_group["cells"]
 
@@ -585,15 +589,12 @@ func _draw_board() -> void:
 					_ball(center,CELL*0.36*swell,int(board[y][x]))
 				else:
 					_ball(center,CELL*0.36,int(board[y][x]))
-				# Groups 3/5 and 4/5 are in progress; 5+ is charged.
-				# Pulsing outlines show what the player is building.
+				# Groups of 3 or 4 are close to POP. Highlight their
+				# progress, not 5+ clusters that should already be gone.
 				if phase == "drop" and Vector2i(x,y) in _charged_cells():
-					var size_of_group: int = int(pending_group["count"])
-					var charged: bool = size_of_group >= Rules.POP_THRESHOLD
-					var pulse: float = 0.40+0.22*sin(clock*(5.0 if charged else 2.5))
-					var color: Color = Color("#ffde78") if charged else Color("#8acbef")
+					var pulse: float = 0.42+0.19*sin(clock*3.2)
 					draw_arc(center,CELL*0.40,0.0,TAU,30,
-						Color(color.r,color.g,color.b,pulse),4.0 if charged else 2.3,true)
+						Color(1.0,0.86,0.49,pulse),2.8,true)
 	if animating:
 		var raw: float = clampf(motion_time/motion_duration,0.0,1.0)
 		var factor: float = raw*raw*(3.0-2.0*raw) if motion_kind=="spin" else 1.0-pow(1.0-raw,3.4)
