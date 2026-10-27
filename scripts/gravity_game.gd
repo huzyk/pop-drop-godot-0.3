@@ -119,7 +119,10 @@ func new_game() -> void:
 	animating = false
 	phase = "drop"
 	for i in range(3):
-		var piece: Array = Rules.next_piece(rng,board,recent_shapes)
+		# A legible first move: the red bead can fill the empty floor
+		# column and complete the visible 4/5 target. Afterwards the
+		# usual randomized shapes resume.
+		var piece: Array = [[0,0,0],[1,0,1]] if i == 0 else Rules.next_piece(rng,board,recent_shapes)
 		pieces.append(piece)
 		_remember_shape(piece)
 	_refresh_targets()
