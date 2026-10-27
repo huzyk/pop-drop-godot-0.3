@@ -141,13 +141,21 @@ func _process(delta: float) -> void:
 		if particle.life <= 0.0:
 			fx.remove_at(i)
 	for i in range(rings.size()-1,-1,-1):
-		rings[i].life -= delta
-		if rings[i].life <= 0.0:
+		var ring: Dictionary = rings[i]
+		ring.life -= delta
+		if ring.life <= 0.0:
 			rings.remove_at(i)
+		else:
+			rings[i] = ring
 	for i in range(floaters.size()-1,-1,-1):
-		floaters[i].life -= delta
-		if floaters[i].life <= 0.0:
+		var floater: Dictionary = floaters[i]
+		floater.life -= delta
+		if floater.life <= 0.0:
 			floaters.remove_at(i)
+		else:
+			floaters[i] = floater
+	if shake_time <= 0.0:
+		shake_force = 0.0
 	queue_redraw()
 
 func _scale() -> float:
