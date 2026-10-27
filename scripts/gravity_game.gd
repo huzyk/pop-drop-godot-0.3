@@ -180,8 +180,10 @@ func _rotate_board(clockwise: bool) -> void:
 	var gravity: Dictionary = Rules.settle(board)
 	await _animate_to(gravity.board,gravity.motions,0.42,"fall")
 	await _resolve_cascades()
+	# Free rotation sandbox: the player chooses when to take the next piece.
+	# No automatic _finish_turn() here; repeated turns still settle and pop normally.
 	phase = "rotate"
-	_finish_turn()
+	queue_redraw()
 
 func _finish_turn() -> void:
 	if phase == "anim":
