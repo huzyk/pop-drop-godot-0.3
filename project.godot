@@ -1,9 +1,9 @@
 config_version=5
 
 [application]
-config/name="POP DROP"
+config/name="POP DROP Gravity - Prototype"
 config/description="Original casual cascade puzzle prototype."
-run/main_scene="res://scenes/main.tscn"
+run/main_scene="res://scenes/gravity.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 
 [display]
