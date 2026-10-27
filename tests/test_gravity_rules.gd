@@ -77,6 +77,12 @@ func _initialize() -> void:
 	assert(first_goal.valid)
 	assert(Rules.find_matches(first_goal.board).size() == 5,
 		"The open first column must really complete the first 5/5 target")
+	var tutorial_drop: Dictionary = Rules.drop(opening,[[0,0,0],[1,0,1]],0)
+	assert(tutorial_drop.valid)
+	assert(Rules.find_matches(tutorial_drop.board).size() >= 5,
+		"Scripted two-ball starter must finish the goal at column 0")
+	assert(int(Rules.rotate_preview(tutorial_drop.board,true)["score"]) >= 320,
+		"Clockwise rotation must successfully cash in the starter reward")
 	var clockwise_opening: Array = Rules.settle(Rules.rotate(opening,true).board).board
 	assert(Rules.find_matches(clockwise_opening).is_empty())
 	checks += 4
