@@ -21,7 +21,7 @@ Po zakończeniu testów możesz ponownie przełączyć **Current branch → main
 - **Dotknij kolumny** na planszy, żeby zrzucić kształt; spadnie do swoich kolumn. Następny kształt automatycznie wchodzi do gry — **przycisk „Dalej” został usunięty**.
 - **Dwa duże przyciski pod planszą** obracają planszę w lewo albo w prawo. Przesuwanie palcem po planszy nie wywołuje obrotu — plansza służy wyłącznie do zrzucania kulek.
 - Obracaj **ile chcesz, przed zrzutem lub po nim**, bez zużywania kształtów. Obroty mogą uruchamiać kaskady; gracz sam wybiera, kiedy znów coś zrzucić.
-- Start jest bardziej żywy: **20 kulek**, w tym celowo przygotowana grupa **czterech jednakowych**, którą można rozbudować do pięciu.
+- Start jest bardziej żywy: **20 kulek**, w tym celowo przygotowana grupa **czterech jednakowych**, którą można rozbudować do pięciu. **Pierwszy kształt** to czerwona i zielona kulka obok siebie — zrzucenie go do lewej skrajnej kolumny domyka 5 czerwonych. Obrót powinien wtedy dać pierwszy wybuch i wypłatę. Kolejne kształty są losowane.
 - **Zrzut tylko buduje skupiska** — nie kasuje żadnych kulek, nawet gdy pięć identycznych już się styka.
 - **Dopiero obrót uruchamia POP.** Obrót przemieszcza kulki o 90°, następnie opadają zgodnie z grawitacją i pękają grupy **5+ kulek tego samego koloru stykających się bokami**. Mniejsze grupy (3/5, 4/5) nie wybuchają, tylko zachęcają do dołożenia kolejnych.
 - Grupa 5 daje **320 pkt**, 6 daje **560**, 7 daje **900**, 8 daje **1400**. Większe punktują jeszcze więcej. Każdy poziom kaskady mnoży wypłatę. Dwie oddzielne grupy po pięć liczą się oddzielnie, nie jak dziesiątka.
