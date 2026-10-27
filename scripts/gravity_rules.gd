@@ -54,9 +54,11 @@ static func filled(board: Array) -> int:
 				total += 1
 	return total
 
-static func find_matches(board: Array) -> Array:
+static func find_groups(board: Array, minimum: int = 3) -> Array:
+	# Return separate connected colour groups. A 6-ball group scores differently
+	# from two independent 3-ball groups, so flattening loses information.
 	var visited: Dictionary = {}
-	var hits: Array = []
+	var groups: Array = []
 	for y in range(SIZE):
 		for x in range(SIZE):
 			var color: int = board[y][x]
@@ -78,9 +80,51 @@ static func find_matches(board: Array) -> Array:
 					if not visited.has(key) and board[neighbor.y][neighbor.x] == color:
 						visited[key] = true
 						queue.append(neighbor)
-			if group.size() >= 3:
-				hits.append_array(group)
+			if group.size() >= minimum:
+				groups.append({"cells":group,"color":color,"count":group.size()})
+	return groups
+
+static func find_matches(board: Array) -> Array:
+	var hits: Array = []
+	for group in find_groups(board):
+		hits.append_array(group["cells"])
 	return hits
+
+static func group_points(count: int) -> int:
+	# The deliberate risk/reward curve for holding a group before triggering it.
+	if count < 3:
+		return 0
+	var rewards: Array = [100,180,320,560,900,1400]
+	if count <= 8:
+		return rewards[count-3]
+	var extra: int = count - 8
+	return 1400 + extra*600 + extra*extra*90
+
+static func score_groups(groups: Array, cascade_level: int = 1) -> int:
+	var total: int = 0
+	for group in groups:
+		total += group_points(int(group["count"]))
+	return total * maxi(1,cascade_level)
+
+static func rotate_preview(board: Array, clockwise: bool) -> Dictionary:
+	# Exact deterministic preview: same rotate -> settle -> pop loop as gameplay.
+	# No points are paid until the real rotation is performed.
+	var after: Array = settle(rotate(board,clockwise).board).board
+	var total: int = 0
+	var popped: int = 0
+	var cascades: int = 0
+	for stage in range(SIZE*SIZE):
+		var groups: Array = find_groups(after)
+		if groups.is_empty():
+			break
+		cascades += 1
+		total += score_groups(groups,cascades)
+		var hits: Array = []
+		for group in groups:
+			hits.append_array(group["cells"])
+		popped += hits.size()
+		after = settle(erase_matches(after,hits)).board
+	return {"score":total,"removed":popped,"chains":cascades,"board":after}
 
 static func erase_matches(board: Array, matches: Array) -> Array:
 	var result: Array = copy_board(board)
