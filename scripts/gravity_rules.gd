@@ -3,6 +3,7 @@ extends RefCounted
 const SIZE := 8
 const EMPTY := -1
 const COLOR_COUNT := 3
+const POP_THRESHOLD := 5
 
 const SHAPES_BY_SIZE := [
 	# Twelve recognisable silhouettes. The Z and S are intentionally separate.
@@ -70,7 +71,7 @@ static func filled(board: Array) -> int:
 				total += 1
 	return total
 
-static func find_groups(board: Array, minimum: int = 3) -> Array:
+static func find_groups(board: Array, minimum: int = POP_THRESHOLD) -> Array:
 	# Return separate connected colour groups. A 6-ball group scores differently
 	# from two independent 3-ball groups, so flattening loses information.
 	var visited: Dictionary = {}
@@ -108,11 +109,11 @@ static func find_matches(board: Array) -> Array:
 
 static func group_points(count: int) -> int:
 	# The deliberate risk/reward curve for holding a group before triggering it.
-	if count < 3:
+	if count < POP_THRESHOLD:
 		return 0
-	var rewards: Array = [100,180,320,560,900,1400]
+	var rewards: Array = [320,560,900,1400]
 	if count <= 8:
-		return rewards[count-3]
+		return rewards[count-POP_THRESHOLD]
 	var extra: int = count - 8
 	return 1400 + extra*600 + extra*extra*90
 
