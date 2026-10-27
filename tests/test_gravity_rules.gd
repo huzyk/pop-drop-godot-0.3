@@ -140,6 +140,33 @@ func _initialize() -> void:
 	assert(Rules.score_groups(six_groups,3) == 1680)
 	checks += 10
 
+	# Touching only at the corners NEVER qualifies, even for five beads.
+	var diagonal: Array = Rules.empty_board()
+	for index in range(5):
+		diagonal[3+index][index] = 0
+	assert(Rules.find_matches(diagonal).is_empty())
+	assert(int(Rules.resolve_preview(diagonal)["score"]) == 0)
+	checks += 2
+
+	# A cascade must arise naturally AFTER the first explosion:
+	# eight red beads occupy rows 6–7 and five blue beads sit above them.
+	# Once red disappears, blues land side by side for chain x2.
+	var chain_board: Array = Rules.empty_board()
+	for x in range(5):
+		chain_board[7][x] = 0
+		if x < 2:
+			chain_board[6][x] = 2
+		else:
+			chain_board[6][x] = 0
+			chain_board[5][x] = 2
+	assert(Rules.find_groups(chain_board).size() == 1)
+	var chain_result: Dictionary = Rules.resolve_preview(chain_board)
+	assert(chain_result["chains"] == 2)
+	assert(chain_result["removed"] == 13)
+	assert(chain_result["score"] == 2040) # 8 red = 1400, 5 blue ×2 = 640.
+	assert(Rules.filled(chain_result["board"]) == 0)
+	checks += 5
+
 	# Two disconnected groups of five score 2*320, not a single 10-ball prize.
 	var separate: Array = Rules.empty_board()
 	for y in range(3,8):
