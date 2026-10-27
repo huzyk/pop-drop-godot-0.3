@@ -181,7 +181,7 @@ static func make_piece(rng: RandomNumberGenerator, board: Array, desired_size: i
 	var shapes: Array = SHAPES_BY_SIZE[piece_size-1]
 	var shape_index: int = rng.randi_range(0,shapes.size()-1)
 	# Highlight S and Z more frequently than other 4-ball silhouettes.
-	if piece_size == 4 and rng.randf() < 0.48:
+	if piece_size == 4 and rng.randf() < 0.30:
 		shape_index = rng.randi_range(4,5)
 	var shape: Array = shapes[shape_index]
 	var primary: int = rng.randi_range(0,COLOR_COUNT-1)
