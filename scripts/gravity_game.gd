@@ -48,6 +48,20 @@ var praise: String = ""
 var praise_timer: float = 0.0
 var hint_timer: float = 0.0
 var style_cache: Dictionary = {}
+# Lightweight, procedural VFX. No textures, external assets or gameplay changes.
+var clock: float = 0.0
+var display_score: float = 0.0
+var praise_color: Color = Color.WHITE
+var praise_length: float = 1.0
+var pop_time: float = 0.0
+var pop_length: float = 0.17
+var glow: float = 0.0
+var shake_time: float = 0.0
+var shake_force: float = 0.0
+var rings: Array = []
+var floaters: Array = []
+var queued_action: String = ""
+var queued_column: int = -1
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -90,7 +104,15 @@ func new_game() -> void:
 	motion.clear()
 	flash.clear()
 	fx.clear()
+	rings.clear()
+	floaters.clear()
 	praise = ""
+	pop_time = 0.0
+	glow = 0.0
+	shake_time = 0.0
+	display_score = 0.0
+	queued_action = ""
+	queued_column = -1
 	animating = false
 	phase = "drop"
 	for i in range(3):
@@ -100,18 +122,32 @@ func new_game() -> void:
 	queue_redraw()
 
 func _process(delta: float) -> void:
+	clock += delta
 	if animating:
 		motion_time = minf(motion_duration,motion_time+delta)
+	pop_time = maxf(0.0,pop_time-delta)
 	praise_timer = maxf(0.0,praise_timer-delta)
 	hint_timer = maxf(0.0,hint_timer-delta)
+	shake_time = maxf(0.0,shake_time-delta)
+	glow = maxf(0.0,glow-delta*3.5)
+	# A fast score roll-up makes even a small clear feel rewarding.
+	display_score = move_toward(display_score,float(score),maxf(65.0,absf(float(score)-display_score)*delta*13.0))
 	for i in range(fx.size()-1,-1,-1):
 		var particle: Dictionary = fx[i]
 		particle.p += particle.v * delta
-		particle.v *= maxf(0.0,1.0-2.7*delta)
+		particle.v *= maxf(0.0,1.0-2.6*delta)
 		particle.life -= delta
 		fx[i] = particle
 		if particle.life <= 0.0:
 			fx.remove_at(i)
+	for i in range(rings.size()-1,-1,-1):
+		rings[i].life -= delta
+		if rings[i].life <= 0.0:
+			rings.remove_at(i)
+	for i in range(floaters.size()-1,-1,-1):
+		floaters[i].life -= delta
+		if floaters[i].life <= 0.0:
+			floaters.remove_at(i)
 	queue_redraw()
 
 func _scale() -> float:
@@ -134,6 +170,14 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	var pt: Vector2 = _logical(event.position)
 	if phase == "anim":
+		# Buffer one action instead of making rapid taps feel unresponsive.
+		if LEFT_RECT.has_point(pt):
+			queued_action = "left"
+		elif RIGHT_RECT.has_point(pt):
+			queued_action = "right"
+		elif BOARD.has_point(pt):
+			queued_action = "drop"
+			queued_column = int((pt.x-BOARD.position.x)/CELL)
 		return
 	if phase == "over":
 		if RESTART_RECT.has_point(pt):
@@ -173,12 +217,13 @@ func _play_drop(column: int) -> void:
 	phase = "anim"
 	moves += 1
 	chain_depth = 0
-	await _animate_to(result.board,result.motions,0.19,"fall")
+	await _animate_to(result.board,result.motions,0.23,"drop")
 	await _resolve_cascades()
 	# No Next button: the next shape is ready immediately after this drop.
 	_advance_piece()
 	phase = "drop"
 	_check_stuck()
+	_flush_queued_input()
 	queue_redraw()
 
 func _rotate_board(clockwise: bool) -> void:
@@ -187,13 +232,29 @@ func _rotate_board(clockwise: bool) -> void:
 	phase = "anim"
 	spin_clockwise = clockwise
 	var turned: Dictionary = Rules.rotate(board,clockwise)
-	await _animate_to(turned.board,turned.motions,0.22,"spin")
+	_shock(BOARD.get_center(),1.15,Color("#78d9ff"))
+	await _animate_to(turned.board,turned.motions,0.27,"spin")
 	var gravity: Dictionary = Rules.settle(board)
-	await _animate_to(gravity.board,gravity.motions,0.18,"fall")
+	await _animate_to(gravity.board,gravity.motions,0.19,"fall")
 	await _resolve_cascades()
 	phase = "drop"
 	_check_stuck()
+	_flush_queued_input()
 	queue_redraw()
+
+func _flush_queued_input() -> void:
+	var action: String = queued_action
+	var column: int = queued_column
+	queued_action = ""
+	queued_column = -1
+	if phase != "drop":
+		return
+	if action == "left":
+		call_deferred("_rotate_board",false)
+	elif action == "right":
+		call_deferred("_rotate_board",true)
+	elif action == "drop" and column >= 0:
+		call_deferred("_play_drop",column)
 
 func _remember_shape(piece: Array) -> void:
 	recent_shapes.append(Rules.piece_shape_id(piece))
@@ -258,6 +319,17 @@ func _animate_to(next_board: Array, motions: Array, seconds: float, kind: String
 	await get_tree().create_timer(seconds).timeout
 	animating = false
 	motion.clear()
+	# Every arrival has a tiny physical recoil, a few glints and a board pulse.
+	var impact_count: int = 0
+	for m in motions:
+		if impact_count >= 12:
+			break
+		var dest: Vector2 = m["to"]
+		if kind != "spin":
+			_burst(Vector2i(int(dest.x),int(dest.y)),2)
+		impact_count += 1
+	if kind != "spin":
+		_shock(BOARD.get_center(),0.38 if kind == "fall" else 0.58,Color("#a2e9ff"))
 	queue_redraw()
 
 func _resolve_cascades() -> void:
@@ -267,35 +339,67 @@ func _resolve_cascades() -> void:
 			return
 		chain_depth += 1
 		flash = hits
+		pop_length = 0.18 if chain_depth <= 2 else 0.21
+		pop_time = pop_length
 		if chain_depth >= 3:
-			_praise("AMAZING!",Color("#ffe58c"),1.35)
+			_praise("AMAZING!",Color("#ffe58c"),1.30)
 		elif chain_depth >= 2 or hits.size() >= 6:
 			_praise("GREAT!",Color("#92f2e2"),1.0)
 		else:
 			_praise("POP!",Color("#ffffff"),0.72)
-		await get_tree().create_timer(0.08).timeout
+		# Anticipation: connected bubbles brighten, swell, then shatter together.
+		await get_tree().create_timer(pop_length).timeout
+		var centroid: Vector2 = Vector2.ZERO
+		var main_color: Color = COLORS[board[hits[0].y][hits[0].x]]
 		for pt in hits:
-			_burst(pt,4)
+			centroid += BOARD.position+(Vector2(pt)+Vector2(0.5,0.5))*CELL
+			_burst(pt,8 if chain_depth <= 2 else 11)
+		centroid /= float(hits.size())
+		_shock(centroid,minf(4.5,1.15+float(chain_depth)*0.7+float(hits.size())*0.12),main_color)
+		_float_score(centroid,hits.size()*35*chain_depth,chain_depth)
 		board = Rules.erase_matches(board,hits)
 		score += hits.size() * 35 * chain_depth
 		best = maxi(best,score)
 		_save()
 		flash.clear()
+		pop_time = 0.0
 		queue_redraw()
-		await get_tree().create_timer(0.05).timeout
 		var gravity: Dictionary = Rules.settle(board)
-		await _animate_to(gravity.board,gravity.motions,0.17,"fall")
+		await _animate_to(gravity.board,gravity.motions,0.20,"fall")
 
 func _burst(cell: Vector2i, count: int) -> void:
 	var center: Vector2 = BOARD.position+(Vector2(cell)+Vector2(0.5,0.5))*CELL
+	var color_index: int = int(board[cell.y][cell.x])
+	var base: Color = COLORS[clampi(color_index,0,COLORS.size()-1)]
 	for i in range(count):
+		if fx.size() >= 220:
+			fx.pop_front()
 		var angle: float = rng.randf_range(0.0,TAU)
-		var speed: float = rng.randf_range(90.0,250.0)
-		fx.append({"p":center,"v":Vector2.from_angle(angle)*speed,
-			"life":0.70,"max":0.70,"color":COLORS[rng.randi_range(0,2)],"r":rng.randf_range(3.0,8.0)})
+		var speed: float = rng.randf_range(130.0,420.0)
+		var duration: float = rng.randf_range(0.32,0.70)
+		fx.append({"p":center+Vector2.from_angle(angle)*rng.randf_range(0.0,8.0),
+			"v":Vector2.from_angle(angle)*speed,"life":duration,"max":duration,
+			"color":base.lightened(rng.randf_range(0.0,0.4)),
+			"r":rng.randf_range(2.5,6.0),"streak":i%3 != 0})
+
+func _shock(at: Vector2, strength: float, tint: Color) -> void:
+	rings.append({"p":at,"life":0.48,"max":0.48,"strength":strength,"color":tint})
+	if rings.size() > 14:
+		rings.pop_front()
+	shake_time = maxf(shake_time,0.18)
+	shake_force = maxf(shake_force,2.0+strength*2.0)
+	glow = minf(1.0,glow+strength*0.18)
+
+func _float_score(at: Vector2, gained: int, combo: int) -> void:
+	floaters.append({"p":at,"text":"+%d" % gained,"combo":combo,
+		"life":0.90,"max":0.90})
+	if floaters.size() > 10:
+		floaters.pop_front()
 
 func _praise(value: String, color: Color, length: float) -> void:
 	praise = value
+	praise_color = color
+	praise_length = length
 	praise_timer = length
 
 func _box(rect: Rect2, color: Color, radius: int=16, border: Color=Color.TRANSPARENT, width: int=0) -> void:
@@ -321,10 +425,13 @@ func _center(value: String, center_x: float, baseline: float, pt: int, color: Co
 func _ball(center: Vector2, radius: float, color_index: int, alpha: float=1.0) -> void:
 	var c: Color = COLORS[clampi(color_index,0,COLORS.size()-1)]
 	c.a = alpha
-	draw_circle(center+Vector2(0,5),radius+3,Color(0,0,0,0.22*alpha))
-	draw_circle(center,radius,c.darkened(0.22))
-	draw_circle(center-Vector2(0,2),radius-3,c)
-	draw_circle(center+Vector2(-radius*0.30,-radius*0.36),radius*0.28,Color(1,1,1,0.35*alpha))
+	# Soft halo + hard glossy core keep the marbles legible on small phones.
+	draw_circle(center,radius+8.0,Color(c.r,c.g,c.b,0.055*alpha))
+	draw_circle(center+Vector2(0,5),radius+3,Color(0,0,0,0.26*alpha))
+	draw_circle(center,radius,c.darkened(0.30))
+	draw_circle(center-Vector2(0,2),maxf(1.0,radius-3),c)
+	draw_circle(center+Vector2(-radius*0.30,-radius*0.38),radius*0.29,Color(1,1,1,0.40*alpha))
+	draw_arc(center-Vector2(0,1),maxf(2.0,radius-3),0.25,2.95,18,Color(1,1,1,0.20*alpha),2.7,true)
 
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO,size),Color("#0a1026"))
@@ -332,6 +439,12 @@ func _draw() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#111d3c"))
 	draw_circle(Vector2(145,280),330,Color("#51327b",0.22))
 	draw_circle(Vector2(575,940),280,Color("#255f80",0.18))
+	# Slow ambient motes, distinct from gameplay sparks.
+	for i in range(24):
+		var star_pos: Vector2 = Vector2(fmod(float(i*151+37),700.0)+10.0,
+			fmod(float(i*239+73)-clock*(4.0+float(i%4)),1230.0)+25.0)
+		draw_circle(star_pos,1.6+float(i%3)*0.5,
+			Color(0.72,0.85,1.0,0.11+0.07*sin(clock*1.7+float(i))))
 	_box(Rect2(35,33,650,116),Color("#1a2a51"),25,Color("#435c86"),2)
 	_text("POP",Vector2(66,108),58,Color.WHITE)
 	_text("DROP",Vector2(196,108),58,Color("#6ef0d9"))
@@ -342,26 +455,45 @@ func _draw() -> void:
 	_box(Rect2(35,166,322,95),Color("#192a50"),20)
 	_box(Rect2(372,166,313,95),Color("#192a50"),20)
 	_text(t("score"),Vector2(58,198),16,Color("#9cb6de"))
-	_text(str(score),Vector2(58,243),39,Color.WHITE)
+	_text(str(int(round(display_score))),Vector2(58,243),39,Color.WHITE)
 	_text(t("best"),Vector2(392,198),16,Color("#9cb6de"))
 	_text(str(best),Vector2(392,243),39,Color("#ffe08e"))
 	for i in range(3):
 		_text("♥",Vector2(574+i*32,196),26,Color("#ff7396") if i<lives else Color("#536083"))
+	var shake: Vector2 = Vector2.ZERO
+	if shake_time > 0.0:
+		var falloff: float = shake_time/0.18
+		shake = Vector2(sin(clock*105.0),cos(clock*131.0))*shake_force*falloff*falloff
+	draw_set_transform(_offset()+shake*_scale(),0,Vector2.ONE*_scale())
 	_draw_board()
+	_draw_particles()
+	draw_set_transform(_offset(),0,Vector2.ONE*_scale())
 	_draw_pieces()
 	_draw_buttons()
-	for p in fx:
-		var a: float = clampf(float(p.life)/float(p.max),0.0,1.0)
-		draw_circle(p.p,p.r,Color(p.color.r,p.color.g,p.color.b,a))
+	if glow > 0.0:
+		draw_rect(Rect2(0,0,720,1280),Color(0.77,0.91,1.0,0.08*glow))
 	if praise_timer > 0 and phase != "over":
-		_box(Rect2(161,516,398,103),Color("#101d3b",0.88),26)
-		_center(praise,360,588,42,Color("#ffe49c"))
+		var enter: float = clampf((praise_length-praise_timer)/0.14,0.0,1.0)
+		var bounce: float = 1.0+0.16*sin(enter*PI)
+		var panel: Rect2 = Rect2(360.0-199.0*bounce,567.0-51.5*bounce,
+			398.0*bounce,103.0*bounce)
+		_box(panel,Color("#101d3b",0.84*minf(1.0,praise_timer*5.0)),26,
+			Color(praise_color.r,praise_color.g,praise_color.b,0.4),2)
+		_center(praise,360,588,roundi(42.0*bounce),praise_color)
 	if phase == "over":
 		_draw_game_over()
 	draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
 
 func _draw_board() -> void:
-	_box(Rect2(29,259,662,662),Color("#273a68"),27,Color("#536894"),2)
+	var rim: Color = Color("#6d8bc6").lerp(Color("#ffda9e"),glow)
+	_box(Rect2(24,254,672,672),Color("#74d3fa",0.06+glow*0.12),30)
+	_box(Rect2(29,259,662,662),Color("#273a68"),27,rim,3)
+	if motion_kind == "spin" and animating:
+		var spin_progress: float = clampf(motion_time/motion_duration,0.0,1.0)
+		for j in range(4):
+			var direction: float = float(j)*TAU/4.0+spin_progress*(PI*0.5 if spin_clockwise else -PI*0.5)
+			var corner: Vector2 = BOARD.get_center()+Vector2.from_angle(direction)*385.0
+			draw_circle(corner,9.0+4.0*sin(spin_progress*PI),Color("#9defff",0.4))
 	var hidden: Dictionary = {}
 	if animating:
 		for m in motion:
@@ -372,24 +504,45 @@ func _draw_board() -> void:
 			var cell: Vector2 = BOARD.position+Vector2(x,y)*CELL
 			_box(Rect2(cell+Vector2(3,3),Vector2(CELL-6,CELL-6)),
 				Color("#1a2c54") if (x+y)%2==0 else Color("#20345e"),13)
+			var center: Vector2 = cell+Vector2(CELL*0.5,CELL*0.5)
+			var is_pop: bool = Vector2i(x,y) in flash
 			if board[y][x] != Rules.EMPTY and not hidden.has(y*8+x):
-				_ball(cell+Vector2(CELL*0.5,CELL*0.5),CELL*0.36,board[y][x])
-			if Vector2i(x,y) in flash:
-				draw_circle(cell+Vector2(CELL*0.5,CELL*0.5),CELL*0.40,Color(1,1,1,0.32))
+				if is_pop and pop_time > 0.0:
+					var progress: float = 1.0-pop_time/pop_length
+					var swell: float = 1.0+0.27*sin(progress*PI)-0.17*pow(progress,5.0)
+					var tint: Color = COLORS[int(board[y][x])]
+					draw_circle(center,46.0+14.0*progress,
+						Color(tint.r,tint.g,tint.b,0.28*(1.0-progress)))
+					draw_circle(center,38.0,Color(1,1,1,0.28*progress))
+					_ball(center,CELL*0.36*swell,int(board[y][x]))
+				else:
+					_ball(center,CELL*0.36,int(board[y][x]))
 	if animating:
-		var factor: float = clampf(motion_time/motion_duration,0.0,1.0)
-		factor = factor*factor*(3.0-2.0*factor) if motion_kind=="spin" else 1.0-pow(1.0-factor,3.0)
+		var raw: float = clampf(motion_time/motion_duration,0.0,1.0)
+		var factor: float = raw*raw*(3.0-2.0*raw) if motion_kind=="spin" else 1.0-pow(1.0-raw,3.4)
 		for m in motion:
 			var from: Vector2 = m["from"]
 			var dest: Vector2 = m["to"]
 			var at: Vector2 = from.lerp(dest,factor)
 			if motion_kind == "spin":
-				# Travel around the centre along a true quarter-circle,
-				# rather than cutting straight across the board.
 				var angle: float = (PI*0.5 if spin_clockwise else -PI*0.5)*factor
 				at = Vector2(3.5,3.5)+(from-Vector2(3.5,3.5)).rotated(angle)
-			_ball(BOARD.position+(at+Vector2(0.5,0.5))*CELL,
-				CELL*0.36,int(m["color"]))
+			var center: Vector2 = BOARD.position+(at+Vector2(0.5,0.5))*CELL
+			var tint: Color = COLORS[int(m["color"])]
+			# Temporal echoes give rotation a circular luminous streak.
+			for echo in range(3,0,-1):
+				var older: float = maxf(0.0,factor-0.045*float(echo))
+				var behind: Vector2 = from.lerp(dest,older)
+				if motion_kind == "spin":
+					var a: float = (PI*0.5 if spin_clockwise else -PI*0.5)*older
+					behind = Vector2(3.5,3.5)+(from-Vector2(3.5,3.5)).rotated(a)
+				var tail: Vector2 = BOARD.position+(behind+Vector2(0.5,0.5))*CELL
+				draw_line(tail,center,Color(tint.r,tint.g,tint.b,0.055+float(echo)*0.02),8.0,true)
+			var stretch: float = 1.0+0.10*sin(raw*PI)
+			_ball(center,CELL*0.36*stretch,int(m["color"]))
+			if raw > 0.75 and motion_kind != "spin":
+				draw_arc(center,33.0+7.0*(1.0-raw),0.0,TAU,28,
+					Color(tint.r,tint.g,tint.b,0.28*(1.0-raw)),2.5,true)
 	elif phase=="drop" and hover_column>=0 and not pieces.is_empty():
 		var preview: Dictionary = Rules.drop(board,pieces[0],hover_column)
 		if preview.get("valid",false):
@@ -399,6 +552,45 @@ func _draw_board() -> void:
 	# Tutorial: column and objective are always obvious without a manual.
 	if phase=="drop":
 		_center(t("drop"),360,302,15,Color("#def9ee"))
+
+func _draw_particles() -> void:
+	for ring in rings:
+		var progress: float = 1.0-float(ring.life)/float(ring.max)
+		var tint: Color = ring.color
+		var strength: float = float(ring.strength)
+		var radius: float = 15.0+progress*(55.0+strength*37.0)
+		draw_circle(ring.p,13.0+progress*25.0,
+			Color(1,1,1,0.13*(1.0-progress)))
+		draw_arc(ring.p,radius,0.0,TAU,48,
+			Color(tint.r,tint.g,tint.b,0.70*(1.0-progress)*(1.0-progress)),
+			5.0+4.0*(1.0-progress),true)
+	for p in fx:
+		var a: float = clampf(float(p.life)/float(p.max),0.0,1.0)
+		var tint: Color = p.color
+		if bool(p.streak):
+			var direction: Vector2 = p.v.normalized()
+			draw_line(p.p-direction*(8.0+17.0*a),p.p+direction*2.0,
+				Color(tint.r,tint.g,tint.b,a),float(p.r)*0.85,true)
+		else:
+			draw_circle(p.p,float(p.r)*a,Color(tint.r,tint.g,tint.b,a))
+			draw_circle(p.p,float(p.r)*2.1*a,Color(tint.r,tint.g,tint.b,0.13*a))
+	for item in floaters:
+		var life_fraction: float = clampf(float(item.life)/float(item.max),0.0,1.0)
+		var location: Vector2 = item.p-Vector2(0.0,65.0*(1.0-life_fraction))
+		var points: int = 26 if int(item.combo) == 1 else 35
+		var label: String = str(item.text)
+		var measured: Vector2 = BOLD.get_string_size(label,HORIZONTAL_ALIGNMENT_LEFT,-1,points)
+		var at: Vector2 = location-Vector2(measured.x*0.5,0.0)
+		draw_string(BOLD,at+Vector2(1,2),label,HORIZONTAL_ALIGNMENT_LEFT,-1,points,
+			Color(0.02,0.07,0.17,0.7*life_fraction))
+		draw_string(BOLD,at,label,HORIZONTAL_ALIGNMENT_LEFT,-1,points,
+			Color(1.0,0.84,0.43,life_fraction))
+		if int(item.combo) > 1:
+			var combo_text: String = "×%d" % int(item.combo)
+			var combo_width: float = BOLD.get_string_size(combo_text,HORIZONTAL_ALIGNMENT_LEFT,-1,22).x
+			draw_string(BOLD,location+Vector2(-combo_width*0.5,27.0),
+				combo_text,HORIZONTAL_ALIGNMENT_LEFT,-1,22,
+				Color(0.63,0.96,1.0,life_fraction))
 
 func _draw_pieces() -> void:
 	_text("%s  %d" % [t("move"),moves+1],Vector2(41,952),18,Color("#b8caec"))
