@@ -18,17 +18,20 @@ Po zakończeniu testów możesz ponownie przełączyć **Current branch → main
 - Plansza 8 × 8; 3 kolory, z góry spada **jeden mały kształt**.
 - **75%** podstawowych losowań to pary dwóch kulek; ok. **15%** — trójki, **10%** — pojedyncza kulka. Gęsta plansza preferuje pojedyncze kulki.
 - Widać aktualny kształt oraz dwa następne (podgląd).
-- Kliknij **kolumnę na planszy**, w której kształt ma spaść. Kulki nie pozostają sklejone; opadają do swoich kolumn.
-- Po zrzuceniu można wybierać **obrót w lewo** lub **obrót w prawo** dowolną liczbę razy. Każdy obrót uruchamia grawitację i ewentualne kaskady. Dopiero **DALEJ** zrzuca następny kształt. To wersja eksperymentalna bez limitu obrotów.
+- **Dotknij kolumny** na planszy, żeby zrzucić kształt; spadnie do swoich kolumn. Następny kształt automatycznie wchodzi do gry — **przycisk „Dalej” został usunięty**.
+- **Przesuń palcem / myszką poziomo po planszy**, żeby wykonać obrót: w lewo = przeciwnie do wskazówek zegara, w prawo = zgodnie. Można też użyć dwóch przycisków pod planszą.
+- Obracaj **ile chcesz, przed zrzutem lub po nim**, bez zużywania kształtów. Obroty mogą uruchamiać kaskady; gracz sam wybiera, kiedy znów coś zrzucić.
+- Start jest bardziej żywy: **20 kulek** w przygotowanym układzie (bez gotowego match-3).
 - Obrót obraca zawartość planszy o 90°, a następnie kulki opadają zgodnie z ekranową grawitacją. Kolorowe grupy **3+ sąsiadujących bokami kulek** znikają, a pozostałe spadają.
 - Kolejne połączenia uruchamiają kaskady. Gracz powinien zrozumieć, jak obrót może je wywołać.
-- 3 życia na rundę. Jeśli nowego kształtu nie da się zrzucić, traci się życie, a plansza częściowo się opróżnia.
+- 3 życia na rundę. Nie tracisz życia, jeśli kształt nie mieści się w danej chwili, **ale obrót mógłby zrobić dla niego miejsce**. Życie tracisz dopiero gdy żadne z przetestowanych położeń po obrocie nie daje możliwości zrzutu.
 - Po 3. utraconym życiu pojawia się **TEST: +1 ŻYCIE**. To przycisk demonstracyjny, **nie reklama**. Reklam jeszcze nie zintegrowano.
 
 ## Zakres i ograniczenia
 
 - Interfejs, zasady obrotu, grawitacja, dopasowania, kaskady, 7 języków interfejsu, rekord i demonstracyjne życie.
 - Obroty są na razie **nielimitowane** (hipoteza do sprawdzenia). Wielokrotne kręcenie może nadmiernie ułatwiać grę — oceniamy to w testach.
+- Tempo prototypu: zrzut ~0,19 s, obrót ~0,22 s, opadanie ~0,18 s oraz krótsze pauzy przy POP. Sterowanie działa po zwolnieniu palca/przycisku myszy, więc gest nie zrzuca przy okazji kształtu.
 - To **prototyp oceny przyjemności z gry**. Nie zawiera jeszcze wspomagaczy Bomba / Spin / Laser / Undo / STAR MODE, nie ma AdMob ani docelowych animacji i audio.
 - Fizyka jest **deterministyczna na siatce** (żadne losowe kolizje Rigidbody). Animacje przedstawiają obrót po łuku i opadanie.
 - Nie uruchomiono jeszcze testów we własnym silniku Godot w środowisku tworzenia. Testy logiczne należy uruchomić na maszynie z Godot 4.7.2 i sprawdzić błędy konsoli.
