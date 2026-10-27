@@ -40,6 +40,7 @@ var motion: Array = []
 var motion_time: float = 0.0
 var motion_duration: float = 1.0
 var motion_kind: String = "fall"
+var spin_clockwise: bool = true
 var animating: bool = false
 var flash: Array = []
 var fx: Array = []
@@ -173,6 +174,7 @@ func _rotate_board(clockwise: bool) -> void:
 	if phase != "rotate":
 		return
 	phase = "anim"
+	spin_clockwise = clockwise
 	var turned: Dictionary = Rules.rotate(board,clockwise)
 	await _animate_to(turned.board,turned.motions,0.43,"spin")
 	var gravity: Dictionary = Rules.settle(board)
@@ -336,6 +338,11 @@ func _draw_board() -> void:
 			var from: Vector2 = m["from"]
 			var dest: Vector2 = m["to"]
 			var at: Vector2 = from.lerp(dest,factor)
+			if motion_kind == "spin":
+				# Travel around the centre along a true quarter-circle,
+				# rather than cutting straight across the board.
+				var angle: float = (PI*0.5 if spin_clockwise else -PI*0.5)*factor
+				at = Vector2(3.5,3.5)+(from-Vector2(3.5,3.5)).rotated(angle)
 			_ball(BOARD.position+(at+Vector2(0.5,0.5))*CELL,
 				CELL*0.36,int(m["color"]))
 	elif phase=="drop" and hover_column>=0 and not pieces.is_empty():
