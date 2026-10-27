@@ -95,9 +95,8 @@ func new_game() -> void:
 	# The empty floor cell at column 0 offers an obvious first target.
 	for x in range(8):
 		board[7][x] = [-1,0,0,0,0,1,2,2][x]
-		board[6][x] = [1,2,1,2,1,2,1,0][x]
-	for bead in [[0,5,2],[3,5,0],[5,5,1],[7,5,1],[6,5,2]]:
-		board[bead[1]][bead[0]] = bead[2]
+		board[6][x] = [-1,1,2,1,2,0,1,0][x]
+		board[5][x] = [-1,-1,2,0,1,2,0,1][x]
 	score = 0
 	moves = 0
 	lives = 3
