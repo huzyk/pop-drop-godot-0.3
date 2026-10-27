@@ -74,11 +74,48 @@ func _initialize() -> void:
 
 	var random: RandomNumberGenerator = RandomNumberGenerator.new()
 	random.seed = 20261027
+	# All piece templates have the expected size and valid unique positions.
+	var shapes_checked: int = 0
+	for piece_size in range(1,5):
+		for shape in Rules.SHAPES_BY_SIZE[piece_size-1]:
+			assert(shape.size() == piece_size)
+			var occupied: Dictionary = {}
+			for position in shape:
+				assert(position.x >= 0 and position.x < 8)
+				assert(position.y >= 0 and position.y < 8)
+				assert(not occupied.has(position))
+				occupied[position] = true
+			shapes_checked += 1
+	assert(shapes_checked >= 15)
+	checks += shapes_checked
+
+	# Newly offered pieces may not clear themselves on an empty board.
+	for piece_size in range(1,5):
+		for sample in range(140):
+			var candidate: Array = Rules.make_piece(random,Rules.empty_board(),piece_size)
+			assert(candidate.size() == piece_size)
+			var placed: Dictionary = Rules.drop(Rules.empty_board(),candidate,0)
+			assert(placed.get("valid",false))
+			assert(Rules.find_matches(placed.board).is_empty())
+			checks += 1
+
+	# Test that the size distribution is not distorted toward four-ball pieces.
+	var size_counts: Array = [0,0,0,0]
+	for sample in range(900):
+		var sampled_size: int = Rules.choose_piece_size(random,Rules.empty_board())
+		size_counts[sampled_size-1] += 1
+	assert(size_counts[1] > size_counts[3])
+	assert(size_counts[2] > size_counts[3])
+	assert(size_counts[3] > 75)
+	checks += 3
+
 	# Generate hundreds of actual turns, not just isolated shapes.
 	var simulation: Array = Rules.empty_board()
 	for turn in range(300):
 		var piece: Array = Rules.next_piece(random,simulation)
-		assert(piece.size() >= 1 and piece.size() <= 3)
+		assert(piece.size() >= 1 and piece.size() <= 4)
+		# The selected shape is not an automatic reward on an empty board.
+		assert(Rules.find_matches(Rules.drop(Rules.empty_board(),piece,0).board).is_empty())
 		var possible: Array = []
 		for col in range(8):
 			if Rules.drop(simulation,piece,col).get("valid",false):
