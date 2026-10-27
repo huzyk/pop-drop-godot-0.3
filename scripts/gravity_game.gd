@@ -10,13 +10,13 @@ const COLORS := [Color("#ff7096"),Color("#55dcad"),Color("#62b5ff")]
 const SAVE_FILE := "user://pop_drop_gravity.json"
 const LOCALES := ["pl","en","es","pt","de","fr","ru"]
 const TR := {
-	"pl":{"score":"WYNIK","best":"REKORD","move":"RUCH","drop":"DOTKNIJ KOLUMNĘ, ABY ZRZUCIĆ","turn":"OBRÓĆ PLANSZĘ LUB GRAJ DALEJ","left":"W LEWO","right":"W PRAWO","skip":"DALEJ","next":"NASTĘPNE","ready":"3 TEGO SAMEGO KOLORU = POP!","over":"KONIEC RUNDY","again":"ZAGRAJ PONOWNIE","rescue":"TEST: +1 ŻYCIE","lost":"STRATA ŻYCIA","rotate_controls":"OBRACAJ PRZYCISKAMI PONIŻEJ","rotate_help":"SPRÓBUJ OBRÓCIĆ PLANSZĘ","hint":"Wybierz kolumnę dla spadającego kształtu"},
-	"en":{"score":"SCORE","best":"BEST","move":"MOVE","drop":"TAP A COLUMN TO DROP","turn":"ROTATE OR KEEP GOING","left":"LEFT","right":"RIGHT","skip":"NEXT","next":"UP NEXT","ready":"3 SAME-COLOUR BALLS = POP!","over":"GAME OVER","again":"PLAY AGAIN","rescue":"TEST: +1 LIFE","lost":"LIFE LOST","rotate_controls":"ROTATE WITH THE BUTTONS BELOW","rotate_help":"ROTATE TO MAKE ROOM","hint":"Choose a column for the falling piece"},
-	"es":{"score":"PUNTOS","best":"RÉCORD","move":"JUGADA","drop":"TOCA UNA COLUMNA PARA SOLTAR","turn":"GIRA O CONTINÚA","left":"IZQUIERDA","right":"DERECHA","skip":"SEGUIR","next":"SIGUIENTES","ready":"3 BOLAS DEL MISMO COLOR = POP!","over":"FIN DEL JUEGO","again":"JUGAR OTRA VEZ","rescue":"PRUEBA: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USA LOS BOTONES PARA GIRAR","rotate_help":"GIRA PARA HACER ESPACIO","hint":"Elige una columna para las bolas"},
-	"pt":{"score":"PONTOS","best":"RECORDE","move":"JOGADA","drop":"TOQUE NA COLUNA PARA SOLTAR","turn":"GIRE OU CONTINUE","left":"ESQUERDA","right":"DIREITA","skip":"SEGUIR","next":"PRÓXIMAS","ready":"3 BOLAS DA MESMA COR = POP!","over":"FIM DE JOGO","again":"JOGAR DE NOVO","rescue":"TESTE: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USE OS BOTÕES PARA GIRAR","rotate_help":"GIRE PARA ABRIR ESPAÇO","hint":"Escolha uma coluna para jogar"},
-	"de":{"score":"PUNKTE","best":"REKORD","move":"ZUG","drop":"SPALTE ANTIPPEN ZUM FALLEN","turn":"DREHEN ODER WEITER","left":"LINKS","right":"RECHTS","skip":"WEITER","next":"ALS NÄCHSTES","ready":"3 GLEICHE FARBEN = POP!","over":"SPIEL VORBEI","again":"NOCHMAL SPIELEN","rescue":"TEST: +1 LEBEN","lost":"LEBEN VERLOREN","rotate_controls":"MIT DEN TASTEN UNTEN DREHEN","rotate_help":"DREHE FÜR MEHR PLATZ","hint":"Wähle eine Spalte zum Einwerfen"},
-	"fr":{"score":"SCORE","best":"RECORD","move":"COUP","drop":"TOUCHE UNE COLONNE POUR LÂCHER","turn":"TOURNE OU CONTINUE","left":"GAUCHE","right":"DROITE","skip":"SUITE","next":"À SUIVRE","ready":"3 BILLES IDENTIQUES = POP!","over":"PARTIE FINIE","again":"REJOUER","rescue":"TEST : +1 VIE","lost":"VIE PERDUE","rotate_controls":"TOURNE AVEC LES BOUTONS","rotate_help":"TOURNE POUR LIBÉRER DE LA PLACE","hint":"Choisis une colonne pour les billes"},
-	"ru":{"score":"ОЧКИ","best":"РЕКОРД","move":"ХОД","drop":"НАЖМИ СТОЛБЕЦ ДЛЯ СБРОСА","turn":"ПОВЕРНИ ИЛИ ПРОДОЛЖИ","left":"ВЛЕВО","right":"ВПРАВО","skip":"ДАЛЕЕ","next":"СЛЕДУЮЩИЕ","ready":"3 ОДНОГО ЦВЕТА = POP!","over":"ИГРА ОКОНЧЕНА","again":"ИГРАТЬ СНОВА","rescue":"ТЕСТ: +1 ЖИЗНЬ","lost":"МИНУС ЖИЗНЬ","rotate_controls":"ПОВОРОТ КНОПКАМИ ВНИЗУ","rotate_help":"ПОВЕРНИ, ЧТОБЫ ОСВОБОДИТЬ МЕСТО","hint":"Выбери столбец для шариков"}
+	"pl":{"score":"WYNIK","best":"REKORD","move":"RUCH","drop":"DOTKNIJ KOLUMNĘ, ABY ZRZUCIĆ","turn":"OBRÓĆ PLANSZĘ LUB GRAJ DALEJ","left":"W LEWO","right":"W PRAWO","skip":"DALEJ","next":"NASTĘPNE","ready":"3 TEGO SAMEGO KOLORU = POP!","over":"KONIEC RUNDY","again":"ZAGRAJ PONOWNIE","rescue":"TEST: +1 ŻYCIE","lost":"STRATA ŻYCIA","rotate_controls":"OBRACAJ PRZYCISKAMI PONIŻEJ","rotate_help":"SPRÓBUJ OBRÓCIĆ PLANSZĘ","charge":"GRUPA","hint":"Wybierz kolumnę dla spadającego kształtu"},
+	"en":{"score":"SCORE","best":"BEST","move":"MOVE","drop":"TAP A COLUMN TO DROP","turn":"ROTATE OR KEEP GOING","left":"LEFT","right":"RIGHT","skip":"NEXT","next":"UP NEXT","ready":"3 SAME-COLOUR BALLS = POP!","over":"GAME OVER","again":"PLAY AGAIN","rescue":"TEST: +1 LIFE","lost":"LIFE LOST","rotate_controls":"ROTATE WITH THE BUTTONS BELOW","rotate_help":"ROTATE TO MAKE ROOM","charge":"GROUP","hint":"Choose a column for the falling piece"},
+	"es":{"score":"PUNTOS","best":"RÉCORD","move":"JUGADA","drop":"TOCA UNA COLUMNA PARA SOLTAR","turn":"GIRA O CONTINÚA","left":"IZQUIERDA","right":"DERECHA","skip":"SEGUIR","next":"SIGUIENTES","ready":"3 BOLAS DEL MISMO COLOR = POP!","over":"FIN DEL JUEGO","again":"JUGAR OTRA VEZ","rescue":"PRUEBA: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USA LOS BOTONES PARA GIRAR","rotate_help":"GIRA PARA HACER ESPACIO","charge":"GRUPO","hint":"Elige una columna para las bolas"},
+	"pt":{"score":"PONTOS","best":"RECORDE","move":"JOGADA","drop":"TOQUE NA COLUNA PARA SOLTAR","turn":"GIRE OU CONTINUE","left":"ESQUERDA","right":"DIREITA","skip":"SEGUIR","next":"PRÓXIMAS","ready":"3 BOLAS DA MESMA COR = POP!","over":"FIM DE JOGO","again":"JOGAR DE NOVO","rescue":"TESTE: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USE OS BOTÕES PARA GIRAR","rotate_help":"GIRE PARA ABRIR ESPAÇO","charge":"GRUPO","hint":"Escolha uma coluna para jogar"},
+	"de":{"score":"PUNKTE","best":"REKORD","move":"ZUG","drop":"SPALTE ANTIPPEN ZUM FALLEN","turn":"DREHEN ODER WEITER","left":"LINKS","right":"RECHTS","skip":"WEITER","next":"ALS NÄCHSTES","ready":"3 GLEICHE FARBEN = POP!","over":"SPIEL VORBEI","again":"NOCHMAL SPIELEN","rescue":"TEST: +1 LEBEN","lost":"LEBEN VERLOREN","rotate_controls":"MIT DEN TASTEN UNTEN DREHEN","rotate_help":"DREHE FÜR MEHR PLATZ","charge":"GRUPPE","hint":"Wähle eine Spalte zum Einwerfen"},
+	"fr":{"score":"SCORE","best":"RECORD","move":"COUP","drop":"TOUCHE UNE COLONNE POUR LÂCHER","turn":"TOURNE OU CONTINUE","left":"GAUCHE","right":"DROITE","skip":"SUITE","next":"À SUIVRE","ready":"3 BILLES IDENTIQUES = POP!","over":"PARTIE FINIE","again":"REJOUER","rescue":"TEST : +1 VIE","lost":"VIE PERDUE","rotate_controls":"TOURNE AVEC LES BOUTONS","rotate_help":"TOURNE POUR LIBÉRER DE LA PLACE","charge":"GROUPE","hint":"Choisis une colonne pour les billes"},
+	"ru":{"score":"ОЧКИ","best":"РЕКОРД","move":"ХОД","drop":"НАЖМИ СТОЛБЕЦ ДЛЯ СБРОСА","turn":"ПОВЕРНИ ИЛИ ПРОДОЛЖИ","left":"ВЛЕВО","right":"ВПРАВО","skip":"ДАЛЕЕ","next":"СЛЕДУЮЩИЕ","ready":"3 ОДНОГО ЦВЕТА = POP!","over":"ИГРА ОКОНЧЕНА","again":"ИГРАТЬ СНОВА","rescue":"ТЕСТ: +1 ЖИЗНЬ","lost":"МИНУС ЖИЗНЬ","rotate_controls":"ПОВОРОТ КНОПКАМИ ВНИЗУ","rotate_help":"ПОВЕРНИ, ЧТОБЫ ОСВОБОДИТЬ МЕСТО","charge":"ГРУППА","hint":"Выбери столбец для шариков"}
 }
 const LEFT_RECT := Rect2(35,1123,285,92)
 const RIGHT_RECT := Rect2(400,1123,285,92)
@@ -62,6 +62,10 @@ var rings: Array = []
 var floaters: Array = []
 var queued_action: String = ""
 var queued_column: int = -1
+# Strategic feedback, recomputed when board state changes (never each frame).
+var pending_group: Dictionary = {}
+var preview_left: Dictionary = {}
+var preview_right: Dictionary = {}
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -119,6 +123,7 @@ func new_game() -> void:
 		var piece: Array = Rules.next_piece(rng,board,recent_shapes)
 		pieces.append(piece)
 		_remember_shape(piece)
+	_refresh_targets()
 	queue_redraw()
 
 func _process(delta: float) -> void:
@@ -226,10 +231,12 @@ func _play_drop(column: int) -> void:
 	moves += 1
 	chain_depth = 0
 	await _animate_to(result.board,result.motions,0.23,"drop")
-	await _resolve_cascades()
+	# Players BANK their groups by dropping. Only rotating can trigger a POP.
+	# This creates an intentional choice between cashing in now and stacking.
 	# No Next button: the next shape is ready immediately after this drop.
 	_advance_piece()
 	phase = "drop"
+	_refresh_targets()
 	_check_stuck()
 	_flush_queued_input()
 	queue_redraw()
@@ -238,6 +245,7 @@ func _rotate_board(clockwise: bool) -> void:
 	if phase != "drop":
 		return
 	phase = "anim"
+	chain_depth = 0 # Cascade multiplier is per rotation, not accumulated forever.
 	spin_clockwise = clockwise
 	var turned: Dictionary = Rules.rotate(board,clockwise)
 	_shock(BOARD.get_center(),1.15,Color("#78d9ff"))
@@ -246,6 +254,7 @@ func _rotate_board(clockwise: bool) -> void:
 	await _animate_to(gravity.board,gravity.motions,0.19,"fall")
 	await _resolve_cascades()
 	phase = "drop"
+	_refresh_targets()
 	_check_stuck()
 	_flush_queued_input()
 	queue_redraw()
@@ -263,6 +272,16 @@ func _flush_queued_input() -> void:
 		call_deferred("_rotate_board",true)
 	elif action == "drop" and column >= 0:
 		call_deferred("_play_drop",column)
+
+func _refresh_targets() -> void:
+	# The largest cluster shows how much more the player could build.
+	pending_group.clear()
+	var groups: Array = Rules.find_groups(board,2)
+	for group in groups:
+		if pending_group.is_empty() or int(group["count"]) > int(pending_group["count"]):
+			pending_group = group
+	preview_left = Rules.rotate_preview(board,false)
+	preview_right = Rules.rotate_preview(board,true)
 
 func _remember_shape(piece: Array) -> void:
 	recent_shapes.append(Rules.piece_shape_id(piece))
@@ -311,6 +330,7 @@ func _check_stuck() -> void:
 		if not Rules.any_drop(board,pieces[0]):
 			# Let the next input recover the board; no recursive losses.
 			board = Rules.empty_board()
+		_refresh_targets()
 	queue_redraw()
 
 func _animate_to(next_board: Array, motions: Array, seconds: float, kind: String) -> void:
@@ -341,32 +361,45 @@ func _animate_to(next_board: Array, motions: Array, seconds: float, kind: String
 	queue_redraw()
 
 func _resolve_cascades() -> void:
+	# Called ONLY after the player rotates, never after a normal drop.
 	for depth in range(20):
-		var hits: Array = Rules.find_matches(board)
-		if hits.is_empty():
+		var groups: Array = Rules.find_groups(board)
+		if groups.is_empty():
 			return
 		chain_depth += 1
+		var hits: Array = []
+		var largest: int = 0
+		for group in groups:
+			hits.append_array(group["cells"])
+			largest = maxi(largest,int(group["count"]))
 		flash = hits
 		pop_length = 0.18 if chain_depth <= 2 else 0.21
 		pop_time = pop_length
-		if chain_depth >= 3:
+		if chain_depth >= 3 or largest >= 8:
 			_praise("AMAZING!",Color("#ffe58c"),1.30)
-		elif chain_depth >= 2 or hits.size() >= 6:
+		elif chain_depth >= 2 or largest >= 5 or groups.size() > 1:
 			_praise("GREAT!",Color("#92f2e2"),1.0)
 		else:
 			_praise("POP!",Color("#ffffff"),0.72)
-		# Anticipation: connected bubbles brighten, swell, then shatter together.
 		await get_tree().create_timer(pop_length).timeout
+		var main_color: Color = COLORS[int(groups[0]["color"])]
+		# Score each actual connected group, not the total across unrelated colours.
+		# An 8-ball group is worth much more than two separate groups of four.
+		var payout: int = Rules.score_groups(groups,chain_depth)
 		var centroid: Vector2 = Vector2.ZERO
-		var main_color: Color = COLORS[board[hits[0].y][hits[0].x]]
-		for pt in hits:
-			centroid += BOARD.position+(Vector2(pt)+Vector2(0.5,0.5))*CELL
-			_burst(pt,8 if chain_depth <= 2 else 11)
+		for group in groups:
+			var group_center: Vector2 = Vector2.ZERO
+			for pt in group["cells"]:
+				var position: Vector2 = BOARD.position+(Vector2(pt)+Vector2(0.5,0.5))*CELL
+				group_center += position
+				centroid += position
+				_burst(pt,8 if chain_depth <= 2 else 11)
+			group_center /= float(group["count"])
+			_float_score(group_center,Rules.group_points(int(group["count"]))*chain_depth,chain_depth)
 		centroid /= float(hits.size())
 		_shock(centroid,minf(4.5,1.15+float(chain_depth)*0.7+float(hits.size())*0.12),main_color)
-		_float_score(centroid,hits.size()*35*chain_depth,chain_depth)
 		board = Rules.erase_matches(board,hits)
-		score += hits.size() * 35 * chain_depth
+		score += payout
 		best = maxi(best,score)
 		_save()
 		flash.clear()
@@ -492,6 +525,11 @@ func _draw() -> void:
 		_draw_game_over()
 	draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
 
+func _charged_cells() -> Array:
+	if pending_group.is_empty() or int(pending_group["count"]) < 3:
+		return []
+	return pending_group["cells"]
+
 func _draw_board() -> void:
 	var rim: Color = Color("#6d8bc6").lerp(Color("#ffda9e"),glow)
 	_box(Rect2(24,254,672,672),Color("#74d3fa",0.06+glow*0.12),30)
@@ -525,6 +563,12 @@ func _draw_board() -> void:
 					_ball(center,CELL*0.36*swell,int(board[y][x]))
 				else:
 					_ball(center,CELL*0.36,int(board[y][x]))
+				# Groups of 3+ are ready but won't POP until a rotation.
+				# This pulsing outline makes the deliberate stack visible.
+				if phase == "drop" and Vector2i(x,y) in _charged_cells():
+					var pulse: float = 0.45+0.22*sin(clock*4.0)
+					draw_arc(center,CELL*0.40,0.0,TAU,30,
+						Color(1.0,0.88,0.45,pulse),3.2,true)
 	if animating:
 		var raw: float = clampf(motion_time/motion_duration,0.0,1.0)
 		var factor: float = raw*raw*(3.0-2.0*raw) if motion_kind=="spin" else 1.0-pow(1.0-raw,3.4)
@@ -602,6 +646,14 @@ func _draw_particles() -> void:
 
 func _draw_pieces() -> void:
 	_text("%s  %d" % [t("move"),moves+1],Vector2(41,952),18,Color("#b8caec"))
+	if not pending_group.is_empty():
+		var amount: int = int(pending_group["count"])
+		var tint: Color = COLORS[int(pending_group["color"])]
+		draw_circle(Vector2(282,947),10.0,tint)
+		var value: int = Rules.group_points(amount)
+		var next_value: int = Rules.group_points(maxi(3,amount+1))
+		var status: String = "%d  = %d    %d  = %d" % [amount,value,amount+1,next_value]
+		_text(t("charge")+" "+status,Vector2(301,953),16,Color("#ffe39b"))
 	_text(t("next"),Vector2(43,1004),16,Color("#9fb7dc"))
 	for i in range(3):
 		var rect: Rect2 = Rect2(45+i*216,1017,200,87)
@@ -634,8 +686,12 @@ func _draw_buttons() -> void:
 		var rect: Rect2 = entry.rect
 		_box(rect,Color("#ffcd6f") if entry.enabled else Color("#25365e"),
 			23,Color("#ffe6ae") if entry.enabled else Color("#354e7a"),2)
-		_center(entry.label,rect.get_center().x,rect.get_center().y+8,23,
+		var projected: int = int(preview_left.get("score",0)) if rect == LEFT_RECT else int(preview_right.get("score",0))
+		_center(entry.label,rect.get_center().x,rect.get_center().y-3,23,
 			Color("#272446") if entry.enabled else Color("#778baa"))
+		var payoff: String = "+%d" % projected if projected > 0 else "—"
+		_center(payoff,rect.get_center().x,rect.get_center().y+29,19,
+			Color("#4e3850") if projected > 0 else Color("#957b55"))
 	_center(t("rotate_controls"),360,1115,18,Color("#a9c6ec"))
 	_center(t("ready"),360,1251,18,Color("#a9c6ec"))
 
