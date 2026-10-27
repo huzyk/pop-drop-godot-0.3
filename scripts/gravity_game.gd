@@ -404,11 +404,13 @@ func _draw_pieces() -> void:
 		for b in piece:
 			max_x = maxi(max_x,int(b[0]))
 			max_y = maxi(max_y,int(b[1]))
-		var step: float = 30.0
+		# Keep even the tallest 4-ball towers inside the preview tile.
+		var step: float = minf(32.0,55.0/float(maxi(1,max_y)),135.0/float(maxi(1,max_x)))
+		var radius: float = minf(15.0,step*0.47)
 		var left: float = rect.get_center().x-float(max_x-min_x)*step*0.5
 		var top: float = rect.get_center().y-float(max_y-min_y)*step*0.5
 		for b in piece:
-			_ball(Vector2(left+b[0]*step,top+b[1]*step),15.5,int(b[2]))
+			_ball(Vector2(left+b[0]*step,top+b[1]*step),radius,int(b[2]))
 
 func _draw_buttons() -> void:
 	var enabled: bool = phase == "drop"
