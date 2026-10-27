@@ -75,8 +75,12 @@ func _save() -> void:
 
 func new_game() -> void:
 	board = Rules.empty_board()
-	# Pairs already on the board make a deliberate first POP possible.
-	for bead in [[1,7,0],[2,7,0],[5,7,1],[6,7,1],[3,6,2],[4,6,2]]:
+	# Livelier opening: 20 balls, several visible same-colour pairs and
+	# different column heights. No group of 3 matches before the first move.
+	for x in range(8):
+		board[7][x] = [0,0,2,1,1,0,2,2][x]
+		board[6][x] = [1,2,0,2,0,2,1,0][x]
+	for bead in [[0,5,2],[3,5,0],[5,5,1],[7,5,1]]:
 		board[bead[1]][bead[0]] = bead[2]
 	score = 0
 	moves = 0
