@@ -827,7 +827,7 @@ func _draw_buttons() -> void:
 		var accent: Color = Color("#ff89a6") if left else Color("#77f0dd")
 		var base: Color = Color("#f86f9a") if left else Color("#55dfcd")
 		var projected: int = int(preview_left.get("score",0)) if left else int(preview_right.get("score",0))
-		_box(rect.translated(Vector2(0,5)),Color("#080f29"),24)
+		_box(Rect2(rect.position+Vector2(0,5),rect.size),Color("#080f29"),24)
 		_box(rect,base if enabled else Color("#263c61"),24,
 			accent if enabled else Color("#3f547a"),2)
 		_box(Rect2(rect.position+Vector2(5,5),Vector2(rect.size.x-10,rect.size.y*0.39)),
@@ -862,7 +862,7 @@ func _draw_game_over() -> void:
 	_fit_center(t("over"),360,535,48,510,Color("#f7faff"))
 	_center(str(score),360,635,76,Color("#ffdc93"))
 	_fit_center(t("best")+"  "+str(best),360,681,23,480,Color("#b8d2ef"))
-	_box(RESTART_RECT.translated(Vector2(0,5)),Color("#090e24"),24)
+	_box(Rect2(RESTART_RECT.position+Vector2(0,5),RESTART_RECT.size),Color("#090e24"),24)
 	_box(RESTART_RECT,Color("#64ead2"),24,Color("#b5ffec"),2)
 	_fit_center(t("again"),360,774,30,470,Color("#112745"))
 	_box(RESCUE_RECT,Color("#314d76"),22,Color("#557da2"),2)
