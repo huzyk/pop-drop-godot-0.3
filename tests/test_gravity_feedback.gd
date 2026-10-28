@@ -8,11 +8,11 @@ func _initialize() -> void:
 	game.free()
 	var feedback = Feedback.new()
 	feedback.persist_enabled = false
-	root.add_child(feedback)
+	# Avoid invoking AudioServer playback in a headless test.
+	# The main-scene CI smoke test covers lifecycle initialization.
 	assert(feedback.CUES.size() == 8)
-	assert(feedback.voices.size() == feedback.VOICE_COUNT)
 	for key in feedback.CUES.keys():
-		var wav: AudioStreamWAV = feedback.streams[key]
+		var wav: AudioStreamWAV = feedback._render_cue(str(key))
 		assert(wav.format == AudioStreamWAV.FORMAT_16_BITS)
 		assert(wav.mix_rate == feedback.RATE)
 		assert(not wav.stereo)
@@ -25,6 +25,7 @@ func _initialize() -> void:
 	feedback.cue("level") # Silent; never triggers vibration.
 	feedback.set_sound_enabled(true)
 	assert(feedback.sound_enabled)
+	feedback.set_sound_enabled(false)
 	feedback.cue("tap")
 	feedback.cue("not_an_event")
 	feedback.free()
