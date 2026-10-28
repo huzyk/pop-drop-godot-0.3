@@ -123,7 +123,7 @@ static func score_groups(groups: Array, cascade_level: int = 1) -> int:
 		total += group_points(int(group["count"]))
 	return total * maxi(1,cascade_level)
 
-static func resolve_preview(board: Array) -> Dictionary:
+static func resolve_preview(board: Array, fluid: bool = false, clockwise: bool = true) -> Dictionary:
 	# Pure equivalent of game._resolve_cascades(), for tests and previews.
 	# Drop results can be resolved directly; rotations settle first.
 	var after: Array = copy_board(board)
@@ -141,10 +141,13 @@ static func resolve_preview(board: Array) -> Dictionary:
 			hits.append_array(group["cells"])
 		popped += hits.size()
 		after = settle(erase_matches(after,hits)).board
+		if fluid:
+			after = spill_after_rotation(after,clockwise).board
 	return {"score":total,"removed":popped,"chains":cascades,"board":after}
 
 static func rotate_preview(board: Array, clockwise: bool) -> Dictionary:
-	return resolve_preview(settle(rotate(board,clockwise).board).board)
+	var turned: Array = settle(rotate(board,clockwise).board).board
+	return resolve_preview(spill_after_rotation(turned,clockwise).board,true,clockwise)
 
 static func drop_preview(board: Array, piece: Array, left_col: int) -> Dictionary:
 	var result: Dictionary = drop(board,piece,left_col)
@@ -191,6 +194,64 @@ static func settle(board: Array) -> Dictionary:
 				motions.append({"from":Vector2(x,y),"to":Vector2(x,target_y),"color":color})
 			target_y -= 1
 	return {"board":result,"motions":motions}
+
+## A deliberately discrete, deterministic marble spill, applied ONLY after rotation.
+## Each ball always loses height; no oscillation, random outcomes or teleporting.
+## A roll requires a free side entrance AND a free diagonally lower destination.
+## Tracks complete individual paths for a single smooth animation.
+static func spill_after_rotation(board: Array, clockwise: bool) -> Dictionary:
+	var result: Array = copy_board(board)
+	var identities: Array = empty_board()
+	var paths: Array = []
+	var colors: Array = []
+	for y in range(SIZE):
+		for x in range(SIZE):
+			if result[y][x] == EMPTY:
+				continue
+			identities[y][x] = paths.size()
+			paths.append([Vector2(x,y)])
+			colors.append(int(result[y][x]))
+	var sideways_steps: int = 0
+	for pass_index in range(SIZE*SIZE):
+		var changed: bool = false
+		# Traversing bottom-up avoids a moving bead being processed twice.
+		# Scan direction alternates to make two equally good pockets fair.
+		for y in range(SIZE-2,-1,-1):
+			for order in range(SIZE):
+				var x: int = order if (clockwise == (pass_index%2==0)) else SIZE-1-order
+				if result[y][x] == EMPTY:
+					continue
+				var destination: Vector2i = Vector2i(-1,-1)
+				if result[y+1][x] == EMPTY:
+					destination = Vector2i(x,y+1)
+				else:
+					var direction: int = 1 if clockwise == (pass_index%2==0) else -1
+					for attempt in range(2):
+						var nx: int = x+direction
+						if nx >= 0 and nx < SIZE:
+							if result[y][nx] == EMPTY and result[y+1][nx] == EMPTY:
+								destination = Vector2i(nx,y+1)
+								sideways_steps += 1
+								break
+						direction = -direction
+				if destination.x < 0:
+					continue
+				var particle_id: int = identities[y][x]
+				result[destination.y][destination.x] = result[y][x]
+				result[y][x] = EMPTY
+				identities[destination.y][destination.x] = particle_id
+				identities[y][x] = EMPTY
+				paths[particle_id].append(Vector2(destination))
+				changed = true
+		if not changed:
+			break
+	var motions: Array = []
+	for particle_id in range(paths.size()):
+		var route: Array = paths[particle_id]
+		if route.size() > 1:
+			motions.append({"from":route[0],"to":route[route.size()-1],
+				"color":colors[particle_id],"path":route})
+	return {"board":result,"motions":motions,"rolls":sideways_steps}
 
 static func drop(board: Array, piece: Array, left_col: int) -> Dictionary:
 	var result: Array = copy_board(board)
