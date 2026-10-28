@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+ <defs>
+  <radialGradient id="aura" cx="50%" cy="48%" r="50%"><stop offset="0.5" stop-color="#3e8fff" stop-opacity="0.25"/><stop offset="0.83" stop-color="#3e8fff" stop-opacity=".10"/><stop offset="1" stop-color="#3e8fff" stop-opacity="0"/></radialGradient>
+  <radialGradient id="base" cx="30%" cy="21%" r="88%" fx="29%" fy="18%">
+   <stop offset="0" stop-color="#c5e8ff"/>
+   <stop offset=".18" stop-color="#86d5ff"/>
+   <stop offset=".43" stop-color="#4ca3ff"/>
+   <stop offset=".77" stop-color="#2558be"/>
+   <stop offset="1" stop-color="#171d65"/>
+  </radialGradient>
+  <linearGradient id="edge" x1="0" y1="0" x2=".8" y2="1">
+   <stop offset="0" stop-color="#fcfeff" stop-opacity=".94"/>
+   <stop offset=".24" stop-color="#a8cfff" stop-opacity=".47"/>
+   <stop offset=".63" stop-color="#2558be" stop-opacity=".9"/>
+   <stop offset="1" stop-color="#c5e8ff" stop-opacity=".68"/>
+  </linearGradient>
+  <linearGradient id="gloss" x1="0" y1="0" x2="0.1" y2="1">
+   <stop offset="0" stop-color="#ffffff" stop-opacity=".90"/>
+   <stop offset=".40" stop-color="#c5e8ff" stop-opacity=".49"/>
+   <stop offset="1" stop-color="#86d5ff" stop-opacity=".02"/>
+  </linearGradient>
+  <radialGradient id="reflect" cx="50%" cy="10%" r="90%">
+   <stop offset="0" stop-color="#fcfeff" stop-opacity=".85"/>
+   <stop offset="1" stop-color="#c5e8ff" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="undertone" x1="0" y1="0" x2=".2" y2="1">
+    <stop offset="0" stop-color="#4ca3ff" stop-opacity="0"/>
+    <stop offset="1" stop-color="#171d65" stop-opacity=".44"/>
+  </linearGradient>
+ </defs>
+ <circle cx="128" cy="129" r="125" fill="url(#aura)"/>
+ <ellipse cx="128" cy="219" rx="84" ry="19" fill="#171d65" opacity=".22"/>
+ <circle cx="128" cy="125" r="102.2" fill="url(#edge)"/>
+ <circle cx="128" cy="125" r="97.2" fill="url(#base)"/>
+ <circle cx="128" cy="125" r="97.2" fill="url(#undertone)"/>
+ <path d="M 52,108 C 57,64 86,43 131,39 C 164,36 191,54 200,75 C 206,89 190,90 178,82 C 143,56 92,69 68,111 C 56,131 49,124 52,108 Z" fill="url(#gloss)" opacity=".78"/>
+ <path d="M 60,148 C 75,196 115,210 143,211 C 105,224 63,200 48,168 C 39,145 46,130 52,134 Z" fill="#fcfeff" opacity=".17"/>
+ <path d="M 165,200 C 195,183 210,157 210,132 C 216,150 209,186 181,205 C 166,215 149,218 149,214 Z" fill="#c5e8ff" opacity=".41"/>
+ <ellipse cx="91" cy="76" rx="27" ry="13" transform="rotate(-29 91 76)" fill="url(#reflect)" opacity=".72"/>
+ <ellipse cx="82" cy="69" rx="11" ry="4.1" transform="rotate(-30 82 69)" fill="#fcfeff" opacity=".88"/>
+ <ellipse cx="185" cy="167" rx="5.5" ry="15" transform="rotate(27 185 167)" fill="#c5e8ff" opacity=".20"/>
+ <circle cx="174" cy="192" r="3.5" fill="#fcfeff" opacity=".47"/>
+</svg>
