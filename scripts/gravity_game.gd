@@ -120,6 +120,10 @@ var run_id: String = ""
 var rounds_played: int = 0
 var best_at_round_start: int = 0
 var game_over_reported: bool = false
+# The first wave hits quickly; intervals become longer as the board fills.
+var wave_number: int = 0
+var wave_time_left: float = 15.0
+var wave_queued: bool = false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -194,6 +198,9 @@ func new_game() -> void:
 	mission_notice = ""
 	mission_notice_time = 0.0
 	level_fx_time = 0.0
+	wave_number = 0
+	wave_time_left = Rules.wave_interval(0)
+	wave_queued = false
 	ad_note = ""
 	board = Rules.empty_board()
 	# Lively opening: a four-ball group is one ball away from a 5-POP.
@@ -251,7 +258,9 @@ func _save_progress() -> void:
 		"revives": revives, "run_id": run_id,
 		"best_at_start": best_at_round_start,
 		"over_reported": game_over_reported,
-		"action_serial": action_serial
+		"action_serial": action_serial,
+		"wave_number":wave_number,
+		"wave_time_left":wave_time_left
 	})
 
 func _restore_progress(data: Dictionary) -> void:
@@ -267,6 +276,9 @@ func _restore_progress(data: Dictionary) -> void:
 	game_over_reported = bool(data.get("over_reported",phase=="over"))
 	action_serial = maxi(0,int(data.get("action_serial",0)))
 	action_id = ""
+	wave_number = maxi(0,int(data.get("wave_number",0)))
+	wave_time_left = clampf(float(data.get("wave_time_left",Rules.wave_interval(wave_number))),0.0,Rules.wave_interval(wave_number))
+	wave_queued = false
 	best = maxi(best,score)
 	display_score = float(score)
 	selected_piece = 0
@@ -323,6 +335,12 @@ func _process(delta: float) -> void:
 	mission_notice_time = maxf(0.0,mission_notice_time-delta)
 	level_fx_time = maxf(0.0,level_fx_time-delta)
 	tap_time = maxf(0.0,tap_time-delta)
+	# No countdown during interactions, modal screens, or animated cascades.
+	if phase == "drop" and not settings_open and not profile_open and not wave_queued:
+		wave_time_left = maxf(0.0,wave_time_left-minf(delta,0.15))
+		if wave_time_left <= 0.0:
+			wave_queued = true
+			call_deferred("_trigger_pressure_wave")
 	if animating:
 		motion_time = minf(motion_duration,motion_time+delta)
 	pop_time = maxf(0.0,pop_time-delta)
@@ -560,6 +578,64 @@ func _rotate_board(clockwise: bool) -> void:
 	_flush_queued_input()
 	queue_redraw()
 
+func _trigger_pressure_wave() -> void:
+	wave_queued = false
+	if phase != "drop":
+		return
+	phase = "anim"
+	action_serial += 1
+	action_id = "action:%s:%d" % [run_id,action_serial]
+	wave_number += 1
+	var beads: int = Rules.wave_marble_count(wave_number)
+	wave_time_left = Rules.wave_interval(wave_number)
+	var wave: Dictionary = Rules.rise_wave(board,rng,beads)
+	if bool(wave.get("overflow",false)):
+		# An incoming row cannot silently delete occupied top cells.
+		lives -= 1
+		if feedback != null:
+			feedback.cue("fail")
+		telemetry.track("life_lost",{"run_id":run_id,"cause":"wave_overflow","wave":wave_number,"lives_left":lives})
+		_shock(BOARD.position+Vector2(BOARD.size.x*0.5,CELL*0.5),2.6,Color("#ff678f"))
+		if lives <= 0:
+			phase = "over"
+			_on_game_over()
+			_save_progress()
+			queue_redraw()
+			return
+		board = Rules.rescue(board)
+		wave = Rules.rise_wave(board,rng,beads)
+		if not bool(wave.get("valid",false)):
+			phase = "drop"
+			_save_progress()
+			return
+	if feedback != null:
+		feedback.cue("rotate")
+	_shock(BOARD.get_center(),1.6,Color("#ffae83"))
+	await _animate_to(wave.board,wave.motions,0.45,"wave")
+	var rock_added: bool = false
+	if wave_number % 2 == 0:
+		var rock: Dictionary = Rules.spawn_rock(board,rng)
+		if bool(rock.get("spawned",false)):
+			board = rock.board
+			rock_added = true
+			_shock(BOARD.position+(Vector2(rock.cell)+Vector2(0.5,0.5))*CELL,1.4,Color("#ffe0a7"))
+	telemetry.track("pressure_wave",{
+		"run_id":run_id,"wave":wave_number,"marbles":beads,
+		"rock_added":rock_added,"next_interval":wave_time_left
+	})
+	chain_depth = 0
+	await _resolve_cascades()
+	phase = "drop"
+	_check_ceiling()
+	if phase == "drop":
+		_refresh_targets()
+		_check_stuck()
+	if phase == "over":
+		_on_game_over()
+	_save_progress()
+	_flush_queued_input()
+	queue_redraw()
+
 func _flush_queued_input() -> void:
 	var action: String = queued_action
 	var column: int = queued_column
@@ -731,7 +807,17 @@ func _resolve_cascades(fluid: bool=false) -> void:
 			_float_score(group_center,Rules.group_points(int(group["count"]))*chain_depth,chain_depth)
 		centroid /= float(hits.size())
 		_shock(centroid,minf(4.5,1.15+float(chain_depth)*0.7+float(hits.size())*0.12),main_color)
-		board = Rules.erase_matches(board,hits)
+		var rocks: Dictionary = Rules.damage_rocks(board,hits)
+		board = Rules.erase_matches(rocks.board,hits)
+		for cracked_cell in rocks.cracked:
+			_burst(cracked_cell,8)
+			_shock(BOARD.position+(Vector2(cracked_cell)+Vector2(0.5,0.5))*CELL,
+				0.7,Color("#fcdbaa"))
+		if not rocks.cracked.is_empty():
+			telemetry.track("rock_cracked",{
+				"run_id":run_id,"hit_count":rocks.cracked.size(),
+				"destroyed":rocks.destroyed.size(),"wave":wave_number
+			})
 		score += payout
 		progression.record_pop(action_id+":pop:"+str(chain_depth),
 			groups.size(),hits.size(),payout,chain_depth)
@@ -973,6 +1059,7 @@ func _draw() -> void:
 	_draw_particles()
 	draw_set_transform(_offset(),0,Vector2.ONE*_scale())
 	_draw_status()
+	_draw_wave_timer()
 	_draw_pieces()
 	_draw_buttons()
 	_draw_drag_overlay()
@@ -1054,6 +1141,31 @@ func _motion_position(item: Dictionary, progress: float) -> Vector2:
 			return bead
 	return source.lerp(destination,progress)
 
+func _draw_rock(center: Vector2, stone: int, alpha: float = 1.0) -> void:
+	var hp: int = clampi(stone-Rules.ROCK_MIN+1,1,3)
+	var rim: Color = Color("#e2b879") if hp == 1 else Color("#a8a5bc")
+	draw_circle(center,38.0,Color(0.03,0.06,0.14,0.6*alpha))
+	_box(Rect2(center-Vector2(32,32),Vector2(64,64)),
+		Color(0.16,0.18,0.26,alpha),13,Color(rim.r,rim.g,rim.b,alpha),3)
+	draw_colored_polygon(PackedVector2Array([
+		center+Vector2(-24,-22),center+Vector2(15,-27),
+		center+Vector2(27,-11),center+Vector2(11,14),
+		center+Vector2(-21,19),center+Vector2(-28,2)
+	]),Color(0.35,0.38,0.47,0.65*alpha))
+	draw_line(center+Vector2(-22,-13),center+Vector2(10,-21),
+		Color(0.78,0.81,0.91,0.68*alpha),2.4,true)
+	if hp <= 2:
+		draw_line(center+Vector2(-8,-17),center+Vector2(9,1),
+			Color(0.04,0.07,0.14,0.94*alpha),3.6,true)
+		draw_line(center+Vector2(9,1),center+Vector2(-3,23),
+			Color(0.04,0.07,0.14,0.94*alpha),3.4,true)
+	if hp == 1:
+		draw_line(center+Vector2(9,1),center+Vector2(24,-8),
+			Color(0.04,0.07,0.14,0.94*alpha),3.6,true)
+	for n in range(3):
+		var pos: Vector2 = center+Vector2(-16+float(n)*16,25)
+		draw_circle(pos,4.3,Color("#ffdc94",alpha) if n < hp else Color(0.05,0.07,0.14,0.86*alpha))
+
 func _draw_board() -> void:
 	# Cabinet-depth border, four illuminated corners, and a living light rail.
 	draw_circle(BOARD.get_center(),430.0,Color("#7c46fd",0.065+glow*0.07))
@@ -1096,7 +1208,9 @@ func _draw_board() -> void:
 			draw_circle(center,25.0,Color("#050c21",0.58))
 			draw_arc(center,25.0,PI*0.05,PI*0.92,16,Color("#8ca7f5",0.10),1.3,true)
 			var occupied: bool = board[y][x] != Rules.EMPTY
-			if occupied and not hidden.has(y*8+x):
+			if occupied and not hidden.has(y*8+x) and Rules.is_rock(int(board[y][x])):
+				_draw_rock(center,int(board[y][x]))
+			elif occupied and not hidden.has(y*8+x):
 				var is_pop: bool = Vector2i(x,y) in flash
 				if is_pop and pop_time > 0.0:
 					var progress: float = 1.0-pop_time/pop_length
@@ -1126,6 +1240,9 @@ func _draw_board() -> void:
 		for m in motion:
 			var at: Vector2 = _motion_position(m,factor)
 			var center: Vector2 = BOARD.position+(at+Vector2(0.5,0.5))*CELL
+			if Rules.is_rock(int(m["color"])):
+				_draw_rock(center,int(m["color"]))
+				continue
 			var tint: Color = COLORS[int(m["color"])]
 			# Moving marbles leave a chromatic comet trail, especially when rolling.
 			var trails: int = 5 if motion_kind=="roll" else 3
@@ -1258,6 +1375,22 @@ func _draw_status() -> void:
 
 
 # Shared layout / gameplay mapping so mouse, drag and ghost cannot disagree.
+func _draw_wave_timer() -> void:
+	# Narrow cabinet-edge display: always in view, never blocks a touch target.
+	if phase == "over":
+		return
+	var warning: bool = wave_time_left <= 5.0
+	var accent: Color = Color("#ff7891") if warning else Color("#ffcb93")
+	var glow_power: float = 0.58+0.34*sin(clock*10.0) if warning else 0.90
+	_box(Rect2(230,253,260,23),Color("#0a1025",0.94),11,
+		Color(accent.r,accent.g,accent.b,0.73*glow_power),1)
+	var current: float = Rules.wave_interval(wave_number)
+	var fraction: float = clampf(wave_time_left/current,0.0,1.0)
+	_box(Rect2(235,271,250.0*fraction,3),accent,2)
+	var text_value: String = ("FALA" if language == "pl" else "WAVE")
+	text_value += " %02d  •  %02ds" % [wave_number+1,int(ceil(wave_time_left))]
+	_fit_center(text_value,360,270,16,247,Color("#fff6ec") if warning else Color("#f5dfc9"))
+
 func _piece_card_rect(index: int) -> Rect2:
 	return Rect2(35+index*219,1042,207,71)
 

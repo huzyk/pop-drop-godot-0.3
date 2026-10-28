@@ -51,7 +51,7 @@ static func valid(s: Dictionary) -> bool:
 		for bead in row:
 			if typeof(bead) != TYPE_FLOAT and typeof(bead) != TYPE_INT:
 				return false
-			if int(bead) < -1 or int(bead) > 2 or float(bead) != float(int(bead)):
+			if int(bead) < -1 or int(bead) > 5 or float(bead) != float(int(bead)):
 				return false
 	if not (tray is Array) or tray.size() != 3:
 		return false
@@ -78,4 +78,16 @@ static func valid(s: Dictionary) -> bool:
 		return false
 	if str(s.get("phase", "")) not in ["drop", "over"]:
 		return false
+	# Fields absent in legacy 0.6 checkpoints use safe starting defaults.
+	if "wave_number" in s:
+		if typeof(s["wave_number"]) not in [TYPE_INT,TYPE_FLOAT]:
+			return false
+		if int(s["wave_number"]) < 0 or int(s["wave_number"]) > 1000000:
+			return false
+	if "wave_time_left" in s:
+		if typeof(s["wave_time_left"]) not in [TYPE_INT,TYPE_FLOAT]:
+			return false
+		var remaining: float = float(s["wave_time_left"])
+		if not is_finite(remaining) or remaining < 0.0 or remaining > 45.0:
+			return false
 	return true

@@ -4,6 +4,98 @@ const SIZE := 8
 const EMPTY := -1
 const COLOR_COUNT := 3
 const POP_THRESHOLD := 5
+# Rock durability encoded as cells: 5=3 hits, 4=2 hits, 3=1 hit.
+const ROCK_MIN := 3
+const ROCK_MAX := 5
+const MAX_ROCKS := 3
+
+static func is_rock(cell: int) -> bool:
+	return cell >= ROCK_MIN and cell <= ROCK_MAX
+
+static func is_marble(cell: int) -> bool:
+	return cell >= 0 and cell < COLOR_COUNT
+
+static func wave_interval(waves_completed: int) -> float:
+	# Waves get farther apart, while each successive row is more dangerous.
+	return float(mini(39, 15 + maxi(0, waves_completed) * 4))
+
+static func wave_marble_count(wave_number: int) -> int:
+	if wave_number < 4:
+		return 6
+	if wave_number < 8:
+		return 7
+	return 8
+
+static func rock_count(board: Array) -> int:
+	var count: int = 0
+	for row in board:
+		for cell in row:
+			if is_rock(int(cell)):
+				count += 1
+	return count
+
+static func spawn_rock(board: Array, rng: RandomNumberGenerator) -> Dictionary:
+	var result: Array = copy_board(board)
+	if rock_count(result) >= MAX_ROCKS:
+		return {"board":result,"spawned":false}
+	var spots: Array = []
+	for y in range(3,7):
+		for x in range(SIZE):
+			if int(result[y][x]) == EMPTY:
+				spots.append(Vector2i(x,y))
+	if spots.is_empty():
+		return {"board":result,"spawned":false}
+	var where: Vector2i = spots[rng.randi_range(0,spots.size()-1)]
+	result[where.y][where.x] = ROCK_MAX
+	return {"board":result,"spawned":true,"cell":where}
+
+static func rise_wave(board: Array, rng: RandomNumberGenerator, marble_count: int) -> Dictionary:
+	# Never silently discard a filled top row; report overflow to game logic.
+	for cell in board[0]:
+		if int(cell) != EMPTY:
+			return {"valid":false,"overflow":true,"board":copy_board(board),"motions":[]}
+	var result: Array = empty_board()
+	var motions: Array = []
+	for y in range(1,SIZE):
+		for x in range(SIZE):
+			var cell: int = int(board[y][x])
+			result[y-1][x] = cell
+			if cell != EMPTY:
+				motions.append({"from":Vector2(x,y),"to":Vector2(x,y-1),"color":cell})
+	var columns: Array = range(SIZE)
+	for i in range(SIZE-1,0,-1):
+		var index: int = rng.randi_range(0,i)
+		var tmp: int = int(columns[i])
+		columns[i] = columns[index]
+		columns[index] = tmp
+	for i in range(clampi(marble_count,0,SIZE)):
+		var x: int = int(columns[i])
+		var color: int = rng.randi_range(0,COLOR_COUNT-1)
+		result[SIZE-1][x] = color
+		motions.append({"from":Vector2(x,SIZE),"to":Vector2(x,SIZE-1),"color":color})
+	return {"valid":true,"overflow":false,"board":result,"motions":motions}
+
+static func damage_rocks(board: Array, popped: Array) -> Dictionary:
+	# One adjacent POP stage = one hit, even if many balls touch the rock.
+	var result: Array = copy_board(board)
+	var affected: Dictionary = {}
+	for position in popped:
+		for direction in [Vector2i.UP,Vector2i.DOWN,Vector2i.LEFT,Vector2i.RIGHT]:
+			var xy: Vector2i = position + direction
+			if xy.x >= 0 and xy.x < SIZE and xy.y >= 0 and xy.y < SIZE:
+				if is_rock(int(result[xy.y][xy.x])):
+					affected[xy.y*SIZE+xy.x] = xy
+	var cracked: Array = []
+	var destroyed: Array = []
+	for point in affected.values():
+		var health: int = int(result[point.y][point.x])
+		result[point.y][point.x] = EMPTY if health == ROCK_MIN else health-1
+		cracked.append(point)
+		if health == ROCK_MIN:
+			destroyed.append(point)
+	return {"board":result,"cracked":cracked,"destroyed":destroyed}
+
+
 
 const SHAPES_BY_SIZE := [
 	# Twelve recognisable silhouettes. The Z and S are intentionally separate.
@@ -79,7 +171,7 @@ static func find_groups(board: Array, minimum: int = POP_THRESHOLD) -> Array:
 	for y in range(SIZE):
 		for x in range(SIZE):
 			var color: int = board[y][x]
-			if color == EMPTY or visited.has(y * SIZE + x):
+			if not is_marble(color) or visited.has(y * SIZE + x):
 				continue
 			var group: Array = []
 			var queue: Array = [Vector2i(x,y)]
@@ -140,7 +232,8 @@ static func resolve_preview(board: Array, fluid: bool = false, clockwise: bool =
 		for group in groups:
 			hits.append_array(group["cells"])
 		popped += hits.size()
-		after = settle(erase_matches(after,hits)).board
+		var damaged: Dictionary = damage_rocks(after,hits)
+		after = settle(erase_matches(damaged.board,hits)).board
 		if fluid:
 			after = spill_after_rotation(after,clockwise).board
 	return {"score":total,"removed":popped,"chains":cascades,"board":after}
@@ -186,8 +279,13 @@ static func settle(board: Array) -> Dictionary:
 	for x in range(SIZE):
 		var target_y: int = SIZE - 1
 		for y in range(SIZE - 1,-1,-1):
-			var color: int = board[y][x]
+			var color: int = int(board[y][x])
 			if color == EMPTY:
+				continue
+			if is_rock(color):
+				# An anchored stone separates independent falling segments.
+				result[y][x] = color
+				target_y = y-1
 				continue
 			result[target_y][x] = color
 			if y != target_y:
@@ -206,7 +304,7 @@ static func spill_after_rotation(board: Array, clockwise: bool) -> Dictionary:
 	var colors: Array = []
 	for y in range(SIZE):
 		for x in range(SIZE):
-			if result[y][x] == EMPTY:
+			if not is_marble(int(result[y][x])):
 				continue
 			identities[y][x] = paths.size()
 			paths.append([Vector2(x,y)])
@@ -219,7 +317,7 @@ static func spill_after_rotation(board: Array, clockwise: bool) -> Dictionary:
 		for y in range(SIZE-2,-1,-1):
 			for order in range(SIZE):
 				var x: int = order if (clockwise == (pass_index%2==0)) else SIZE-1-order
-				if result[y][x] == EMPTY:
+				if not is_marble(int(result[y][x])):
 					continue
 				var destination: Vector2i = Vector2i(-1,-1)
 				if result[y+1][x] == EMPTY:
@@ -263,12 +361,13 @@ static func drop(board: Array, piece: Array, left_col: int) -> Dictionary:
 		var x: int = left_col + int(bead[0])
 		if x < 0 or x >= SIZE:
 			return {"valid":false}
-		var landing: int = -1
-		for y in range(SIZE - 1,-1,-1):
-			if result[y][x] == EMPTY:
-				landing = y
+		# Drop from above; cannot fall through an anchored rock.
+		var landing: int = SIZE-1
+		for y in range(SIZE):
+			if result[y][x] != EMPTY:
+				landing = y-1
 				break
-		if landing == -1:
+		if landing < 0:
 			return {"valid":false}
 		var color: int = int(bead[2])
 		result[landing][x] = color

@@ -33,6 +33,8 @@ jobs:
         run: godot --headless --path . --script res://tests/test_gravity_ads.gd
       - name: Test daily missions and cosmetics
         run: godot --headless --path . --script res://tests/test_gravity_progression.gd
+      - name: Test pressure waves and unbreakable rock physics
+        run: timeout 40s godot --headless --path . --script res://tests/test_gravity_pressure.gd
       - name: Test audio and haptics
         run: timeout 40s godot --headless --path . --script res://tests/test_gravity_feedback.gd
       - name: Smoke test actual main scene (including audio)
