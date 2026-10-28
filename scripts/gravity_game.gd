@@ -1014,7 +1014,9 @@ func _draw_drag_overlay() -> void:
 	var allowed: bool = false
 	if drag_column>=0:
 		allowed = bool(Rules.drop(board,item,drag_column).get("valid",false))
-	var tint: Color = Color("#9fffe9") if allowed else Color("#ff9cb8") if drag_column>=0 else Color("#a2b7ff")
+	var tint: Color = Color("#a2b7ff")
+	if drag_column>=0:
+		tint = Color("#9fffe9") if allowed else Color("#ff9cb8")
 	var halo_rect: Rect2 = Rect2(origin-Vector2(12,12),Vector2(width+24,height+24))
 	_box(halo_rect,Color("#080c22",0.48),26,Color(tint.r,tint.g,tint.b,0.22),2)
 	# Gentle links between touching beads preserve the selected silhouette.
