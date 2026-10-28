@@ -10,13 +10,13 @@ const COLORS := [Color("#ff7096"),Color("#55dcad"),Color("#62b5ff")]
 const SAVE_FILE := "user://pop_drop_gravity.json"
 const LOCALES := ["pl","en","es","pt","de","fr","ru"]
 const TR := {
-	"pl":{"life":"ŻYCIA","tap_short":"DOTKNIJ KOLUMNY","score":"WYNIK","best":"REKORD","move":"RUCH","drop":"DOTKNIJ KOLUMNĘ, ABY ZRZUCIĆ","turn":"OBRÓĆ PLANSZĘ LUB GRAJ DALEJ","left":"W LEWO","right":"W PRAWO","skip":"DALEJ","next":"NASTĘPNE","ready":"5 KULEK POŁĄCZONYCH BOKAMI = POP  •  GÓRA = -1 ŻYCIE","over":"KONIEC RUNDY","again":"ZAGRAJ PONOWNIE","rescue":"TEST: +1 ŻYCIE","lost":"STRATA ŻYCIA","rotate_controls":"OBRACAJ PRZYCISKAMI PONIŻEJ","rotate_help":"SPRÓBUJ OBRÓCIĆ PLANSZĘ","charge":"GRUPA","danger":"WYSOKOŚĆ","danger_soon":"UWAGA: GÓRNA LINIA!","overflow":"UTRATA ŻYCIA!","hint":"Wybierz kolumnę dla spadającego kształtu"},
-	"en":{"life":"LIVES","tap_short":"TAP A COLUMN","score":"SCORE","best":"BEST","move":"MOVE","drop":"TAP A COLUMN TO DROP","turn":"ROTATE OR KEEP GOING","left":"LEFT","right":"RIGHT","skip":"NEXT","next":"UP NEXT","ready":"5 TOUCHING BALLS = POP  •  TOP = -1 LIFE","over":"GAME OVER","again":"PLAY AGAIN","rescue":"TEST: +1 LIFE","lost":"LIFE LOST","rotate_controls":"ROTATE WITH THE BUTTONS BELOW","rotate_help":"ROTATE TO MAKE ROOM","charge":"GROUP","danger":"HEIGHT","danger_soon":"CAREFUL: TOP ROW!","overflow":"LIFE LOST!","hint":"Choose a column for the falling piece"},
-	"es":{"life":"VIDAS","tap_short":"TOCA COLUMNA","score":"PUNTOS","best":"RÉCORD","move":"JUGADA","drop":"TOCA UNA COLUMNA PARA SOLTAR","turn":"GIRA O CONTINÚA","left":"IZQUIERDA","right":"DERECHA","skip":"SEGUIR","next":"SIGUIENTES","ready":"5 BOLAS CONECTADAS = POP  •  ARRIBA = -1 VIDA","over":"FIN DEL JUEGO","again":"JUGAR OTRA VEZ","rescue":"PRUEBA: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USA LOS BOTONES PARA GIRAR","rotate_help":"GIRA PARA HACER ESPACIO","charge":"GRUPO","danger":"ALTURA","danger_soon":"¡FILA SUPERIOR!","overflow":"¡VIDA PERDIDA!","hint":"Elige una columna para las bolas"},
-	"pt":{"life":"VIDAS","tap_short":"TOQUE A COLUNA","score":"PONTOS","best":"RECORDE","move":"JOGADA","drop":"TOQUE NA COLUNA PARA SOLTAR","turn":"GIRE OU CONTINUE","left":"ESQUERDA","right":"DIREITA","skip":"SEGUIR","next":"PRÓXIMAS","ready":"5 BOLAS CONECTADAS = POP  •  TOPO = -1 VIDA","over":"FIM DE JOGO","again":"JOGAR DE NOVO","rescue":"TESTE: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USE OS BOTÕES PARA GIRAR","rotate_help":"GIRE PARA ABRIR ESPAÇO","charge":"GRUPO","danger":"ALTURA","danger_soon":"CUIDADO: TOPO!","overflow":"VIDA PERDIDA!","hint":"Escolha uma coluna para jogar"},
-	"de":{"life":"LEBEN","tap_short":"SPALTE TIPPEN","score":"PUNKTE","best":"REKORD","move":"ZUG","drop":"SPALTE ANTIPPEN ZUM FALLEN","turn":"DREHEN ODER WEITER","left":"LINKS","right":"RECHTS","skip":"WEITER","next":"ALS NÄCHSTES","ready":"5 VERBUNDENE KUGELN = POP  •  OBEN = -1 LEBEN","over":"SPIEL VORBEI","again":"NOCHMAL SPIELEN","rescue":"TEST: +1 LEBEN","lost":"LEBEN VERLOREN","rotate_controls":"MIT DEN TASTEN UNTEN DREHEN","rotate_help":"DREHE FÜR MEHR PLATZ","charge":"GRUPPE","danger":"HÖHE","danger_soon":"ACHTUNG: OBERSTE REIHE!","overflow":"LEBEN VERLOREN!","hint":"Wähle eine Spalte zum Einwerfen"},
-	"fr":{"life":"VIES","tap_short":"TOUCHE COLONNE","score":"SCORE","best":"RECORD","move":"COUP","drop":"TOUCHE UNE COLONNE POUR LÂCHER","turn":"TOURNE OU CONTINUE","left":"GAUCHE","right":"DROITE","skip":"SUITE","next":"À SUIVRE","ready":"5 BILLES CONNECTÉES = POP  •  HAUT = -1 VIE","over":"PARTIE FINIE","again":"REJOUER","rescue":"TEST : +1 VIE","lost":"VIE PERDUE","rotate_controls":"TOURNE AVEC LES BOUTONS","rotate_help":"TOURNE POUR LIBÉRER DE LA PLACE","charge":"GROUPE","danger":"HAUTEUR","danger_soon":"ATTENTION AU SOMMET!","overflow":"VIE PERDUE!","hint":"Choisis une colonne pour les billes"},
-	"ru":{"life":"ЖИЗНИ","tap_short":"ВЫБЕРИ СТОЛБЕЦ","score":"ОЧКИ","best":"РЕКОРД","move":"ХОД","drop":"НАЖМИ СТОЛБЕЦ ДЛЯ СБРОСА","turn":"ПОВЕРНИ ИЛИ ПРОДОЛЖИ","left":"ВЛЕВО","right":"ВПРАВО","skip":"ДАЛЕЕ","next":"СЛЕДУЮЩИЕ","ready":"5 СОЕДИНЁННЫХ ШАРОВ = POP  •  ВЕРХ = -1 ЖИЗНЬ","over":"ИГРА ОКОНЧЕНА","again":"ИГРАТЬ СНОВА","rescue":"ТЕСТ: +1 ЖИЗНЬ","lost":"МИНУС ЖИЗНЬ","rotate_controls":"ПОВОРОТ КНОПКАМИ ВНИЗУ","rotate_help":"ПОВЕРНИ, ЧТОБЫ ОСВОБОДИТЬ МЕСТО","charge":"ГРУППА","danger":"ВЫСОТА","danger_soon":"ВНИМАНИЕ: ВЕРХ!","overflow":"МИНУС ЖИЗНЬ!","hint":"Выбери столбец для шариков"}
+	"pl":{"life":"ŻYCIA","tap_short":"DOTKNIJ KOLUMNY","score":"WYNIK","best":"REKORD","move":"RUCH","drop":"DOTKNIJ KOLUMNĘ, ABY ZRZUCIĆ","turn":"OBRÓĆ PLANSZĘ LUB GRAJ DALEJ","left":"W LEWO","right":"W PRAWO","skip":"DALEJ","next":"WYBIERZ KSZTAŁT","ready":"5 KULEK POŁĄCZONYCH BOKAMI = POP  •  GÓRA = -1 ŻYCIE","over":"KONIEC RUNDY","again":"ZAGRAJ PONOWNIE","rescue":"TEST: +1 ŻYCIE","lost":"STRATA ŻYCIA","rotate_controls":"OBRACAJ PRZYCISKAMI PONIŻEJ","rotate_help":"SPRÓBUJ OBRÓCIĆ PLANSZĘ","charge":"GRUPA","danger":"WYSOKOŚĆ","danger_soon":"UWAGA: GÓRNA LINIA!","overflow":"UTRATA ŻYCIA!","hint":"Wybierz kolumnę dla spadającego kształtu"},
+	"en":{"life":"LIVES","tap_short":"TAP A COLUMN","score":"SCORE","best":"BEST","move":"MOVE","drop":"TAP A COLUMN TO DROP","turn":"ROTATE OR KEEP GOING","left":"LEFT","right":"RIGHT","skip":"NEXT","next":"CHOOSE A SHAPE","ready":"5 TOUCHING BALLS = POP  •  TOP = -1 LIFE","over":"GAME OVER","again":"PLAY AGAIN","rescue":"TEST: +1 LIFE","lost":"LIFE LOST","rotate_controls":"ROTATE WITH THE BUTTONS BELOW","rotate_help":"ROTATE TO MAKE ROOM","charge":"GROUP","danger":"HEIGHT","danger_soon":"CAREFUL: TOP ROW!","overflow":"LIFE LOST!","hint":"Choose a column for the falling piece"},
+	"es":{"life":"VIDAS","tap_short":"TOCA COLUMNA","score":"PUNTOS","best":"RÉCORD","move":"JUGADA","drop":"TOCA UNA COLUMNA PARA SOLTAR","turn":"GIRA O CONTINÚA","left":"IZQUIERDA","right":"DERECHA","skip":"SEGUIR","next":"ELIGE UNA FIGURA","ready":"5 BOLAS CONECTADAS = POP  •  ARRIBA = -1 VIDA","over":"FIN DEL JUEGO","again":"JUGAR OTRA VEZ","rescue":"PRUEBA: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USA LOS BOTONES PARA GIRAR","rotate_help":"GIRA PARA HACER ESPACIO","charge":"GRUPO","danger":"ALTURA","danger_soon":"¡FILA SUPERIOR!","overflow":"¡VIDA PERDIDA!","hint":"Elige una columna para las bolas"},
+	"pt":{"life":"VIDAS","tap_short":"TOQUE A COLUNA","score":"PONTOS","best":"RECORDE","move":"JOGADA","drop":"TOQUE NA COLUNA PARA SOLTAR","turn":"GIRE OU CONTINUE","left":"ESQUERDA","right":"DIREITA","skip":"SEGUIR","next":"ESCOLHA UMA PEÇA","ready":"5 BOLAS CONECTADAS = POP  •  TOPO = -1 VIDA","over":"FIM DE JOGO","again":"JOGAR DE NOVO","rescue":"TESTE: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USE OS BOTÕES PARA GIRAR","rotate_help":"GIRE PARA ABRIR ESPAÇO","charge":"GRUPO","danger":"ALTURA","danger_soon":"CUIDADO: TOPO!","overflow":"VIDA PERDIDA!","hint":"Escolha uma coluna para jogar"},
+	"de":{"life":"LEBEN","tap_short":"SPALTE TIPPEN","score":"PUNKTE","best":"REKORD","move":"ZUG","drop":"SPALTE ANTIPPEN ZUM FALLEN","turn":"DREHEN ODER WEITER","left":"LINKS","right":"RECHTS","skip":"WEITER","next":"FORM WÄHLEN","ready":"5 VERBUNDENE KUGELN = POP  •  OBEN = -1 LEBEN","over":"SPIEL VORBEI","again":"NOCHMAL SPIELEN","rescue":"TEST: +1 LEBEN","lost":"LEBEN VERLOREN","rotate_controls":"MIT DEN TASTEN UNTEN DREHEN","rotate_help":"DREHE FÜR MEHR PLATZ","charge":"GRUPPE","danger":"HÖHE","danger_soon":"ACHTUNG: OBERSTE REIHE!","overflow":"LEBEN VERLOREN!","hint":"Wähle eine Spalte zum Einwerfen"},
+	"fr":{"life":"VIES","tap_short":"TOUCHE COLONNE","score":"SCORE","best":"RECORD","move":"COUP","drop":"TOUCHE UNE COLONNE POUR LÂCHER","turn":"TOURNE OU CONTINUE","left":"GAUCHE","right":"DROITE","skip":"SUITE","next":"CHOISIS UNE FORME","ready":"5 BILLES CONNECTÉES = POP  •  HAUT = -1 VIE","over":"PARTIE FINIE","again":"REJOUER","rescue":"TEST : +1 VIE","lost":"VIE PERDUE","rotate_controls":"TOURNE AVEC LES BOUTONS","rotate_help":"TOURNE POUR LIBÉRER DE LA PLACE","charge":"GROUPE","danger":"HAUTEUR","danger_soon":"ATTENTION AU SOMMET!","overflow":"VIE PERDUE!","hint":"Choisis une colonne pour les billes"},
+	"ru":{"life":"ЖИЗНИ","tap_short":"ВЫБЕРИ СТОЛБЕЦ","score":"ОЧКИ","best":"РЕКОРД","move":"ХОД","drop":"НАЖМИ СТОЛБЕЦ ДЛЯ СБРОСА","turn":"ПОВЕРНИ ИЛИ ПРОДОЛЖИ","left":"ВЛЕВО","right":"ВПРАВО","skip":"ДАЛЕЕ","next":"ВЫБЕРИ ФИГУРУ","ready":"5 СОЕДИНЁННЫХ ШАРОВ = POP  •  ВЕРХ = -1 ЖИЗНЬ","over":"ИГРА ОКОНЧЕНА","again":"ИГРАТЬ СНОВА","rescue":"ТЕСТ: +1 ЖИЗНЬ","lost":"МИНУС ЖИЗНЬ","rotate_controls":"ПОВОРОТ КНОПКАМИ ВНИЗУ","rotate_help":"ПОВЕРНИ, ЧТОБЫ ОСВОБОДИТЬ МЕСТО","charge":"ГРУППА","danger":"ВЫСОТА","danger_soon":"ВНИМАНИЕ: ВЕРХ!","overflow":"МИНУС ЖИЗНЬ!","hint":"Выбери столбец для шариков"}
 }
 const LEFT_RECT := Rect2(35,1123,285,92)
 const RIGHT_RECT := Rect2(400,1123,285,92)
@@ -36,6 +36,11 @@ var lives: int = 3
 var revives: int = 0
 var chain_depth: int = 0
 var hover_column: int = -1
+var selected_piece: int = 0
+var dragging_piece: bool = false
+var drag_point: Vector2 = Vector2.ZERO
+var drag_column: int = -1
+var queued_piece_index: int = 0
 var motion: Array = []
 var motion_time: float = 0.0
 var motion_duration: float = 1.0
@@ -118,6 +123,11 @@ func new_game() -> void:
 	display_score = 0.0
 	queued_action = ""
 	queued_column = -1
+	queued_piece_index = 0
+	selected_piece = 0
+	dragging_piece = false
+	drag_column = -1
+	hover_column = -1
 	animating = false
 	phase = "drop"
 	for i in range(3):
@@ -177,37 +187,55 @@ func _offset() -> Vector2:
 func _logical(screen: Vector2) -> Vector2:
 	return (screen-_offset())/_scale()
 
+
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
-		var pt: Vector2 = _logical(event.position)
-		hover_column = -1
-		if BOARD.has_point(pt):
-			hover_column = int((pt.x-BOARD.position.x)/CELL)
+		var pointer: Vector2 = _logical(event.position)
+		if dragging_piece:
+			drag_point = pointer
+			drag_column = _drop_column_at(pointer)
+			hover_column = drag_column
+		else:
+			hover_column = _drop_column_at(pointer) if phase=="drop" else -1
 		queue_redraw()
-	if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed):
+		return
+	if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT):
 		return
 	var pt: Vector2 = _logical(event.position)
+	# A release, not a press, commits a dragged shape. Cancelling outside
+	# the board never consumes it, and tapping a preview card only selects it.
+	if not event.pressed:
+		if dragging_piece:
+			var landing_column: int = _drop_column_at(pt)
+			dragging_piece = false
+			drag_column = -1
+			hover_column = -1
+			if phase=="drop" and landing_column>=0:
+				_play_drop(landing_column)
+			queue_redraw()
+		return
 	tap_point = pt
 	tap_time = 0.42
-	if phase == "anim":
-		# Buffer one action instead of making rapid taps feel unresponsive.
+	if phase=="anim":
 		if LEFT_RECT.has_point(pt):
 			queued_action = "left"
 		elif RIGHT_RECT.has_point(pt):
 			queued_action = "right"
 		elif BOARD.has_point(pt):
 			queued_action = "drop"
-			queued_column = int((pt.x-BOARD.position.x)/CELL)
+			queued_column = _drop_column_at(pt)
+			queued_piece_index = selected_piece
 		return
-	if phase == "over":
+	if phase=="over":
 		if RESTART_RECT.has_point(pt):
 			new_game()
 		elif RESCUE_RECT.has_point(pt):
-			revives += 1 # Explicit test reward, NOT an ad callback.
+			revives += 1
 			lives = 1
 			board = Rules.rescue(board)
 			pieces[0] = Rules.next_piece(rng,board,recent_shapes)
 			_remember_shape(pieces[0])
+			selected_piece = 0
 			phase = "drop"
 			_refresh_targets()
 			_praise("+1 ♥",Color("#ff9bb7"),1.2)
@@ -219,19 +247,34 @@ func _gui_input(event: InputEvent) -> void:
 		_save()
 		queue_redraw()
 		return
-	if phase != "drop":
+	if phase!="drop":
 		return
 	if LEFT_RECT.has_point(pt):
 		_rotate_board(false)
-	elif RIGHT_RECT.has_point(pt):
-		_rotate_board(true)
-	elif BOARD.has_point(pt):
-		_play_drop(int((pt.x-BOARD.position.x)/CELL))
-
-func _play_drop(column: int) -> void:
-	if phase != "drop":
 		return
-	var result: Dictionary = Rules.drop(board,pieces[0],column)
+	if RIGHT_RECT.has_point(pt):
+		_rotate_board(true)
+		return
+	for i in range(pieces.size()):
+		if _piece_card_rect(i).has_point(pt):
+			selected_piece = i
+			dragging_piece = true
+			drag_point = pt
+			drag_column = -1
+			hover_column = -1
+			queue_redraw()
+			return
+	if BOARD.has_point(pt):
+		dragging_piece = true
+		drag_point = pt
+		drag_column = _drop_column_at(pt)
+		hover_column = drag_column
+		queue_redraw()
+func _play_drop(column: int) -> void:
+	if phase != "drop" or pieces.is_empty():
+		return
+	var used_index: int = clampi(selected_piece,0,pieces.size()-1)
+	var result: Dictionary = Rules.drop(board,pieces[used_index],column)
 	if not result.get("valid",false):
 		_praise(t("hint"),Color("#ff8ba8"),0.8)
 		return
@@ -243,7 +286,7 @@ func _play_drop(column: int) -> void:
 	# Resolve every resulting cascade BEFORE checking overflow or advancing.
 	await _resolve_cascades()
 	# No Next button: the next shape is ready immediately after this drop.
-	_advance_piece()
+	_advance_piece(used_index)
 	phase = "drop"
 	_check_ceiling()
 	if phase == "drop":
@@ -278,6 +321,7 @@ func _rotate_board(clockwise: bool) -> void:
 func _flush_queued_input() -> void:
 	var action: String = queued_action
 	var column: int = queued_column
+	var piece_index: int = queued_piece_index
 	queued_action = ""
 	queued_column = -1
 	if phase != "drop":
@@ -287,6 +331,7 @@ func _flush_queued_input() -> void:
 	elif action == "right":
 		call_deferred("_rotate_board",true)
 	elif action == "drop" and column >= 0:
+		selected_piece = clampi(piece_index,0,pieces.size()-1)
 		call_deferred("_play_drop",column)
 
 func _refresh_targets() -> void:
@@ -304,15 +349,17 @@ func _remember_shape(piece: Array) -> void:
 	while recent_shapes.size() > 5:
 		recent_shapes.pop_front()
 
-func _advance_piece() -> void:
-	pieces.pop_front()
+
+func _advance_piece(used_index: int) -> void:
+	# The selected card disappears; other offered shapes stay available.
+	pieces.remove_at(used_index)
 	var next: Array = Rules.next_piece(rng,board,recent_shapes)
 	pieces.append(next)
 	_remember_shape(next)
+	selected_piece = 0
 
-func _could_recover_by_rotating(piece: Array) -> bool:
-	# A player may rotate without dropping. Do not take a life if
-	# there is still a viable path to place the currently offered piece.
+func _could_recover_by_rotating() -> bool:
+	# A blocked shape is not a loss when either of the other two can fit.
 	for clockwise in [false,true]:
 		var virtual: Array = Rules.copy_board(board)
 		for quarter in range(4):
@@ -320,10 +367,9 @@ func _could_recover_by_rotating(piece: Array) -> bool:
 			virtual = Rules.settle(virtual).board
 			virtual = Rules.spill_after_rotation(virtual,clockwise).board
 			virtual = Rules.resolve_preview(virtual,true,clockwise).board
-			if Rules.any_drop(virtual,piece):
+			if _any_piece_can_drop(virtual):
 				return true
 	return false
-
 func _check_ceiling() -> void:
 	# Reaching the clearly highlighted top row costs one life, even if there
 	# are other empty columns. Rotating can prevent the loss beforehand.
@@ -339,12 +385,18 @@ func _check_ceiling() -> void:
 		board = Rules.rescue(board)
 	queue_redraw()
 
+func _any_piece_can_drop(on_board: Array) -> bool:
+	for piece in pieces:
+		if Rules.any_drop(on_board,piece):
+			return true
+	return false
+
 func _check_stuck() -> void:
 	if phase != "drop" or pieces.is_empty():
 		return
-	if Rules.any_drop(board,pieces[0]):
+	if _any_piece_can_drop(board):
 		return
-	if _could_recover_by_rotating(pieces[0]):
+	if _could_recover_by_rotating():
 		_praise(t("rotate_help"),Color("#ffe49c"),1.1)
 		return
 	lives -= 1
@@ -355,9 +407,10 @@ func _check_stuck() -> void:
 		board = Rules.rescue(board)
 		pieces[0] = Rules.next_piece(rng,board,recent_shapes)
 		_remember_shape(pieces[0])
-		if not Rules.any_drop(board,pieces[0]):
+		if not _any_piece_can_drop(board):
 			# Let the next input recover the board; no recursive losses.
 			board = Rules.empty_board()
+		selected_piece = 0
 		_refresh_targets()
 	queue_redraw()
 
@@ -665,6 +718,7 @@ func _draw() -> void:
 	_draw_status()
 	_draw_pieces()
 	_draw_buttons()
+	_draw_drag_overlay()
 	_draw_tap_ripple()
 	if glow > 0.0:
 		draw_rect(Rect2(0,0,720,1280),Color(0.8,0.94,1.0,0.055*glow))
@@ -828,12 +882,25 @@ func _draw_board() -> void:
 				draw_arc(center,31.0+landing*9.0,0.0,TAU,32,
 					Color(1,1,1,0.27*(1.0-landing)),2.0,true)
 	elif phase=="drop" and hover_column>=0 and not pieces.is_empty():
-		var preview: Dictionary = Rules.drop(board,pieces[0],hover_column)
+		var option: Array = pieces[clampi(selected_piece,0,pieces.size()-1)]
+		var preview: Dictionary = Rules.drop(board,option,hover_column)
 		if preview.get("valid",false):
+			var x_start: float = BOARD.position.x+float(hover_column)*CELL
+			var span: Vector2i = _piece_span(option)
+			draw_rect(Rect2(x_start,BOARD.position.y,
+				float(span.x)*CELL,BOARD.size.y),Color("#7fffe3",0.045))
 			for m in preview.motions:
 				var pos: Vector2 = m["to"]
-				_ball(BOARD.position+(pos+Vector2(0.5,0.5))*CELL,
-					CELL*0.33,int(m["color"]),0.52)
+				var center: Vector2 = BOARD.position+(pos+Vector2(0.5,0.5))*CELL
+				var tint: Color = COLORS[int(m["color"])]
+				draw_circle(center,35.0,Color(tint.r,tint.g,tint.b,0.18))
+				draw_arc(center,32.0,0.0,TAU,48,
+					Color("#d7fff7",0.64+0.16*sin(clock*5.0)),2.8,true)
+				_ball(center,CELL*0.35,int(m["color"]),0.67)
+		else:
+			draw_rect(Rect2(BOARD.position.x+float(hover_column)*CELL,
+				BOARD.position.y,CELL,BOARD.size.y),
+				Color("#ff6e92",0.13))
 	var used: int = Rules.tallest_column(board)
 	var danger: Color = Color("#ff657e") if used >= 6 else Color("#e577a2")
 	var danger_alpha: float = 0.88+0.12*sin(clock*7.0) if used >= 6 else 0.42
@@ -914,37 +981,84 @@ func _draw_status() -> void:
 		draw_line(Vector2(539,1007),Vector2(659,1007),
 			Color("#ff819e",0.4+0.3*sin(clock*6.0)),2,true)
 
+
+# Shared layout / gameplay mapping so mouse, drag and ghost cannot disagree.
+func _piece_card_rect(index: int) -> Rect2:
+	return Rect2(35+index*219,1042,207,71)
+
+func _piece_span(piece: Array) -> Vector2i:
+	var largest: Vector2i = Vector2i.ZERO
+	for bead in piece:
+		largest.x = maxi(largest.x,int(bead[0]))
+		largest.y = maxi(largest.y,int(bead[1]))
+	return largest+Vector2i.ONE
+
+func _drop_column_at(pt: Vector2) -> int:
+	if not BOARD.has_point(pt) or pieces.is_empty():
+		return -1
+	var width: int = _piece_span(pieces[clampi(selected_piece,0,pieces.size()-1)]).x
+	var x: float = (pt.x-BOARD.position.x)/CELL
+	return clampi(int(floor(x-float(width)*0.5+0.5)),0,8-width)
+
+func _draw_drag_overlay() -> void:
+	if not dragging_piece or phase!="drop" or pieces.is_empty():
+		return
+	var item: Array = pieces[clampi(selected_piece,0,pieces.size()-1)]
+	var span: Vector2i = _piece_span(item)
+	var width: float = float(span.x)*CELL
+	var height: float = float(span.y)*CELL
+	# Lift the silhouette above the user's fingertip, never cover it.
+	var origin: Vector2 = drag_point-Vector2(width*0.5,145.0+height*0.5)
+	origin.x = clampf(origin.x,12.0,720.0-width-12.0)
+	origin.y = clampf(origin.y,18.0,1200.0-height)
+	var allowed: bool = false
+	if drag_column>=0:
+		allowed = bool(Rules.drop(board,item,drag_column).get("valid",false))
+	var tint: Color = Color("#9fffe9") if allowed else Color("#ff9cb8") if drag_column>=0 else Color("#a2b7ff")
+	var halo_rect: Rect2 = Rect2(origin-Vector2(12,12),Vector2(width+24,height+24))
+	_box(halo_rect,Color("#080c22",0.48),26,Color(tint.r,tint.g,tint.b,0.22),2)
+	# Gentle links between touching beads preserve the selected silhouette.
+	for bead in item:
+		var a: Vector2 = origin+(Vector2(float(bead[0]),float(bead[1]))+Vector2(0.5,0.5))*CELL
+		for peer in item:
+			if int(peer[0])==int(bead[0])+1 and int(peer[1])==int(bead[1]) or int(peer[0])==int(bead[0]) and int(peer[1])==int(bead[1])+1:
+				var b: Vector2 = origin+(Vector2(float(peer[0]),float(peer[1]))+Vector2(0.5,0.5))*CELL
+				draw_line(a,b,Color(tint.r,tint.g,tint.b,0.3),23,true)
+	for bead in item:
+		var center: Vector2 = origin+(Vector2(float(bead[0]),float(bead[1]))+Vector2(0.5,0.5))*CELL
+		draw_circle(center,34.0,Color(tint.r,tint.g,tint.b,0.11))
+		_ball(center,28.5,int(bead[2]),0.94)
+	if drag_column>=0 and not allowed:
+		_center("×",drag_point.x,drag_point.y-35.0,43,Color("#ff8caa"))
+
+
 func _draw_pieces() -> void:
-	_text(t("next"),Vector2(47,1033),16,Color("#e6dcff"))
-	for i in range(3):
-		var rect: Rect2 = Rect2(35+i*219,1042,207,71)
-		var active: bool = i==0
-		var accent: Color = Color("#a1fff1") if active else Color("#7388b7")
+	_text(t("next"),Vector2(47,1033),17,Color("#e6dcff"))
+	for i in range(pieces.size()):
+		var rect: Rect2 = _piece_card_rect(i)
+		var active: bool = selected_piece==i
+		var accent: Color = Color("#a1fff1") if active else Color("#8792c8")
 		_neon_panel(rect,accent,active)
 		if active:
-			draw_rect(Rect2(rect.position+Vector2(8,8),Vector2(5,rect.size.y-16)),
-				Color("#9af4e5"))
-			_spark(rect.position+Vector2(rect.size.x-17,16),4,
+			draw_rect(Rect2(rect.position+Vector2(8,8),Vector2(5,rect.size.y-16)),Color("#9af4e5"))
+			_spark(rect.position+Vector2(rect.size.x-17,16),5,
 				Color("#fff3bf"),0.4+0.4*sin(clock*3.0))
+		var piece: Array = pieces[i]
+		var span: Vector2i = _piece_span(piece)
+		var step: float = minf(29.0,minf(46.0/float(maxi(1,span.y-1)),
+			136.0/float(maxi(1,span.x-1))))
+		var radius: float = minf(16.0,step*0.45)
+		var left: float = rect.get_center().x+12.0-float(span.x-1)*step*0.5
+		var top: float = rect.get_center().y-float(span.y-1)*step*0.5
 		_fit_center("%02d" % (i+1),rect.position.x+23,
 			rect.position.y+27,16,35,
 			Color("#d7fff5") if active else Color("#9ba9cc"))
-		if i>=pieces.size():
-			continue
-		var piece: Array = pieces[i]
-		var max_x: int = 0
-		var max_y: int = 0
 		for bead in piece:
-			max_x = maxi(max_x,int(bead[0]))
-			max_y = maxi(max_y,int(bead[1]))
-		var step: float = minf(29.0,minf(46.0/float(maxi(1,max_y)),
-			136.0/float(maxi(1,max_x))))
-		var radius: float = minf(16.0,step*0.45)
-		var left: float = rect.get_center().x+12.0-float(max_x)*step*0.5
-		var top: float = rect.get_center().y-float(max_y)*step*0.5
-		for bead in piece:
-			_ball(Vector2(left+float(bead[0])*step,
-				top+float(bead[1])*step),radius,int(bead[2]))
+			_ball(Vector2(left+float(bead[0])*step,top+float(bead[1])*step),
+				radius,int(bead[2]),0.42 if dragging_piece and active else 1.0)
+		if active and not dragging_piece:
+			draw_line(rect.position+Vector2(64,62),rect.position+Vector2(178,62),
+				Color("#b6fff4",0.62),2.4,true)
 func _draw_button_arrow(at: Vector2, clockwise: bool, tint: Color) -> void:
 	draw_arc(at,21.0,-PI*0.70 if clockwise else PI*0.30,
 		PI*0.70 if clockwise else PI*1.70,26,tint,4.0,true)
