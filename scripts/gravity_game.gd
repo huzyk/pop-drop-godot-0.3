@@ -3,6 +3,12 @@ extends Control
 const Rules = preload("res://scripts/gravity_rules.gd")
 const FONT = preload("res://fonts/ClearSans-Regular.ttf")
 const BOLD = preload("res://fonts/ClearSans-Bold.ttf")
+# Artist-authored vector sprites imported as textures by Godot (no more circle stacks).
+const MARBLE_TEXTURES = [
+	preload("res://assets/marbles/coral.svg"),
+	preload("res://assets/marbles/mint.svg"),
+	preload("res://assets/marbles/blue.svg")
+]
 const BASE := Vector2(720,1280)
 const BOARD := Rect2(44,274,632,632)
 const CELL := 79.0
@@ -77,6 +83,7 @@ var preview_right: Dictionary = {}
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	rng.randomize()
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	var detected: String = OS.get_locale_language().to_lower()
 	language = detected if detected in LOCALES else "en"
 	if FileAccess.file_exists(SAVE_FILE):
@@ -604,34 +611,16 @@ func _draw_tap_ripple() -> void:
 		Color(tint.r,tint.g,tint.b,0.48*fade),3.5,true)
 	draw_circle(tap_point,5.0+progress*12.0,Color(1,1,1,0.12*fade))
 
-func _ball(center: Vector2, radius: float, color_index: int, alpha: float=1.0) -> void:
-	var base: Color = COLORS[clampi(color_index,0,COLORS.size()-1)]
-	var light: Color = base.lightened(0.40)
-	# Multi-layer candy gem: bloom, contact shadow, metallic rim, coloured glass.
-	draw_circle(center+Vector2(1.8,7.0),radius+5.5,Color("#030714",0.49*alpha))
-	draw_circle(center,radius+11.0,Color(base.r,base.g,base.b,0.055*alpha))
-	draw_circle(center,radius+6.4,Color(base.r,base.g,base.b,0.13*alpha))
-	draw_circle(center,radius+1.8,Color(0.91,0.94,1.0,0.63*alpha))
-	draw_circle(center,radius,Color(base.r*0.47,base.g*0.47,base.b*0.53,alpha))
-	draw_circle(center-Vector2(0.6,2.0),radius-2.8,Color(base.r,base.g,base.b,alpha))
-	draw_circle(center+Vector2(radius*0.1,radius*0.29),radius*0.66,
-		Color(base.r*0.48,base.g*0.49,base.b*0.57,0.38*alpha))
-	draw_circle(center-Vector2(radius*0.19,radius*0.25),radius*0.56,
-		Color(light.r,light.g,light.b,0.24*alpha))
-	draw_circle(center-Vector2(radius*0.27,radius*0.35),radius*0.32,
-		Color(1,1,1,0.38*alpha))
-	draw_circle(center-Vector2(radius*0.40,radius*0.47),radius*0.105,
-		Color(1,1,1,0.91*alpha))
-	draw_arc(center-Vector2(0.3,1.2),radius-4.3,3.45,5.53,18,
-		Color(1,1,1,0.47*alpha),2.7,true)
-	draw_arc(center+Vector2(0.3,0.8),radius-3.8,0.20,1.39,14,
-		Color(1,1,1,0.27*alpha),2.5,true)
-	# A tiny accent highlight travels around the rim, without a shader.
-	if radius >= 22.0:
-		var orbit: float = clock*0.76+float(color_index)*2.2
-		var spot: Vector2 = center+Vector2.from_angle(orbit)*radius*0.74
-		draw_circle(spot,2.2,Color(1,1,1,(0.16+0.14*sin(clock*2.0))*alpha))
-
+func _ball(center: Vector2, radius: float, color_index: int,
+		alpha: float=1.0, stretch: Vector2=Vector2.ONE) -> void:
+	# One actual high-resolution candy-glass sprite rather than 12 overlapping
+	# flat circles. The authored transparent margin contains the soft glow.
+	var marble: Texture2D = MARBLE_TEXTURES[clampi(color_index,0,2)]
+	var half_width: float = radius*1.255*stretch.x
+	var half_height: float = radius*1.255*stretch.y
+	var box: Rect2 = Rect2(center-Vector2(half_width,half_height),
+		Vector2(half_width*2.0,half_height*2.0))
+	draw_texture_rect(marble,box,false,Color(1.0,1.0,1.0,alpha))
 func _draw_background() -> void:
 	_gradient(Rect2(0,0,720,1280),Color("#07081a"),Color("#130b30"),44)
 	# Atmospheric stage lighting with subtle motion, not a static wallpaper.
@@ -876,7 +865,13 @@ func _draw_board() -> void:
 				var shimmer: float = 0.3+0.3*sin(clock*10.0+float(m["color"]))
 				draw_arc(center,34.0,0.0,TAU,32,
 					Color(tint.r,tint.g,tint.b,shimmer),2.0,true)
-			_ball(center,CELL*0.365*(1.0+bounce),int(m["color"]))
+			var deform: Vector2 = Vector2.ONE
+			if motion_kind=="roll":
+				# The final contact squashes like a soft marble, then springs back.
+				var contact: float = clampf((raw-0.77)/0.23,0.0,1.0)
+				var squash: float = 0.13*sin(contact*PI)
+				deform = Vector2(1.0+squash,1.0-squash*0.75)
+			_ball(center,CELL*0.365*(1.0+bounce),int(m["color"]),1.0,deform)
 			if motion_kind=="roll" and raw>0.82:
 				var landing: float = (raw-0.82)/0.18
 				draw_arc(center,31.0+landing*9.0,0.0,TAU,32,
