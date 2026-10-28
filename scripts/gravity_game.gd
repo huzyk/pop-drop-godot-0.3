@@ -573,7 +573,7 @@ func _draw_hud() -> void:
 	_text(t("best"),Vector2(370,194),16,Color("#9aafd3"))
 	_text(str(best),Vector2(370,238),35,Color("#ffde93"))
 	_box(Rect2(541,166,144,88),Color("#192a4d"),22,Color("#38517a"),2)
-	_fit_center(t("life"),613,191,14,126,14,Color("#9aafd3"))
+	_fit_center(t("life"),613,191,14,126,Color("#9aafd3"))
 	for i in range(3):
 		var heart_center: Vector2 = Vector2(570+float(i)*43.0,223)
 		var alive: bool = i < lives
