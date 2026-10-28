@@ -4,6 +4,7 @@ const Rules = preload("res://scripts/gravity_rules.gd")
 const Session = preload("res://scripts/gravity_session.gd")
 const Telemetry = preload("res://scripts/gravity_telemetry.gd")
 const Ads = preload("res://scripts/gravity_ads.gd")
+const Progression = preload("res://scripts/gravity_progression.gd")
 const FONT = preload("res://fonts/ClearSans-Regular.ttf")
 const BOLD = preload("res://fonts/ClearSans-Bold.ttf")
 # Artist-authored vector sprites imported as textures by Godot (no more circle stacks).
@@ -36,6 +37,18 @@ const SETTINGS_CLOSE := Rect2(476,384,118,54)
 const SETTINGS_TOGGLE := Rect2(120,550,480,80)
 const SETTINGS_ERASE := Rect2(120,654,480,74)
 const SETTINGS_AD_PRIVACY := Rect2(120,748,480,68)
+const PROFILE_OPEN := Rect2(365,116,173,42)
+const PROFILE_CLOSE := Rect2(512,265,120,54)
+const PROFILE_CARD := Rect2(54,224,612,906)
+const PROFILE_TR := {
+	"pl":{"profile":"POSTĘP","level":"POZIOM","short":"POZ.","daily":"DZISIEJSZE MISJE","streak":"SERIA DNI","cosmetics":"WYGLĄD KULEK","drops":"ZRZUĆ KSZTAŁTY","pops":"WYWOŁAJ POP","points":"ZDOBĄDŹ PUNKTY","classic":"KLASYCZNE","aurora":"AURORA","starlight":"GWIEZDNE","locked":"POZ.","selected":"WYBRANE","close":"ZAMKNIJ","done":"UKOŃCZONA","autoclaim":"XP przyznaje się automatycznie"},
+	"en":{"profile":"PROGRESS","level":"LEVEL","short":"LVL","daily":"TODAY'S MISSIONS","streak":"DAY STREAK","cosmetics":"MARBLE SKINS","drops":"DROP PIECES","pops":"TRIGGER POPS","points":"EARN POINTS","classic":"CLASSIC","aurora":"AURORA","starlight":"STARLIGHT","locked":"LVL","selected":"SELECTED","close":"CLOSE","done":"COMPLETE","autoclaim":"XP is awarded automatically"},
+	"es":{"profile":"PROGRESO","level":"NIVEL","short":"NV","daily":"MISIONES DIARIAS","streak":"DÍAS SEGUIDOS","cosmetics":"ESTILOS DE BOLAS","drops":"SUELTA PIEZAS","pops":"HAZ POP","points":"GANA PUNTOS","classic":"CLÁSICO","aurora":"AURORA","starlight":"ESTELAR","locked":"NV","selected":"ELEGIDO","close":"CERRAR","done":"COMPLETA","autoclaim":"XP automático"},
+	"pt":{"profile":"PROGRESSO","level":"NÍVEL","short":"NV","daily":"MISSÕES DIÁRIAS","streak":"DIAS SEGUIDOS","cosmetics":"ESTILOS DE BOLAS","drops":"SOLTE PEÇAS","pops":"FAÇA POP","points":"GANHE PONTOS","classic":"CLÁSSICO","aurora":"AURORA","starlight":"ESTELAR","locked":"NV","selected":"ESCOLHIDO","close":"FECHAR","done":"CONCLUÍDA","autoclaim":"XP automático"},
+	"de":{"profile":"FORTSCHRITT","level":"LEVEL","short":"LVL","daily":"TAGESMISSIONEN","streak":"TAGES-SERIE","cosmetics":"KUGEL-DESIGNS","drops":"TEILE ABWERFEN","pops":"POPS AUSLÖSEN","points":"PUNKTE SAMMELN","classic":"KLASSISCH","aurora":"AURORA","starlight":"STERNEN","locked":"LVL","selected":"AKTIV","close":"SCHLIESSEN","done":"FERTIG","autoclaim":"XP automatisch"},
+	"fr":{"profile":"PROGRESSION","level":"NIVEAU","short":"NIV","daily":"MISSIONS DU JOUR","streak":"JOURS DE SUITE","cosmetics":"STYLE DES BILLES","drops":"LÂCHER DES PIÈCES","pops":"FAIRE DES POPS","points":"GAGNER DES POINTS","classic":"CLASSIQUE","aurora":"AURORA","starlight":"ÉTOILÉ","locked":"NIV","selected":"CHOISI","close":"FERMER","done":"TERMINÉE","autoclaim":"XP automatique"},
+	"ru":{"profile":"ПРОГРЕСС","level":"УРОВЕНЬ","short":"УР.","daily":"ЗАДАНИЯ НА ДЕНЬ","streak":"ДНЕЙ ПОДРЯД","cosmetics":"ВИД ШАРИКОВ","drops":"СБРОСЬ ФИГУРЫ","pops":"СОБЕРИ POP","points":"НАБЕРИ ОЧКИ","classic":"КЛАССИКА","aurora":"АВРОРА","starlight":"ЗВЁЗДНЫЕ","locked":"УР.","selected":"ВЫБРАНО","close":"ЗАКРЫТЬ","done":"ГОТОВО","autoclaim":"XP автоматически"}
+}
 
 var board: Array = []
 var pieces: Array = []
@@ -89,6 +102,12 @@ var preview_left: Dictionary = {}
 var preview_right: Dictionary = {}
 var telemetry = null
 var ads = null
+var progression = null
+var profile_open: bool = false
+var action_serial: int = 0
+var action_id: String = ""
+var mission_notice: String = ""
+var mission_notice_time: float = 0.0
 var settings_open: bool = false
 var ad_note: String = ""
 var run_id: String = ""
@@ -115,6 +134,10 @@ func _ready() -> void:
 	ads = Ads.new()
 	add_child(ads)
 	ads.reward_earned.connect(_on_ad_reward)
+	progression = Progression.new()
+	progression.load_data()
+	progression.mission_completed.connect(_on_mission_completed)
+	progression.level_reached.connect(_on_level_reached)
 	var previous: Dictionary = Session.read_progress()
 	if previous.is_empty():
 		new_game()
@@ -125,6 +148,21 @@ func _ready() -> void:
 func t(key: String) -> String:
 	return str(TR.get(language,TR["en"]).get(key,key))
 
+func profile_t(key: String) -> String:
+	return str(PROFILE_TR.get(language,PROFILE_TR["en"]).get(key,key))
+
+func _on_mission_completed(mission_id: String, bonus_xp: int) -> void:
+	mission_notice = "%s +%d XP" % [profile_t("done"),bonus_xp]
+	mission_notice_time = 2.6
+	telemetry.track("mission_completed", {"mission":mission_id,"reward_xp":bonus_xp})
+
+func _on_level_reached(new_level: int) -> void:
+	mission_notice = "%s %d!" % [profile_t("level"),new_level]
+	mission_notice_time = 3.2
+	_shock(Vector2(360,200),2.0,Color("#ffe29d"))
+	telemetry.track("level_reached", {"level":new_level})
+
+
 func _save() -> void:
 	var f: FileAccess = FileAccess.open(SAVE_FILE,FileAccess.WRITE)
 	if f:
@@ -134,6 +172,10 @@ func new_game() -> void:
 	run_id = Crypto.new().generate_random_bytes(8).hex_encode()
 	best_at_round_start = best
 	game_over_reported = false
+	action_serial = 0
+	action_id = ""
+	mission_notice = ""
+	mission_notice_time = 0.0
 	ad_note = ""
 	board = Rules.empty_board()
 	# Lively opening: a four-ball group is one ball away from a 5-POP.
@@ -190,7 +232,8 @@ func _save_progress() -> void:
 		"phase": phase, "score": score, "moves": moves, "lives": lives,
 		"revives": revives, "run_id": run_id,
 		"best_at_start": best_at_round_start,
-		"over_reported": game_over_reported
+		"over_reported": game_over_reported,
+		"action_serial": action_serial
 	})
 
 func _restore_progress(data: Dictionary) -> void:
@@ -204,6 +247,8 @@ func _restore_progress(data: Dictionary) -> void:
 	run_id = str(data.get("run_id","restored"))
 	best_at_round_start = int(data.get("best_at_start",best))
 	game_over_reported = bool(data.get("over_reported",phase=="over"))
+	action_serial = maxi(0,int(data.get("action_serial",0)))
+	action_id = ""
 	best = maxi(best,score)
 	display_score = float(score)
 	selected_piece = 0
@@ -225,9 +270,11 @@ func _notification(what: int) -> void:
 		_save_progress()
 
 func _on_game_over() -> void:
-	if not game_over_reported:
-		rounds_played += 1
-		game_over_reported = true
+	if game_over_reported:
+		return
+	rounds_played += 1
+	game_over_reported = true
+	progression.record_round("round:"+run_id)
 	_save()
 	telemetry.track("game_over", {
 		"run_id":run_id, "score":score, "moves":moves,
@@ -255,6 +302,7 @@ func _on_ad_reward(_transaction: int) -> void:
 
 func _process(delta: float) -> void:
 	clock += delta
+	mission_notice_time = maxf(0.0,mission_notice_time-delta)
 	tap_time = maxf(0.0,tap_time-delta)
 	if animating:
 		motion_time = minf(motion_duration,motion_time+delta)
@@ -329,6 +377,17 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	tap_point = pt
 	tap_time = 0.42
+	if profile_open:
+		if PROFILE_CLOSE.has_point(pt):
+			profile_open = false
+		else:
+			for index in range(Progression.SKINS.size()):
+				if Rect2(90+index*181,975,164,75).has_point(pt):
+					var skin_id: String = str(Progression.SKINS[index]["id"])
+					if progression.select_skin(skin_id):
+						telemetry.track("skin_selected",{"skin":skin_id})
+		queue_redraw()
+		return
 	if settings_open:
 		if SETTINGS_CLOSE.has_point(pt):
 			settings_open = false
@@ -344,6 +403,12 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	if SETTINGS_OPEN.has_point(pt) and phase != "anim":
 		settings_open = true
+		queue_redraw()
+		return
+	if PROFILE_OPEN.has_point(pt) and phase != "anim":
+		progression.ensure_day()
+		profile_open = true
+		telemetry.track("profile_open",{"level":progression.level()})
 		queue_redraw()
 		return
 	if phase=="anim":
@@ -406,9 +471,13 @@ func _play_drop(column: int) -> void:
 	if not result.get("valid",false):
 		_praise(t("hint"),Color("#ff8ba8"),0.8)
 		return
+	action_serial += 1
+	action_id = "action:%s:%d" % [run_id,action_serial]
+	progression.record_drop(action_id+":drop")
 	telemetry.track("piece_drop", {
 		"run_id":run_id, "column":column, "shape_size":pieces[used_index].size(),
-		"move":moves+1, "board_filled":Rules.filled(board)
+		"move":moves+1, "board_filled":Rules.filled(board),
+		"player_level":progression.level()
 	})
 	phase = "anim"
 	moves += 1
@@ -433,6 +502,8 @@ func _play_drop(column: int) -> void:
 func _rotate_board(clockwise: bool) -> void:
 	if phase != "drop":
 		return
+	action_serial += 1
+	action_id = "action:%s:%d" % [run_id,action_serial]
 	telemetry.track("board_rotate", {
 		"run_id":run_id, "clockwise":clockwise, "move":moves,
 		"board_filled":Rules.filled(board)
@@ -627,6 +698,8 @@ func _resolve_cascades(fluid: bool=false) -> void:
 		_shock(centroid,minf(4.5,1.15+float(chain_depth)*0.7+float(hits.size())*0.12),main_color)
 		board = Rules.erase_matches(board,hits)
 		score += payout
+		progression.record_pop(action_id+":pop:"+str(chain_depth),
+			groups.size(),hits.size(),payout,chain_depth)
 		telemetry.track("pop_triggered", {
 			"run_id":run_id, "balls":hits.size(), "groups":groups.size(),
 			"largest_group":largest, "cascade":chain_depth,
@@ -762,7 +835,21 @@ func _ball(center: Vector2, radius: float, color_index: int,
 	var half_height: float = radius*1.255*stretch.y
 	var box: Rect2 = Rect2(center-Vector2(half_width,half_height),
 		Vector2(half_width*2.0,half_height*2.0))
+	if progression != null and progression.skin == "aurora":
+		var tint: Color = COLORS[clampi(color_index,0,2)]
+		draw_circle(center,radius*1.16,Color(tint.r,tint.g,tint.b,0.13*alpha))
 	draw_texture_rect(marble,box,false,Color(1.0,1.0,1.0,alpha))
+	if progression != null and progression.skin == "aurora":
+		draw_arc(center,radius*0.91,-PI*0.90,PI*0.12,30,
+			Color("#ddfcff",0.55*alpha),2.3,true)
+	elif progression != null and progression.skin == "starlight":
+		draw_arc(center,radius*0.98,0,TAU,44,
+			Color("#ffdb8f",0.66*alpha),2.6,true)
+		var gleam: Vector2 = center+Vector2(radius*0.45,-radius*0.60)
+		draw_line(gleam+Vector2(-5,0),gleam+Vector2(5,0),
+			Color(1,1,1,0.85*alpha),1.5,true)
+		draw_line(gleam+Vector2(0,-5),gleam+Vector2(0,5),
+			Color(1,1,1,0.85*alpha),1.5,true)
 func _draw_background() -> void:
 	_gradient(Rect2(0,0,720,1280),Color("#07081a"),Color("#130b30"),44)
 	# Atmospheric stage lighting with subtle motion, not a static wallpaper.
@@ -810,6 +897,8 @@ func _draw_header() -> void:
 	_fit_center(language.to_upper(),629,82,22,94,Color("#f7f6ff"))
 	_neon_panel(SETTINGS_OPEN,Color("#b5b1ff"))
 	_fit_center("⚙ DATA",619,144,17,118,Color("#e9e6ff"))
+	_neon_panel(PROFILE_OPEN,Color("#ffdf8b"))
+	_fit_center("%s %d  •  XP" % [profile_t("short"),progression.level()],451,143,17,159,Color("#ffefd3"))
 	_text("✦ GRAVITY EDITION",Vector2(49,151),18,Color("#d4c2ff"))
 	draw_line(Vector2(316,144),Vector2(551,144),Color("#c695ff",0.23),1.5,true)
 
@@ -861,8 +950,14 @@ func _draw() -> void:
 		_draw_game_over()
 		_neon_panel(SETTINGS_OPEN,Color("#b5b1ff"))
 		_fit_center("⚙ DATA",619,144,17,118,Color("#e9e6ff"))
+		_neon_panel(PROFILE_OPEN,Color("#ffdf8b"))
+		_fit_center("%s %d  •  XP" % [profile_t("short"),progression.level()],451,143,17,159,Color("#ffefd3"))
+	if mission_notice_time > 0 and not settings_open and not profile_open:
+		_draw_mission_toast()
 	if settings_open:
 		_draw_settings()
+	if profile_open:
+		_draw_profile()
 	draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
 
 
@@ -1309,3 +1404,56 @@ func _draw_settings() -> void:
 		else "Analytics is optional. Ads have separate consent.",
 		360,855,15,530,Color("#b6c6db"))
 
+
+func _draw_mission_toast() -> void:
+	var strength: float = minf(1.0,mission_notice_time/0.24)
+	_box(Rect2(166,879,388,56),Color("#162943",0.94*strength),22,
+		Color("#f8d99e",0.7*strength),2)
+	_fit_center(mission_notice,360,916,24,359,
+		Color(1.0,0.91,0.66,strength))
+
+func _draw_profile() -> void:
+	draw_rect(Rect2(0,0,720,1280),Color("#030618",0.95))
+	_neon_panel(PROFILE_CARD,Color("#b9a0ff"),true)
+	_box(Rect2(66,236,588,880),Color("#141b38"),28,Color("#657ab2"),2)
+	_fit_center(profile_t("profile"),295,309,39,440,Color.WHITE)
+	_box(PROFILE_CLOSE,Color("#414b77"),18,Color("#8d9ed1"),2)
+	_fit_center(profile_t("close"),572,301,17,105,Color.WHITE)
+	_fit_center("%s %d" % [profile_t("level"), progression.level()],360,384,37,460,Color("#ffe6a2"))
+	_fit_center(progression.level_xp_text(),360,417,18,410,Color("#bdcbf4"))
+	_box(Rect2(100,433,520,15),Color("#28314f"),8)
+	_box(Rect2(100,433,520*progression.level_fraction(),15),Color("#5be3c3"),8)
+	_fit_center("%s  %d" % [profile_t("streak"),progression.streak],
+		360,488,24,500,Color("#ffb8d8"))
+	_fit_center(profile_t("daily"),360,539,25,500,Color("#edecff"))
+	for i in range(Progression.MISSIONS.size()):
+		var mission: Dictionary = Progression.MISSIONS[i]
+		var key: String = str(mission["id"])
+		var y: float = 550+float(i)*106
+		var complete: bool = bool(progression.claimed.get(key,false))
+		_box(Rect2(89,y,542,94),Color("#20394a") if complete else Color("#222a49"),
+			18,Color("#5fe7b3") if complete else Color("#546c9e"),2)
+		_text(profile_t(key),Vector2(110,y+30),20,
+			Color("#ddfff1") if complete else Color.WHITE)
+		var value: int = mini(int(progression.daily.get(key,0)),int(mission["target"]))
+		var label: String = profile_t("done") if complete else "%d / %d" % [value,int(mission["target"])]
+		_fit_center(label,539,y+32,17,154,Color("#d8f6ed") if complete else Color("#cbd6fb"))
+		_box(Rect2(110,y+57,500,12),Color("#111c33"),7)
+		_box(Rect2(110,y+57,500*progression.mission_ratio(key),12),
+			Color("#6ee9cb") if complete else Color("#ffce84"),7)
+	_fit_center(profile_t("cosmetics"),360,910,25,500,Color("#eae9ff"))
+	for i in range(Progression.SKINS.size()):
+		var available: Dictionary = Progression.SKINS[i]
+		var id: String = str(available["id"])
+		var unlocked: bool = progression.level() >= int(available["level"])
+		var chosen: bool = progression.skin == id
+		var x: float = 90+float(i)*181
+		_box(Rect2(x,975,164,75),Color("#2b625d") if chosen else Color("#29314f"),
+			18,Color("#7cfde0") if chosen else Color("#6677a5"),2)
+		_fit_center(profile_t(id),x+82,1003,18,146,
+			Color("#f0fff8") if unlocked else Color("#9299b4"))
+		var caption: String = profile_t("selected") if chosen else (
+			"%s %d" % [profile_t("locked"),int(available["level"])] if not unlocked else "✓")
+		_fit_center(caption,x+82,1030,15,144,
+			Color("#8bf8d8") if chosen else Color("#bac4e4"))
+	_fit_center(profile_t("autoclaim"),360,1091,15,508,Color("#99a9ca"))

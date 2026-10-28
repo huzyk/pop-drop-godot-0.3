@@ -1,0 +1,35 @@
+name: Godot gameplay checks
+
+on:
+  push:
+    branches:
+      - main
+      - feature/**
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gameplay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Godot 4.7.2
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.7.2
+          use-dotnet: false
+          include-templates: false
+      - name: Import assets and scripts
+        run: godot --headless --editor --path . --import --quit
+      - name: Test core Gravity rules
+        run: godot --headless --path . --script res://tests/test_gravity_rules.gd
+      - name: Test checkpoints and parsing
+        run: godot --headless --path . --script res://tests/test_gravity_session.gd
+      - name: Test ad reward contract
+        run: godot --headless --path . --script res://tests/test_gravity_ads.gd
+      - name: Test daily missions and cosmetics
+        run: godot --headless --path . --script res://tests/test_gravity_progression.gd
