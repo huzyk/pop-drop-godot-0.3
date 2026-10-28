@@ -1,3 +1,9 @@
+# POP DROP Gravity 0.7 — progressive waves and three-hit rocks
+
+**Nowe:** fala napierająca od dołu po **15 sekundach**, potem po 19 / 23 / 27 / 31 / 35 / 39 s (maks. 39 s); 6 kulek w pierwszych falach, później 7 i 8. Co druga fala może dodać twardą skałę (maks. 3 na planszy), która pęka dopiero po **trzech odrębnych POP-ach przylegających bokiem**. Czas stoi podczas animacji i w menu. Zobacz [docs/PRESSURE.md](docs/PRESSURE.md).
+
+---
+
 # POP DROP Gravity — efekty i wibracje (0.6 alpha)
 
 **Nowości:** osiem oryginalnych efektów dźwiękowych (synteza PCM, bez plików i zewnętrznych licencji), haptyka z krótkimi impulsami oraz dodatkowa celebracja zdobycia poziomu. Ustawienia dźwięku i wibracji są dostępne w menu **DATA**, zachowują się po restarcie. Na Androidzie wibracje wymagają pozwolenia `VIBRATE` w ustawieniach eksportu. Więcej: [docs/FEEDBACK.md](docs/FEEDBACK.md).
