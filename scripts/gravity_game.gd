@@ -1,6 +1,9 @@
 extends Control
 ## POP DROP Gravity / isolated gameplay experiment. NO real ads in this scene.
 const Rules = preload("res://scripts/gravity_rules.gd")
+const Session = preload("res://scripts/gravity_session.gd")
+const Telemetry = preload("res://scripts/gravity_telemetry.gd")
+const Ads = preload("res://scripts/gravity_ads.gd")
 const FONT = preload("res://fonts/ClearSans-Regular.ttf")
 const BOLD = preload("res://fonts/ClearSans-Bold.ttf")
 # Artist-authored vector sprites imported as textures by Godot (no more circle stacks).
@@ -28,6 +31,11 @@ const LEFT_RECT := Rect2(35,1123,285,92)
 const RIGHT_RECT := Rect2(400,1123,285,92)
 const RESTART_RECT := Rect2(104,722,512,84)
 const RESCUE_RECT := Rect2(104,821,512,79)
+const SETTINGS_OPEN := Rect2(553,116,132,42)
+const SETTINGS_CLOSE := Rect2(476,384,118,54)
+const SETTINGS_TOGGLE := Rect2(120,550,480,80)
+const SETTINGS_ERASE := Rect2(120,654,480,74)
+const SETTINGS_AD_PRIVACY := Rect2(120,748,480,68)
 
 var board: Array = []
 var pieces: Array = []
@@ -79,6 +87,14 @@ var tap_point: Vector2 = Vector2.ZERO
 var pending_group: Dictionary = {}
 var preview_left: Dictionary = {}
 var preview_right: Dictionary = {}
+var telemetry = null
+var ads = null
+var settings_open: bool = false
+var ad_note: String = ""
+var run_id: String = ""
+var rounds_played: int = 0
+var best_at_round_start: int = 0
+var game_over_reported: bool = false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -90,10 +106,21 @@ func _ready() -> void:
 		var saved = JSON.parse_string(FileAccess.get_file_as_string(SAVE_FILE))
 		if saved is Dictionary:
 			best = int(saved.get("best",0))
+			rounds_played = int(saved.get("rounds_played",0))
 			var remembered: String = str(saved.get("language",language))
 			if remembered in LOCALES:
 				language = remembered
-	new_game()
+	telemetry = Telemetry.new()
+	add_child(telemetry)
+	ads = Ads.new()
+	add_child(ads)
+	ads.reward_earned.connect(_on_ad_reward)
+	var previous: Dictionary = Session.read_progress()
+	if previous.is_empty():
+		new_game()
+	else:
+		_restore_progress(previous)
+	telemetry.track("session_start", {"restored_round": not previous.is_empty()})
 
 func t(key: String) -> String:
 	return str(TR.get(language,TR["en"]).get(key,key))
@@ -101,9 +128,13 @@ func t(key: String) -> String:
 func _save() -> void:
 	var f: FileAccess = FileAccess.open(SAVE_FILE,FileAccess.WRITE)
 	if f:
-		f.store_string(JSON.stringify({"best":best,"language":language}))
+		f.store_string(JSON.stringify({"best":best,"language":language,"rounds_played":rounds_played}))
 
 func new_game() -> void:
+	run_id = Crypto.new().generate_random_bytes(8).hex_encode()
+	best_at_round_start = best
+	game_over_reported = false
+	ad_note = ""
 	board = Rules.empty_board()
 	# Lively opening: a four-ball group is one ball away from a 5-POP.
 	# The empty floor cell at column 0 offers an obvious first target.
@@ -145,6 +176,81 @@ func new_game() -> void:
 		pieces.append(piece)
 		_remember_shape(piece)
 	_refresh_targets()
+	_save_progress()
+	if telemetry != null:
+		telemetry.track("game_start", {"run_id":run_id, "round_number":rounds_played+1})
+	queue_redraw()
+
+func _save_progress() -> void:
+	# Never checkpoint a partially animated cascade or transient rotated board.
+	if phase not in ["drop","over"]:
+		return
+	Session.write_progress({
+		"board": Rules.copy_board(board), "pieces": pieces.duplicate(true),
+		"phase": phase, "score": score, "moves": moves, "lives": lives,
+		"revives": revives, "run_id": run_id,
+		"best_at_start": best_at_round_start,
+		"over_reported": game_over_reported
+	})
+
+func _restore_progress(data: Dictionary) -> void:
+	board = Rules.copy_board(data["board"])
+	pieces = data["pieces"].duplicate(true)
+	phase = str(data["phase"])
+	score = int(data["score"])
+	moves = int(data["moves"])
+	lives = int(data["lives"])
+	revives = int(data["revives"])
+	run_id = str(data.get("run_id","restored"))
+	best_at_round_start = int(data.get("best_at_start",best))
+	game_over_reported = bool(data.get("over_reported",phase=="over"))
+	best = maxi(best,score)
+	display_score = float(score)
+	selected_piece = 0
+	dragging_piece = false
+	animating = false
+	motion.clear()
+	flash.clear()
+	fx.clear()
+	rings.clear()
+	floaters.clear()
+	recent_shapes.clear()
+	for piece in pieces:
+		_remember_shape(piece)
+	_refresh_targets()
+	queue_redraw()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_WM_CLOSE_REQUEST:
+		_save_progress()
+
+func _on_game_over() -> void:
+	if not game_over_reported:
+		rounds_played += 1
+		game_over_reported = true
+	_save()
+	telemetry.track("game_over", {
+		"run_id":run_id, "score":score, "moves":moves,
+		"revives":revives, "distance_to_previous_best":maxi(0,best_at_round_start-score),
+		"round_number":rounds_played
+	})
+
+func _on_ad_reward(_transaction: int) -> void:
+	# Only the SDK provider's reward-earned callback can reach this function.
+	if phase != "over" or revives >= 1:
+		return
+	revives += 1
+	lives = 1
+	board = Rules.rescue(board)
+	pieces[0] = Rules.next_piece(rng,board,recent_shapes)
+	_remember_shape(pieces[0])
+	selected_piece = 0
+	phase = "drop"
+	ad_note = ""
+	_refresh_targets()
+	_praise("+1 ♥",Color("#ff9bb7"),1.2)
+	telemetry.track("ad_reward_earned", {"run_id":run_id,"reward":"revive"})
+	_save_progress()
 	queue_redraw()
 
 func _process(delta: float) -> void:
@@ -223,6 +329,23 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	tap_point = pt
 	tap_time = 0.42
+	if settings_open:
+		if SETTINGS_CLOSE.has_point(pt):
+			settings_open = false
+		elif SETTINGS_TOGGLE.has_point(pt):
+			telemetry.set_opted_in(not telemetry.opted_in)
+			if telemetry.opted_in:
+				telemetry.track("analytics_opt_in")
+		elif SETTINGS_ERASE.has_point(pt):
+			telemetry.erase_events_and_identity()
+		elif SETTINGS_AD_PRIVACY.has_point(pt):
+			ads.show_privacy_options()
+		queue_redraw()
+		return
+	if SETTINGS_OPEN.has_point(pt) and phase != "anim":
+		settings_open = true
+		queue_redraw()
+		return
 	if phase=="anim":
 		if LEFT_RECT.has_point(pt):
 			queued_action = "left"
@@ -235,17 +358,15 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	if phase=="over":
 		if RESTART_RECT.has_point(pt):
+			var should_interstitial: bool = rounds_played >= 3 and rounds_played % 3 == 0
 			new_game()
-		elif RESCUE_RECT.has_point(pt):
-			revives += 1
-			lives = 1
-			board = Rules.rescue(board)
-			pieces[0] = Rules.next_piece(rng,board,recent_shapes)
-			_remember_shape(pieces[0])
-			selected_piece = 0
-			phase = "drop"
-			_refresh_targets()
-			_praise("+1 ♥",Color("#ff9bb7"),1.2)
+			if should_interstitial:
+				ads.request_interstitial()
+		elif RESCUE_RECT.has_point(pt) and revives < 1:
+			if not ads.request_rewarded():
+				ad_note = "ADS UNAVAILABLE" if language != "pl" else "REKLAMA NIEDOSTĘPNA"
+			else:
+				ad_note = "LOADING AD..." if language != "pl" else "ŁADOWANIE REKLAMY..."
 			queue_redraw()
 		return
 	if Rect2(576,53,100,53).has_point(pt):
@@ -285,6 +406,10 @@ func _play_drop(column: int) -> void:
 	if not result.get("valid",false):
 		_praise(t("hint"),Color("#ff8ba8"),0.8)
 		return
+	telemetry.track("piece_drop", {
+		"run_id":run_id, "column":column, "shape_size":pieces[used_index].size(),
+		"move":moves+1, "board_filled":Rules.filled(board)
+	})
 	phase = "anim"
 	moves += 1
 	chain_depth = 0
@@ -299,12 +424,19 @@ func _play_drop(column: int) -> void:
 	if phase == "drop":
 		_refresh_targets()
 		_check_stuck()
+	if phase == "over":
+		_on_game_over()
+	_save_progress()
 	_flush_queued_input()
 	queue_redraw()
 
 func _rotate_board(clockwise: bool) -> void:
 	if phase != "drop":
 		return
+	telemetry.track("board_rotate", {
+		"run_id":run_id, "clockwise":clockwise, "move":moves,
+		"board_filled":Rules.filled(board)
+	})
 	phase = "anim"
 	chain_depth = 0 # Each action has its own independent cascade multiplier.
 	spin_clockwise = clockwise
@@ -322,6 +454,9 @@ func _rotate_board(clockwise: bool) -> void:
 	if phase == "drop":
 		_refresh_targets()
 		_check_stuck()
+	if phase == "over":
+		_on_game_over()
+	_save_progress()
 	_flush_queued_input()
 	queue_redraw()
 
@@ -383,6 +518,7 @@ func _check_ceiling() -> void:
 	if not Rules.ceiling_reached(board):
 		return
 	lives -= 1
+	telemetry.track("life_lost", {"run_id":run_id,"cause":"ceiling","moves":moves,"lives_left":lives})
 	_praise(t("overflow"),Color("#ff879d"),1.3)
 	_shock(BOARD.position+Vector2(BOARD.size.x*0.5,CELL*0.5),2.5,Color("#ff6389"))
 	if lives <= 0:
@@ -407,6 +543,7 @@ func _check_stuck() -> void:
 		_praise(t("rotate_help"),Color("#ffe49c"),1.1)
 		return
 	lives -= 1
+	telemetry.track("life_lost", {"run_id":run_id,"cause":"blocked","moves":moves,"lives_left":lives})
 	_praise(t("lost"),Color("#ff8ca4"),1.2)
 	if lives <= 0:
 		phase = "over"
@@ -490,6 +627,11 @@ func _resolve_cascades(fluid: bool=false) -> void:
 		_shock(centroid,minf(4.5,1.15+float(chain_depth)*0.7+float(hits.size())*0.12),main_color)
 		board = Rules.erase_matches(board,hits)
 		score += payout
+		telemetry.track("pop_triggered", {
+			"run_id":run_id, "balls":hits.size(), "groups":groups.size(),
+			"largest_group":largest, "cascade":chain_depth,
+			"points":payout, "move":moves
+		})
 		best = maxi(best,score)
 		_save()
 		flash.clear()
@@ -666,6 +808,8 @@ func _draw_header() -> void:
 		_ball(logo_center+Vector2.from_angle(angle)*22.0,8.5,i)
 	_neon_panel(Rect2(575,48,110,54),Color("#b5b1ff"))
 	_fit_center(language.to_upper(),629,82,22,94,Color("#f7f6ff"))
+	_neon_panel(SETTINGS_OPEN,Color("#b5b1ff"))
+	_fit_center("⚙ DATA",619,144,17,118,Color("#e9e6ff"))
 	_text("✦ GRAVITY EDITION",Vector2(49,151),18,Color("#d4c2ff"))
 	draw_line(Vector2(316,144),Vector2(551,144),Color("#c695ff",0.23),1.5,true)
 
@@ -715,6 +859,10 @@ func _draw() -> void:
 		_draw_praise()
 	if phase == "over":
 		_draw_game_over()
+		_neon_panel(SETTINGS_OPEN,Color("#b5b1ff"))
+		_fit_center("⚙ DATA",619,144,17,118,Color("#e9e6ff"))
+	if settings_open:
+		_draw_settings()
 	draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
 
 
@@ -1132,5 +1280,32 @@ func _draw_game_over() -> void:
 		Color("#c1fff2",0.32),16)
 	_fit_center(t("again"),360,777,30,462,Color("#102846"))
 	_box(RESCUE_RECT,Color("#34365e"),24,Color("#8881bf"),2)
-	_fit_center(t("rescue"),360,870,26,468,Color("#f3eaff"))
-	_center("DEMO · NO ADS",360,941,15,Color("#c0b5d8"))
+	_fit_center(("REKLAMA: +1 ŻYCIE" if language == "pl" else "WATCH AD: +1 LIFE")
+		if ads != null and ads.rewarded_ready() and revives < 1
+		else ("BRAK REKLAMY" if language == "pl" else "AD NOT AVAILABLE"),
+		360,870,25,468,Color("#f3eaff") if ads != null and ads.rewarded_ready() and revives < 1 else Color("#9992b8"))
+	_center(ad_note if not ad_note.is_empty() else
+		("MAX 1 RATUNEK NA RUNDĘ" if language == "pl" else "MAX 1 REVIVE PER ROUND"),
+		360,941,15,Color("#c0b5d8"))
+
+func _draw_settings() -> void:
+	draw_rect(Rect2(0,0,720,1280),Color("#030618",0.94))
+	_neon_panel(Rect2(72,342,576,540),Color("#88e4ec"),true)
+	_fit_center("PRYWATNOŚĆ" if language == "pl" else "PRIVACY",308,414,40,420,Color.WHITE)
+	_box(SETTINGS_CLOSE,Color("#494e78"),18,Color("#a2b0d9"),2)
+	_fit_center("ZAMKNIJ" if language == "pl" else "CLOSE",535,420,17,106,Color.WHITE)
+	_fit_center("ANALITYKA GRY" if language == "pl" else "GAME ANALYTICS",360,513,22,445,Color("#d0e8fa"))
+	_box(SETTINGS_TOGGLE,Color("#225d58") if telemetry.opted_in else Color("#40365d"),20)
+	_fit_center(("WŁĄCZONA" if language == "pl" else "ON")
+		if telemetry.opted_in else ("WYŁĄCZONA" if language == "pl" else "OFF"),
+		360,601,26,420,Color.WHITE)
+	_box(SETTINGS_ERASE,Color("#42354d"),20)
+	_fit_center("USUŃ DANE LOKALNE" if language == "pl" else "CLEAR LOCAL DATA",
+		360,701,21,420,Color("#ffcfdf"))
+	_box(SETTINGS_AD_PRIVACY,Color("#303e61"),19)
+	_fit_center("USTAWIENIA REKLAM" if language == "pl" else "AD PRIVACY OPTIONS",
+		360,794,21,420,Color("#e0eeff"))
+	_fit_center("Analityka jest opcjonalna. Reklamy: osobna zgoda." if language == "pl"
+		else "Analytics is optional. Ads have separate consent.",
+		360,855,15,530,Color("#b6c6db"))
+

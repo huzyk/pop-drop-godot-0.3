@@ -1,3 +1,13 @@
+# Gravity 0.4 alpha: stan reklam
+
+Nowa scena `scripts/gravity_game.gd` korzysta z `scripts/gravity_ads.gd`.
+Usunięto przyznawanie bezpłatnego ratunku pod przykrywką reklamy. Nagroda jest przyznawana wyłącznie po sygnale `reward_earned` z dostawcy SDK, z kontrolą ID transakcji. Domyślnie SDK jest **wyłączone**, więc przycisk jest niedostępny.
+Opcjonalna implementacja Poing AdMob 5.x: `scripts/poing_admob_provider.gd`. Wymagana instalacja pluginu + UMP + Android App ID + włączenie w `project.godot`.
+
+Aktualny opis integracji i testów znajduje się w [MOBILE_FOUNDATION.md](MOBILE_FOUNDATION.md). Poniższa lista dotyczy historycznej sceny `scripts/game.gd` i nie powinna być interpretowana jako aktualna implementacja Gravity.
+
+---
+
 # Integracja reklam — checklist przed wydaniem
 
 W tym prototypie NIE ma zainstalowanego AdMob ani prawdziwej reklamy.
