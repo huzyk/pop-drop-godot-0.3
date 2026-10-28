@@ -3,6 +3,7 @@ extends Node
 ## Optional PostHog destination configured in Project Settings, not in source.
 const PREFS := "user://gravity_analytics_privacy.json"
 const LOCAL_LOG := "user://gravity_events.jsonl"
+const RETRY_QUEUE := "user://gravity_pending_events.json"
 const MAX_PENDING := 80
 var opted_in: bool = false
 var anonymous_id: String = ""
@@ -31,6 +32,11 @@ func _ready() -> void:
 	http.timeout = 8.0
 	add_child(http)
 	http.request_completed.connect(_request_done)
+	if opted_in and FileAccess.file_exists(RETRY_QUEUE):
+		var stored: Variant = JSON.parse_string(FileAccess.get_file_as_string(RETRY_QUEUE))
+		if stored is Array:
+			pending = stored.slice(0, MAX_PENDING)
+	_send_next()
 
 func set_opted_in(allow: bool) -> void:
 	opted_in = allow
@@ -40,6 +46,11 @@ func set_opted_in(allow: bool) -> void:
 	else:
 		anonymous_id = ""
 		pending.clear()
+		if http != null:
+			http.cancel_request()
+		sending = false
+		if FileAccess.file_exists(RETRY_QUEUE):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(RETRY_QUEUE))
 		if FileAccess.file_exists(LOCAL_LOG):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(LOCAL_LOG))
 	_store_prefs()
@@ -73,6 +84,7 @@ func track(event_name: String, properties: Dictionary = {}) -> void:
 	pending.append(item)
 	if pending.size() > MAX_PENDING:
 		pending.pop_front()
+	_persist_pending()
 	_send_next()
 
 func _send_next() -> void:
@@ -87,13 +99,29 @@ func _send_next() -> void:
 	)
 	if error != OK:
 		sending = false
-		pending.pop_front()
+		# Remain queued for next event / app restart; never grant rewards from HTTP.
 
-func _request_done(_result: int, _code: int, _headers: PackedStringArray, _body: PackedByteArray) -> void:
+func _request_done(_result: int, code: int, _headers: PackedStringArray, _body: PackedByteArray) -> void:
 	sending = false
-	if not pending.is_empty():
-		pending.pop_front()
-	_send_next()
+	if not opted_in:
+		return
+	# Only a successful response removes the event from the durable queue.
+	if code >= 200 and code < 300:
+		if not pending.is_empty():
+			pending.pop_front()
+		_persist_pending()
+		_send_next()
+	# On failure, retry on next event or next app launch to avoid tight loops.
+
+func _persist_pending() -> void:
+	if pending.is_empty():
+		if FileAccess.file_exists(RETRY_QUEUE):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(RETRY_QUEUE))
+		return
+	var file: FileAccess = FileAccess.open(RETRY_QUEUE, FileAccess.WRITE)
+	if file != null:
+		file.store_string(JSON.stringify(pending))
+		file.close()
 
 func _append_local(item: Dictionary) -> void:
 	if FileAccess.file_exists(LOCAL_LOG):
