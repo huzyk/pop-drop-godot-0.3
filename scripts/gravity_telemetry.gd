@@ -64,7 +64,7 @@ func track(event_name: String, properties: Dictionary = {}) -> void:
 		"api_key": project_key,
 		"event": event_name,
 		"distinct_id": anonymous_id,
-		"timestamp": Time.get_datetime_string_from_system(true, true),
+		"timestamp": Time.get_datetime_string_from_system(true, false),
 		"properties": data
 	}
 	_append_local(item)
@@ -100,7 +100,7 @@ func _append_local(item: Dictionary) -> void:
 		var size: int = FileAccess.get_file_as_bytes(LOCAL_LOG).size()
 		if size > 1024 * 1024:
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(LOCAL_LOG))
-	var mode: FileAccess.ModeFlags = FileAccess.READ_WRITE if FileAccess.file_exists(LOCAL_LOG) else FileAccess.WRITE
+	var mode: int = FileAccess.READ_WRITE if FileAccess.file_exists(LOCAL_LOG) else FileAccess.WRITE
 	var file: FileAccess = FileAccess.open(LOCAL_LOG, mode)
 	if file != null:
 		file.seek_end()
