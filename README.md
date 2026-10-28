@@ -1,3 +1,11 @@
+# POP DROP Gravity — efekty i wibracje (0.6 alpha)
+
+**Nowości:** osiem oryginalnych efektów dźwiękowych (synteza PCM, bez plików i zewnętrznych licencji), haptyka z krótkimi impulsami oraz dodatkowa celebracja zdobycia poziomu. Ustawienia dźwięku i wibracji są dostępne w menu **DATA**, zachowują się po restarcie. Na Androidzie wibracje wymagają pozwolenia `VIBRATE` w ustawieniach eksportu. Więcej: [docs/FEEDBACK.md](docs/FEEDBACK.md).
+
+Pozostałe funkcje: [docs/RETENTION.md](docs/RETENTION.md) i [docs/MOBILE_FOUNDATION.md](docs/MOBILE_FOUNDATION.md).
+
+---
+
 # POP DROP Gravity — retencja i progresja (0.5 alpha)
 
 **Nowość:** misje dzienne, XP, poziomy gracza, seria aktywnych dni i kosmetyczne warianty kulek. Otwórz **POZ. / LVL** w prawym górnym pasku gry. Aktualne zasady i testy: [docs/RETENTION.md](docs/RETENTION.md).
