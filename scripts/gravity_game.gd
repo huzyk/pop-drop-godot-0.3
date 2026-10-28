@@ -35,6 +35,7 @@ const SETTINGS_OPEN := Rect2(553,116,132,42)
 const SETTINGS_CLOSE := Rect2(476,384,118,54)
 const SETTINGS_TOGGLE := Rect2(120,550,480,80)
 const SETTINGS_ERASE := Rect2(120,654,480,74)
+const SETTINGS_AD_PRIVACY := Rect2(120,748,480,68)
 
 var board: Array = []
 var pieces: Array = []
@@ -337,6 +338,8 @@ func _gui_input(event: InputEvent) -> void:
 				telemetry.track("analytics_opt_in")
 		elif SETTINGS_ERASE.has_point(pt):
 			telemetry.erase_events_and_identity()
+		elif SETTINGS_AD_PRIVACY.has_point(pt):
+			ads.show_privacy_options()
 		queue_redraw()
 		return
 	if SETTINGS_OPEN.has_point(pt) and phase != "anim":
@@ -355,7 +358,10 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	if phase=="over":
 		if RESTART_RECT.has_point(pt):
+			var should_interstitial: bool = rounds_played >= 3 and rounds_played % 3 == 0
 			new_game()
+			if should_interstitial:
+				ads.request_interstitial()
 		elif RESCUE_RECT.has_point(pt) and revives < 1:
 			if not ads.request_rewarded():
 				ad_note = "ADS UNAVAILABLE" if language != "pl" else "REKLAMA NIEDOSTĘPNA"
@@ -1284,7 +1290,7 @@ func _draw_game_over() -> void:
 
 func _draw_settings() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#030618",0.94))
-	_neon_panel(Rect2(72,342,576,458),Color("#88e4ec"),true)
+	_neon_panel(Rect2(72,342,576,540),Color("#88e4ec"),true)
 	_fit_center("PRYWATNOŚĆ" if language == "pl" else "PRIVACY",308,414,40,420,Color.WHITE)
 	_box(SETTINGS_CLOSE,Color("#494e78"),18,Color("#a2b0d9"),2)
 	_fit_center("ZAMKNIJ" if language == "pl" else "CLOSE",535,420,17,106,Color.WHITE)
@@ -1296,7 +1302,10 @@ func _draw_settings() -> void:
 	_box(SETTINGS_ERASE,Color("#42354d"),20)
 	_fit_center("USUŃ DANE LOKALNE" if language == "pl" else "CLEAR LOCAL DATA",
 		360,701,21,420,Color("#ffcfdf"))
-	_fit_center("Domyślnie wyłączona. Bez ID reklamowego." if language == "pl"
-		else "Off by default. No advertising identifier.",
-		360,766,15,535,Color("#b6c6db"))
+	_box(SETTINGS_AD_PRIVACY,Color("#303e61"),19)
+	_fit_center("USTAWIENIA REKLAM" if language == "pl" else "AD PRIVACY OPTIONS",
+		360,794,21,420,Color("#e0eeff"))
+	_fit_center("Analityka jest opcjonalna. Reklamy: osobna zgoda." if language == "pl"
+		else "Analytics is optional. Ads have separate consent.",
+		360,855,15,530,Color("#b6c6db"))
 
