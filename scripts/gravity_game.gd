@@ -5,6 +5,7 @@ const Session = preload("res://scripts/gravity_session.gd")
 const Telemetry = preload("res://scripts/gravity_telemetry.gd")
 const Ads = preload("res://scripts/gravity_ads.gd")
 const Progression = preload("res://scripts/gravity_progression.gd")
+const Feedback = preload("res://scripts/gravity_feedback.gd")
 const FONT = preload("res://fonts/ClearSans-Regular.ttf")
 const BOLD = preload("res://fonts/ClearSans-Bold.ttf")
 # Artist-authored vector sprites imported as textures by Godot (no more circle stacks).
@@ -37,6 +38,8 @@ const SETTINGS_CLOSE := Rect2(476,384,118,54)
 const SETTINGS_TOGGLE := Rect2(120,550,480,80)
 const SETTINGS_ERASE := Rect2(120,654,480,74)
 const SETTINGS_AD_PRIVACY := Rect2(120,748,480,68)
+const SETTINGS_SOUND := Rect2(114,886,492,67)
+const SETTINGS_HAPTICS := Rect2(114,975,492,67)
 const PROFILE_OPEN := Rect2(365,116,173,42)
 const PROFILE_CLOSE := Rect2(512,265,120,54)
 const PROFILE_CARD := Rect2(54,224,612,906)
@@ -102,12 +105,15 @@ var preview_left: Dictionary = {}
 var preview_right: Dictionary = {}
 var telemetry = null
 var ads = null
+var feedback = null
 var progression = null
 var profile_open: bool = false
 var action_serial: int = 0
 var action_id: String = ""
 var mission_notice: String = ""
 var mission_notice_time: float = 0.0
+var level_fx_time: float = 0.0
+var level_fx_number: int = 0
 var settings_open: bool = false
 var ad_note: String = ""
 var run_id: String = ""
@@ -134,6 +140,8 @@ func _ready() -> void:
 	ads = Ads.new()
 	add_child(ads)
 	ads.reward_earned.connect(_on_ad_reward)
+	feedback = Feedback.new()
+	add_child(feedback)
 	progression = Progression.new()
 	progression.load_data()
 	progression.mission_completed.connect(_on_mission_completed)
@@ -154,12 +162,21 @@ func profile_t(key: String) -> String:
 func _on_mission_completed(mission_id: String, bonus_xp: int) -> void:
 	mission_notice = "%s +%d XP" % [profile_t("done"),bonus_xp]
 	mission_notice_time = 2.6
+	if feedback != null:
+		feedback.cue("mission")
 	telemetry.track("mission_completed", {"mission":mission_id,"reward_xp":bonus_xp})
 
 func _on_level_reached(new_level: int) -> void:
 	mission_notice = "%s %d!" % [profile_t("level"),new_level]
 	mission_notice_time = 3.2
+	level_fx_number = new_level
+	level_fx_time = 3.0
+	glow = 1.0
 	_shock(Vector2(360,200),2.0,Color("#ffe29d"))
+	for i in range(16):
+		_burst(Vector2i((i*5+1)%8,(i*3+2)%8),3)
+	if feedback != null:
+		feedback.cue("level")
 	telemetry.track("level_reached", {"level":new_level})
 
 
@@ -176,6 +193,7 @@ func new_game() -> void:
 	action_id = ""
 	mission_notice = ""
 	mission_notice_time = 0.0
+	level_fx_time = 0.0
 	ad_note = ""
 	board = Rules.empty_board()
 	# Lively opening: a four-ball group is one ball away from a 5-POP.
@@ -303,6 +321,7 @@ func _on_ad_reward(_transaction: int) -> void:
 func _process(delta: float) -> void:
 	clock += delta
 	mission_notice_time = maxf(0.0,mission_notice_time-delta)
+	level_fx_time = maxf(0.0,level_fx_time-delta)
 	tap_time = maxf(0.0,tap_time-delta)
 	if animating:
 		motion_time = minf(motion_duration,motion_time+delta)
@@ -397,6 +416,12 @@ func _gui_input(event: InputEvent) -> void:
 				telemetry.track("analytics_opt_in")
 		elif SETTINGS_ERASE.has_point(pt):
 			telemetry.erase_events_and_identity()
+		elif SETTINGS_SOUND.has_point(pt):
+			feedback.set_sound_enabled(not feedback.sound_enabled)
+			feedback.cue("tap")
+		elif SETTINGS_HAPTICS.has_point(pt):
+			feedback.set_haptics_enabled(not feedback.haptics_enabled)
+			feedback.cue("tap")
 		elif SETTINGS_AD_PRIVACY.has_point(pt):
 			ads.show_privacy_options()
 		queue_redraw()
@@ -471,6 +496,8 @@ func _play_drop(column: int) -> void:
 	if not result.get("valid",false):
 		_praise(t("hint"),Color("#ff8ba8"),0.8)
 		return
+	if feedback != null:
+		feedback.cue("drop")
 	action_serial += 1
 	action_id = "action:%s:%d" % [run_id,action_serial]
 	progression.record_drop(action_id+":drop")
@@ -502,6 +529,8 @@ func _play_drop(column: int) -> void:
 func _rotate_board(clockwise: bool) -> void:
 	if phase != "drop":
 		return
+	if feedback != null:
+		feedback.cue("rotate")
 	action_serial += 1
 	action_id = "action:%s:%d" % [run_id,action_serial]
 	telemetry.track("board_rotate", {
@@ -588,6 +617,8 @@ func _check_ceiling() -> void:
 	# are other empty columns. Rotating can prevent the loss beforehand.
 	if not Rules.ceiling_reached(board):
 		return
+	if feedback != null:
+		feedback.cue("fail")
 	lives -= 1
 	telemetry.track("life_lost", {"run_id":run_id,"cause":"ceiling","moves":moves,"lives_left":lives})
 	_praise(t("overflow"),Color("#ff879d"),1.3)
@@ -613,6 +644,8 @@ func _check_stuck() -> void:
 	if _could_recover_by_rotating():
 		_praise(t("rotate_help"),Color("#ffe49c"),1.1)
 		return
+	if feedback != null:
+		feedback.cue("fail")
 	lives -= 1
 	telemetry.track("life_lost", {"run_id":run_id,"cause":"blocked","moves":moves,"lives_left":lives})
 	_praise(t("lost"),Color("#ff8ca4"),1.2)
@@ -665,6 +698,8 @@ func _resolve_cascades(fluid: bool=false) -> void:
 		if groups.is_empty():
 			return
 		chain_depth += 1
+		if feedback != null:
+			feedback.cue("cascade" if chain_depth >= 2 else "pop")
 		var hits: Array = []
 		var largest: int = 0
 		for group in groups:
@@ -954,6 +989,8 @@ func _draw() -> void:
 		_fit_center("%s %d  •  XP" % [profile_t("short"),progression.level()],451,143,17,159,Color("#ffefd3"))
 	if mission_notice_time > 0 and not settings_open and not profile_open:
 		_draw_mission_toast()
+	if level_fx_time > 0 and not settings_open and not profile_open:
+		_draw_level_celebration()
 	if settings_open:
 		_draw_settings()
 	if profile_open:
@@ -1385,7 +1422,7 @@ func _draw_game_over() -> void:
 
 func _draw_settings() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#030618",0.94))
-	_neon_panel(Rect2(72,342,576,540),Color("#88e4ec"),true)
+	_neon_panel(Rect2(72,342,576,735),Color("#88e4ec"),true)
 	_fit_center("PRYWATNOŚĆ" if language == "pl" else "PRIVACY",308,414,40,420,Color.WHITE)
 	_box(SETTINGS_CLOSE,Color("#494e78"),18,Color("#a2b0d9"),2)
 	_fit_center("ZAMKNIJ" if language == "pl" else "CLOSE",535,420,17,106,Color.WHITE)
@@ -1403,6 +1440,32 @@ func _draw_settings() -> void:
 	_fit_center("Analityka jest opcjonalna. Reklamy: osobna zgoda." if language == "pl"
 		else "Analytics is optional. Ads have separate consent.",
 		360,855,15,530,Color("#b6c6db"))
+	_box(SETTINGS_SOUND,Color("#225d58") if feedback.sound_enabled else Color("#40365d"),18)
+	_fit_center(("DŹWIĘKI: TAK" if language == "pl" else "SOUND: ON")
+		if feedback.sound_enabled else ("DŹWIĘKI: NIE" if language == "pl" else "SOUND: OFF"),
+		360,930,23,450,Color.WHITE)
+	_box(SETTINGS_HAPTICS,Color("#225d58") if feedback.haptics_enabled else Color("#40365d"),18)
+	_fit_center(("WIBRACJE: TAK" if language == "pl" else "HAPTICS: ON")
+		if feedback.haptics_enabled else ("WIBRACJE: NIE" if language == "pl" else "HAPTICS: OFF"),
+		360,1018,23,450,Color.WHITE)
+
+func _draw_level_celebration() -> void:
+	var progress: float = 1.0-level_fx_time/3.0
+	var alpha: float = clampf(level_fx_time/0.42,0.0,1.0)
+	var dy: float = 18.0*sin(progress*PI)
+	var center: Vector2 = Vector2(360,508-dy)
+	_box(Rect2(center-Vector2(255,100),Vector2(510,200)),Color("#29214c",0.92*alpha),
+		33,Color("#ffe29a",0.88*alpha),3)
+	draw_circle(center,94.0+6.0*sin(clock*4.0),Color("#ffe4ae",0.12*alpha))
+	_fit_center("✦ " + ("NOWY POZIOM!" if language == "pl" else "LEVEL UP!") + " ✦",
+		360,center.y-22,29,466,Color(1.0,0.90,0.68,alpha))
+	_fit_center(str(level_fx_number),360,center.y+65,80,354,Color(1,1,1,alpha))
+	for i in range(24):
+		var angle: float = float(i)*TAU/24.0+clock*0.36
+		var dist: float = 128.0+progress*186.0
+		var at: Vector2 = center+Vector2.from_angle(angle)*dist
+		_spark(at,3.0+float(i%4),Color("#ffe6bb"),0.68*alpha*(1.0-progress*0.4))
+
 
 
 func _draw_mission_toast() -> void:
