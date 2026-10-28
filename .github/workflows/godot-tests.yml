@@ -33,3 +33,5 @@ jobs:
         run: godot --headless --path . --script res://tests/test_gravity_ads.gd
       - name: Test daily missions and cosmetics
         run: godot --headless --path . --script res://tests/test_gravity_progression.gd
+      - name: Test audio and haptics
+        run: godot --headless --path . --script res://tests/test_gravity_feedback.gd
