@@ -653,6 +653,9 @@ func _draw_board() -> void:
 			_box(Rect2(tile+Vector2(2.5,2.5),Vector2(CELL-5.0,CELL-5.0)),
 				Color("#17294c") if (x+y)%2==0 else Color("#1a2c50"),12,
 				Color("#21395b"),1)
+			if phase=="drop" and x==hover_column:
+				draw_rect(Rect2(tile+Vector2(4,4),Vector2(CELL-8.0,CELL-8.0)),
+					Color("#9df7e8",0.085))
 			var center: Vector2 = tile+Vector2(CELL*0.5,CELL*0.5)
 			draw_circle(center,24.0,Color("#0b1834",0.35))
 			var occupied: bool = board[y][x] != Rules.EMPTY
