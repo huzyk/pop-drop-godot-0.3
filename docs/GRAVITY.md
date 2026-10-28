@@ -83,3 +83,27 @@ Animacje są częścią gałęzi `gravity-prototype` (nie `main`). Zastosowano *
 - Ponieważ próg wzrósł, dopracowano start, aby na planszy od razu było widać grupę 4/5 i brakujące miejsce na piątą kulkę.
 - Reguła jest centralnie definiowana przez `POP_THRESHOLD = 5` w `scripts/gravity_rules.gd`. Gra i symulacja obu przycisków obrotu korzystają z tej samej reguły.
 - Wdrożono testy reguł pięciu kulek, nieregularnych układów, natychmiastowych POP po zrzucie i obrocie, wypłat, kaskad oraz górnej linii przegranej. **Testy nie zostały jeszcze uruchomione w Godot**.
+
+
+## Cosmic Candy — pełny lifting wizualny (28.10.2026)
+
+Na gałęzi **gravity-prototype** interfejs został przeprojektowany bez zmiany modelu gry (próg POP, punktacja, generator i zasady przegranej są takie same).
+
+- **Nowa identyfikacja:** głęboki granat, kontrastowe neony koralowy/miętowy/błękitny, delikatne refleksy i animowane gwiazdy. Wszystkie efekty są rysowane przez CanvasItem — bez dodatkowych plików graficznych.
+- **Kulki:** warstwowe „jelly marbles”: kontaktowy cień, grubsza obwódka, łagodne odbicia, refleksy i dyskretne halo; trójki/czwórki gotowe do rozbudowy dostają pulsującą złotą obwódkę.
+- **Plansza:** wielowarstwowa rama jak w automacie arcade, wyraźne pola 8×8, podświetlenie wybranej kolumny na komputerze, czytelna różowa linia zagrożenia przy górnej krawędzi.
+- **HUD:** silniejsza hierarchia wyniku i rekordu, wyraźne serca-życia, pasek wysokości i pięciopunktowy wskaźnik zbliżania się do POP.
+- **Kształty i kontrolki:** odróżniona aktywna figura, dwie kolejne w podglądzie, większe kolorowe przyciski obrotu z ikonami i przewidywanymi punktami.
+- **Efekty i koniec rundy:** dodatkowe rozbłyski, świetlne pierścienie, komunikat POP i nowy ekran końca.
+- **Języki:** napisy HUD i krótka instrukcja mają warianty PL/EN/ES/PT/DE/FR/RU, również w nowym układzie.
+
+Wszystkie prostokąty klikalne (BOARD, LEFT_RECT, RIGHT_RECT, RESTART_RECT, RESCUE_RECT) pozostały w tych samych współrzędnych. Zmiana dotyczy wyłącznie rysowania.
+
+### Jak zobaczyć aktualizację
+
+1. W GitHub Desktop otwórz repozytorium i gałąź `gravity-prototype`, wybierz **Fetch origin**, potem **Pull origin**.
+2. W Godot zatrzymaj uruchomioną scenę (F8) i uruchom grę ponownie (F5). Nie musisz zamykać edytora.
+3. Sprawdź: pierwszy zrzut w skrajnej lewej kolumnie, automatyczny POP 5 kulek, płynność obrotu w obie strony, podglądy następnych kształtów, wygląd pełnego rzędu u góry i ekran końca po utracie żyć.
+4. Na telefonie zwróć uwagę na czytelność przycisków, licznika żyć i dolnych podpisów. Na komputerze dodatkowo sprawdź podświetlenie kolumny kursorem.
+
+**Walidacja:** zapisano i sprawdzono kod w GitHub. W środowisku wykonawczym nie ma obecnie binarki Godot, dlatego wizualny test sceny i analiza komunikatów konsoli wymagają uruchomienia F5 w edytorze.
