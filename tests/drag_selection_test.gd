@@ -14,7 +14,7 @@ func _button(pos: Vector2, pressed: bool) -> InputEventMouseButton:
 	return event
 
 func _exercise() -> void:
-	var game: Control = Game.new()
+	var game = Game.new()
 	root.add_child(game)
 	game.size = Vector2(720,1280)
 	assert(game.pieces.size()==3,"Three options must be offered.")
