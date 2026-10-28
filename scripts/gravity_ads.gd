@@ -3,7 +3,7 @@ extends Node
 ## adapter is attached. No mock rewards in release/gameplay builds.
 signal reward_earned(transaction: int)
 signal rewarded_unavailable
-var provider: Node = null
+var provider = null
 var next_transaction: int = 0
 var pending_transaction: int = -1
 
