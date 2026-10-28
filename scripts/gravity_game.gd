@@ -93,6 +93,7 @@ var ad_note: String = ""
 var run_id: String = ""
 var rounds_played: int = 0
 var best_at_round_start: int = 0
+var game_over_reported: bool = false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -131,6 +132,7 @@ func _save() -> void:
 func new_game() -> void:
 	run_id = Crypto.new().generate_random_bytes(8).hex_encode()
 	best_at_round_start = best
+	game_over_reported = false
 	ad_note = ""
 	board = Rules.empty_board()
 	# Lively opening: a four-ball group is one ball away from a 5-POP.
@@ -186,7 +188,8 @@ func _save_progress() -> void:
 		"board": Rules.copy_board(board), "pieces": pieces.duplicate(true),
 		"phase": phase, "score": score, "moves": moves, "lives": lives,
 		"revives": revives, "run_id": run_id,
-		"best_at_start": best_at_round_start
+		"best_at_start": best_at_round_start,
+		"over_reported": game_over_reported
 	})
 
 func _restore_progress(data: Dictionary) -> void:
@@ -199,6 +202,7 @@ func _restore_progress(data: Dictionary) -> void:
 	revives = int(data["revives"])
 	run_id = str(data.get("run_id","restored"))
 	best_at_round_start = int(data.get("best_at_start",best))
+	game_over_reported = bool(data.get("over_reported",phase=="over"))
 	best = maxi(best,score)
 	display_score = float(score)
 	selected_piece = 0
@@ -220,7 +224,9 @@ func _notification(what: int) -> void:
 		_save_progress()
 
 func _on_game_over() -> void:
-	rounds_played += 1
+	if not game_over_reported:
+		rounds_played += 1
+		game_over_reported = true
 	_save()
 	telemetry.track("game_over", {
 		"run_id":run_id, "score":score, "moves":moves,
@@ -847,6 +853,8 @@ func _draw() -> void:
 		_draw_praise()
 	if phase == "over":
 		_draw_game_over()
+		_neon_panel(SETTINGS_OPEN,Color("#b5b1ff"))
+		_fit_center("⚙ DATA",619,144,17,118,Color("#e9e6ff"))
 	if settings_open:
 		_draw_settings()
 	draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
