@@ -1,3 +1,11 @@
+# POP DROP Gravity — retencja i progresja (0.5 alpha)
+
+**Nowość:** misje dzienne, XP, poziomy gracza, seria aktywnych dni i kosmetyczne warianty kulek. Otwórz **POZ. / LVL** w prawym górnym pasku gry. Aktualne zasady i testy: [docs/RETENTION.md](docs/RETENTION.md).
+
+**Uwaga:** produkcyjne AdMob/UMP oraz serwerowy projekt analityczny nadal wymagają konfiguracji, a bezpośrednie testy na telefonie pozostają do wykonania. W GitHub Actions dodano testy Godot 4.7.2. Starsze sekcje README opisują historyczny prototyp.
+
+---
+
 # POP DROP Gravity — mobile foundation (0.4 alpha)
 
 **Aktualny `main` uruchamia scenę Gravity**, a nie starą grę 0.3. Na gałęzi `feature/mobile-foundation` przygotowano zapis rundy, analitykę za zgodą oraz opcjonalne połączenie AdMob/UMP. Szczegóły wdrożenia, wymagane konfiguracje i testy: [docs/MOBILE_FOUNDATION.md](docs/MOBILE_FOUNDATION.md).
