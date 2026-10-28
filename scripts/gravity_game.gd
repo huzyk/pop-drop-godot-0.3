@@ -263,7 +263,10 @@ func _rotate_board(clockwise: bool) -> void:
 	await _animate_to(turned.board,turned.motions,0.27,"spin")
 	var gravity: Dictionary = Rules.settle(board)
 	await _animate_to(gravity.board,gravity.motions,0.19,"fall")
-	await _resolve_cascades()
+	# Only rotation unlocks marble flow into lower neighbouring pockets.
+	var spill: Dictionary = Rules.spill_after_rotation(board,clockwise)
+	await _animate_to(spill.board,spill.motions,0.51,"roll")
+	await _resolve_cascades(true)
 	phase = "drop"
 	_check_ceiling()
 	if phase == "drop":
@@ -315,11 +318,8 @@ func _could_recover_by_rotating(piece: Array) -> bool:
 		for quarter in range(4):
 			virtual = Rules.rotate(virtual,clockwise).board
 			virtual = Rules.settle(virtual).board
-			for cascade in range(20):
-				var hits: Array = Rules.find_matches(virtual)
-				if hits.is_empty():
-					break
-				virtual = Rules.settle(Rules.erase_matches(virtual,hits)).board
+			virtual = Rules.spill_after_rotation(virtual,clockwise).board
+			virtual = Rules.resolve_preview(virtual,true,clockwise).board
 			if Rules.any_drop(virtual,piece):
 				return true
 	return false
@@ -384,11 +384,13 @@ func _animate_to(next_board: Array, motions: Array, seconds: float, kind: String
 		if kind != "spin":
 			_burst(Vector2i(int(dest.x),int(dest.y)),2)
 		impact_count += 1
-	if kind != "spin":
+	if kind == "roll":
+		_shock(BOARD.get_center(),0.82,Color("#86f9e4"))
+	elif kind != "spin":
 		_shock(BOARD.get_center(),0.38 if kind == "fall" else 0.58,Color("#a2e9ff"))
 	queue_redraw()
 
-func _resolve_cascades() -> void:
+func _resolve_cascades(fluid: bool=false) -> void:
 	# Called after both a successful drop and a board rotation.
 	for depth in range(20):
 		var groups: Array = Rules.find_groups(board)
@@ -435,6 +437,9 @@ func _resolve_cascades() -> void:
 		queue_redraw()
 		var gravity: Dictionary = Rules.settle(board)
 		await _animate_to(gravity.board,gravity.motions,0.20,"fall")
+		if fluid:
+			var aftershock: Dictionary = Rules.spill_after_rotation(board,spin_clockwise)
+			await _animate_to(aftershock.board,aftershock.motions,0.38,"roll")
 
 func _burst(cell: Vector2i, count: int) -> void:
 	var center: Vector2 = BOARD.position+(Vector2(cell)+Vector2(0.5,0.5))*CELL
@@ -704,6 +709,28 @@ func _charged_cells() -> Array:
 		return []
 	return pending_group["cells"]
 
+# Evaluate a ball's complete discrete roll path; curve each diagonal hop
+# slightly upward to suggest a bead rolling over its neighbour.
+func _motion_position(item: Dictionary, progress: float) -> Vector2:
+	var source: Vector2 = item["from"]
+	var destination: Vector2 = item["to"]
+	if motion_kind=="spin":
+		var angle: float = (PI*0.5 if spin_clockwise else -PI*0.5)*progress
+		return Vector2(3.5,3.5)+(source-Vector2(3.5,3.5)).rotated(angle)
+	if motion_kind=="roll" and item.has("path"):
+		var route: Array = item["path"]
+		if route.size()>1:
+			var position: float = clampf(progress,0.0,1.0)*float(route.size()-1)
+			var segment: int = mini(int(position),route.size()-2)
+			var fraction: float = position-float(segment)
+			var a: Vector2 = route[segment]
+			var b: Vector2 = route[segment+1]
+			var bead: Vector2 = a.lerp(b,fraction)
+			if a.x != b.x:
+				bead.y -= 0.17*sin(fraction*PI)
+			return bead
+	return source.lerp(destination,progress)
+
 func _draw_board() -> void:
 	# Cabinet-depth border, four illuminated corners, and a living light rail.
 	draw_circle(BOARD.get_center(),430.0,Color("#7c46fd",0.065+glow*0.07))
@@ -772,26 +799,34 @@ func _draw_board() -> void:
 			_spark(at,7+6*sin(step*PI),Color("#adf8ff"),0.54)
 	if animating:
 		var raw: float = clampf(motion_time/motion_duration,0.0,1.0)
-		var factor: float = raw*raw*(3.0-2.0*raw) if motion_kind=="spin" else 1.0-pow(1.0-raw,3.4)
+		var factor: float = raw*raw*(3.0-2.0*raw) if motion_kind=="spin" or motion_kind=="roll" else 1.0-pow(1.0-raw,3.4)
 		for m in motion:
-			var from: Vector2 = m["from"]
-			var dest: Vector2 = m["to"]
-			var at: Vector2 = from.lerp(dest,factor)
-			if motion_kind == "spin":
-				var angle: float = (PI*0.5 if spin_clockwise else -PI*0.5)*factor
-				at = Vector2(3.5,3.5)+(from-Vector2(3.5,3.5)).rotated(angle)
+			var at: Vector2 = _motion_position(m,factor)
 			var center: Vector2 = BOARD.position+(at+Vector2(0.5,0.5))*CELL
 			var tint: Color = COLORS[int(m["color"])]
-			for echo in range(3,0,-1):
-				var older: float = maxf(0.0,factor-0.043*float(echo))
-				var behind: Vector2 = from.lerp(dest,older)
-				if motion_kind == "spin":
-					var a: float = (PI*0.5 if spin_clockwise else -PI*0.5)*older
-					behind = Vector2(3.5,3.5)+(from-Vector2(3.5,3.5)).rotated(a)
+			# Moving marbles leave a chromatic comet trail, especially when rolling.
+			var trails: int = 5 if motion_kind=="roll" else 3
+			for echo in range(trails,0,-1):
+				var older: float = maxf(0.0,factor-0.046*float(echo))
+				var behind: Vector2 = _motion_position(m,older)
 				var tail: Vector2 = BOARD.position+(behind+Vector2(0.5,0.5))*CELL
-				draw_line(tail,center,Color(tint.r,tint.g,tint.b,0.07+float(echo)*0.02),
-					6.0+float(echo)*1.5,true)
-			_ball(center,CELL*0.365*(1.0+0.10*sin(raw*PI)),int(m["color"]))
+				var opacity: float = 0.04+float(trails+1-echo)*0.025
+				draw_line(tail,center,Color(tint.r,tint.g,tint.b,opacity),
+					5.0+float(echo)*2.1,true)
+				if motion_kind=="roll" and echo%2==0:
+					draw_circle(tail,2.3+float(echo)*0.7,
+						Color(tint.r,tint.g,tint.b,0.24))
+			var bounce: float = 0.09*sin(raw*PI)
+			if motion_kind=="roll":
+				bounce = 0.045*sin(raw*PI*4.0)
+				var shimmer: float = 0.3+0.3*sin(clock*10.0+float(m["color"]))
+				draw_arc(center,34.0,0.0,TAU,32,
+					Color(tint.r,tint.g,tint.b,shimmer),2.0,true)
+			_ball(center,CELL*0.365*(1.0+bounce),int(m["color"]))
+			if motion_kind=="roll" and raw>0.82:
+				var landing: float = (raw-0.82)/0.18
+				draw_arc(center,31.0+landing*9.0,0.0,TAU,32,
+					Color(1,1,1,0.27*(1.0-landing)),2.0,true)
 	elif phase=="drop" and hover_column>=0 and not pieces.is_empty():
 		var preview: Dictionary = Rules.drop(board,pieces[0],hover_column)
 		if preview.get("valid",false):
