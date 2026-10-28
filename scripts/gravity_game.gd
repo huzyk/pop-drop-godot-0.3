@@ -62,6 +62,8 @@ var rings: Array = []
 var floaters: Array = []
 var queued_action: String = ""
 var queued_column: int = -1
+var tap_time: float = 0.0
+var tap_point: Vector2 = Vector2.ZERO
 # Strategic feedback, recomputed when board state changes (never each frame).
 var pending_group: Dictionary = {}
 var preview_left: Dictionary = {}
@@ -130,6 +132,7 @@ func new_game() -> void:
 
 func _process(delta: float) -> void:
 	clock += delta
+	tap_time = maxf(0.0,tap_time-delta)
 	if animating:
 		motion_time = minf(motion_duration,motion_time+delta)
 	pop_time = maxf(0.0,pop_time-delta)
@@ -184,6 +187,8 @@ func _gui_input(event: InputEvent) -> void:
 	if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed):
 		return
 	var pt: Vector2 = _logical(event.position)
+	tap_point = pt
+	tap_time = 0.42
 	if phase == "anim":
 		# Buffer one action instead of making rapid taps feel unresponsive.
 		if LEFT_RECT.has_point(pt):
@@ -509,79 +514,135 @@ func _spark(at: Vector2, radius: float, tint: Color, opacity: float=1.0) -> void
 	draw_line(at+Vector2(0,-radius),at+Vector2(0,radius),c,2.2,true)
 	draw_circle(at,2.0,Color(1,1,1,opacity))
 
+
+func _neon_panel(rect: Rect2, accent: Color, strong: bool=false) -> void:
+	# Five depth layers. Keeps shapes readable on small mobile screens.
+	var radius: int = 26 if strong else 20
+	_box(Rect2(rect.position+Vector2(0,7),rect.size),Color("#030817",0.85),radius+2)
+	_box(Rect2(rect.position-Vector2(3,3),rect.size+Vector2(6,6)),
+		Color(accent.r,accent.g,accent.b,0.10),radius+3)
+	_box(rect,Color("#111930") if strong else Color("#131b34"),
+		radius,Color(accent.r,accent.g,accent.b,0.62 if strong else 0.33),2)
+	_box(Rect2(rect.position+Vector2(6,6),rect.size-Vector2(12,12)),
+		Color("#212947",0.48),maxi(9,radius-6))
+	draw_line(rect.position+Vector2(22,8),rect.position+Vector2(rect.size.x-22,8),
+		Color(accent.r,accent.g,accent.b,0.52),2.0,true)
+	draw_circle(rect.position+Vector2(21,18),2.0,Color(1,1,1,0.45))
+
+func _corner(at: Vector2, direction: Vector2, color: Color, length: float=34.0) -> void:
+	draw_line(at,at+Vector2(direction.x*length,0),Color(color.r,color.g,color.b,0.24),10.0,true)
+	draw_line(at,at+Vector2(0,direction.y*length),Color(color.r,color.g,color.b,0.24),10.0,true)
+	draw_line(at,at+Vector2(direction.x*length,0),color,3.0,true)
+	draw_line(at,at+Vector2(0,direction.y*length),color,3.0,true)
+	_spark(at,4.0,Color.WHITE,0.68)
+
+func _draw_tap_ripple() -> void:
+	if tap_time <= 0.0 or phase == "over":
+		return
+	var progress: float = 1.0-tap_time/0.42
+	var fade: float = pow(1.0-progress,2.0)
+	var tint: Color = Color("#9dfdf1")
+	draw_arc(tap_point,15.0+progress*63.0,0.0,TAU,48,
+		Color(tint.r,tint.g,tint.b,0.48*fade),3.5,true)
+	draw_circle(tap_point,5.0+progress*12.0,Color(1,1,1,0.12*fade))
+
 func _ball(center: Vector2, radius: float, color_index: int, alpha: float=1.0) -> void:
 	var base: Color = COLORS[clampi(color_index,0,COLORS.size()-1)]
-	var halo: Color = Color(base.r,base.g,base.b,alpha)
-	# A physically suggested jelly marble: ambient glow, contact shadow,
-	# coloured bevel, saturated core, soft lower bounce and sharp glints.
-	draw_circle(center+Vector2(0,5),radius+5.0,Color(0.01,0.02,0.09,0.40*alpha))
-	draw_circle(center,radius+7.0,Color(base.r,base.g,base.b,0.10*alpha))
-	draw_circle(center,radius+1.0,Color(base.r*0.54,base.g*0.54,base.b*0.54,0.95*alpha))
-	draw_circle(center-Vector2(0,2.5),maxf(1.0,radius-3.0),halo)
-	draw_circle(center+Vector2(radius*0.10,radius*0.24),radius*0.68,
-		Color(base.r*0.60,base.g*0.60,base.b*0.67,0.24*alpha))
-	draw_circle(center-Vector2(radius*0.28,radius*0.32),radius*0.37,
-		Color(1,1,1,0.31*alpha))
-	draw_circle(center-Vector2(radius*0.36,radius*0.42),radius*0.12,
-		Color(1,1,1,0.81*alpha))
-	draw_arc(center-Vector2(0,1.0),radius-3.4,0.45,2.55,19,
-		Color(1,1,1,0.24*alpha),2.5,true)
-	draw_arc(center+Vector2(0,2.0),radius-5.3,3.85,5.95,18,
-		Color(1,1,1,0.13*alpha),2.0,true)
+	var light: Color = base.lightened(0.40)
+	# Multi-layer candy gem: bloom, contact shadow, metallic rim, coloured glass.
+	draw_circle(center+Vector2(1.8,7.0),radius+5.5,Color("#030714",0.49*alpha))
+	draw_circle(center,radius+11.0,Color(base.r,base.g,base.b,0.055*alpha))
+	draw_circle(center,radius+6.4,Color(base.r,base.g,base.b,0.13*alpha))
+	draw_circle(center,radius+1.8,Color(0.91,0.94,1.0,0.63*alpha))
+	draw_circle(center,radius,Color(base.r*0.47,base.g*0.47,base.b*0.53,alpha))
+	draw_circle(center-Vector2(0.6,2.0),radius-2.8,Color(base.r,base.g,base.b,alpha))
+	draw_circle(center+Vector2(radius*0.1,radius*0.29),radius*0.66,
+		Color(base.r*0.48,base.g*0.49,base.b*0.57,0.38*alpha))
+	draw_circle(center-Vector2(radius*0.19,radius*0.25),radius*0.56,
+		Color(light.r,light.g,light.b,0.24*alpha))
+	draw_circle(center-Vector2(radius*0.27,radius*0.35),radius*0.32,
+		Color(1,1,1,0.38*alpha))
+	draw_circle(center-Vector2(radius*0.40,radius*0.47),radius*0.105,
+		Color(1,1,1,0.91*alpha))
+	draw_arc(center-Vector2(0.3,1.2),radius-4.3,3.45,5.53,18,
+		Color(1,1,1,0.47*alpha),2.7,true)
+	draw_arc(center+Vector2(0.3,0.8),radius-3.8,0.20,1.39,14,
+		Color(1,1,1,0.27*alpha),2.5,true)
+	# A tiny accent highlight travels around the rim, without a shader.
+	if radius >= 22.0:
+		var orbit: float = clock*0.76+float(color_index)*2.2
+		var spot: Vector2 = center+Vector2.from_angle(orbit)*radius*0.74
+		draw_circle(spot,2.2,Color(1,1,1,(0.16+0.14*sin(clock*2.0))*alpha))
 
 func _draw_background() -> void:
-	_gradient(Rect2(0,0,720,1280),Color("#080d24"),Color("#18204a"),30)
-	# Fixed pools of light give depth without textures, shaders or GPU blur.
-	draw_circle(Vector2(-70,210),395,Color("#713a90",0.14))
-	draw_circle(Vector2(760,875),365,Color("#178aaf",0.12))
-	draw_circle(Vector2(220,1290),300,Color("#5b3c87",0.14))
-	draw_arc(Vector2(360,612),425,-0.2,PI+0.4,80,Color("#7abfff",0.06),2.5,true)
-	for i in range(34):
-		var drift: float = clock*(5.0+float(i%5)*2.0)
-		var y: float = fposmod(float(i*183+40)-drift,1320.0)
-		var x: float = fmod(float(i*127+19),694.0)+13.0
-		var twinkle: float = 0.24+0.17*sin(clock*1.6+float(i)*1.7)
-		if i%5==0:
-			_spark(Vector2(x,y),3.0+float(i%3),Color("#bed8ff"),twinkle)
+	_gradient(Rect2(0,0,720,1280),Color("#07081a"),Color("#130b30"),44)
+	# Atmospheric stage lighting with subtle motion, not a static wallpaper.
+	var breathe: float = 0.5+0.5*sin(clock*0.68)
+	draw_circle(Vector2(-140,135),420,Color("#e23f9b",0.055+0.022*breathe))
+	draw_circle(Vector2(817,470),480,Color("#3caaf5",0.085+0.020*breathe))
+	draw_circle(Vector2(360,1130),440,Color("#a04ffe",0.085))
+	draw_circle(Vector2(340,542),480,Color("#294893",0.053))
+	draw_arc(Vector2(380,602),470,PI*0.06,PI*1.65,100,
+		Color("#6384e4",0.12),2.3,true)
+	draw_arc(Vector2(345,598),511,PI*1.15,PI*1.93,70,
+		Color("#ff5da8",0.10),2.1,true)
+	for line_index in range(7):
+		var x: float = float(line_index)*142.0-195.0
+		draw_line(Vector2(x,-10),Vector2(x+470,1280),
+			Color("#a185ef",0.018),1.6,true)
+	for i in range(52):
+		var speed: float = 5.0+float(i%6)*2.2
+		var y: float = fposmod(float(i*173+31)-clock*speed,1320.0)
+		var x: float = fposmod(float(i*257+29),694.0)+13.0
+		var light: float = 0.20+0.24*(0.5+0.5*sin(clock*1.9+float(i)*1.6))
+		if i%7==0:
+			_spark(Vector2(x,y),3.5+float(i%3),Color("#e2efff"),light)
 		else:
-			draw_circle(Vector2(x,y),0.8+float(i%3)*0.5,Color(0.69,0.83,1.0,twinkle))
+			draw_circle(Vector2(x,y),0.8+float(i%3)*0.6,
+				Color(0.77,0.82,1.0,light))
 
 func _draw_header() -> void:
-	# The title is the visual anchor; the three brand balls also explain play.
-	_text("POP",Vector2(45,104),66,Color("#ffffff"))
-	_text("DROP",Vector2(188,104),66,Color("#6df3da"))
-	draw_rect(Rect2(50,116,322,4),Color("#2e5275"))
-	draw_rect(Rect2(50,116,135,4),Color("#ff7b9d"))
-	draw_rect(Rect2(185,116,113,4),Color("#66dfd1"))
-	draw_rect(Rect2(298,116,74,4),Color("#78bcff"))
+	# Branded display typography, rainbow underline and subtle floating emblem.
+	_text("POP",Vector2(36,103),72,Color("#f4f5ff"))
+	_text("DROP",Vector2(188,103),72,Color("#91fff0"))
+	_text("POP",Vector2(37,100),72,Color("#ffffff"))
+	_text("DROP",Vector2(188,100),72,Color("#b8fff3"))
 	for i in range(3):
-		draw_circle(Vector2(400+float(i)*25.0,77),11.5,COLORS[i])
-		draw_circle(Vector2(396+float(i)*25.0,73),3.7,Color(1,1,1,0.6))
-	_box(Rect2(482,49,88,55),Color("#25345c"),20,Color("#475b85"),1)
-	_center("G",526,85,27,Color("#ffe09e"))
-	_box(Rect2(585,49,101,55),Color("#1e2e55"),20,Color("#3a507c"),1)
-	_center(language.to_upper(),635,85,23,Color("#f6faff"))
-	_text("GRAVITY",Vector2(51,148),16,Color("#a5bcdd"),false)
+		var x: float = 50.0+float(i)*109.0
+		var width: float = 108.0 if i<2 else 73.0
+		draw_line(Vector2(x,116),Vector2(x+width,116),COLORS[i],4.0,true)
+	# Animated mini-molecule gives the header its own recognisable icon.
+	var logo_center: Vector2 = Vector2(447,76)
+	draw_arc(logo_center,27,0,TAU,52,Color("#8394d4",0.31),2.0,true)
+	for i in range(3):
+		var angle: float = clock*0.40+float(i)*TAU/3.0
+		_ball(logo_center+Vector2.from_angle(angle)*22.0,8.5,i)
+	_neon_panel(Rect2(575,48,110,54),Color("#b5b1ff"))
+	_fit_center(language.to_upper(),629,82,22,94,Color("#f7f6ff"))
+	_text("✦ GRAVITY EDITION",Vector2(49,151),18,Color("#d4c2ff"))
+	draw_line(Vector2(316,144),Vector2(551,144),Color("#c695ff",0.23),1.5,true)
 
 func _draw_hud() -> void:
-	_box(Rect2(35,169,306,91),Color("#26365a",0.46),24)
-	_box(Rect2(38,166,302,88),Color("#1b2c51"),22,Color("#38567d"),2)
-	draw_rect(Rect2(55,181,4,53),Color("#fb7899"))
-	_text(t("score"),Vector2(70,194),16,Color("#9aafd3"))
-	_text(str(int(round(display_score))),Vector2(70,239),42,Color("#fefbff"))
-	_box(Rect2(352,166,177,88),Color("#192a4d"),22,Color("#38517a"),2)
-	_text(t("best"),Vector2(370,194),16,Color("#9aafd3"))
-	_text(str(best),Vector2(370,238),35,Color("#ffde93"))
-	_box(Rect2(541,166,144,88),Color("#192a4d"),22,Color("#38517a"),2)
-	_fit_center(t("life"),613,191,14,126,Color("#9aafd3"))
+	# Score is the hero. Best and hearts become a compact game dashboard.
+	_neon_panel(Rect2(35,170,337,89),Color("#ff79bb"),true)
+	draw_rect(Rect2(51,189,4,49),Color("#ff81b9"))
+	_text(t("score"),Vector2(69,196),16,Color("#f7b7d4"))
+	_text(str(int(round(display_score))),Vector2(67,246),48,Color.WHITE)
+	_spark(Vector2(346,190),5,Color("#ffa6d1"),0.40+0.35*sin(clock*2.6))
+	_neon_panel(Rect2(385,170,139,89),Color("#ffd48d"))
+	_fit_center(t("best"),455,197,15,124,Color("#e4caad"))
+	_fit_center(str(best),455,242,34,121,Color("#fff0b6"))
+	_neon_panel(Rect2(537,170,148,89),Color("#ff729e"))
+	_fit_center(t("life"),609,194,14,136,Color("#edbad4"))
 	for i in range(3):
-		var heart_center: Vector2 = Vector2(570+float(i)*43.0,223)
-		var alive: bool = i < lives
-		draw_circle(heart_center,18,Color("#412941") if alive else Color("#202d49"))
-		draw_circle(heart_center,15,Color("#704058") if alive else Color("#293551"))
-		_center("♥",heart_center.x,heart_center.y+9,25,
-			Color("#ff7e9a") if alive else Color("#62718d"))
-
+		var heart_center: Vector2 = Vector2(567+float(i)*43,229)
+		var alive: bool = i<lives
+		var tint: Color = Color("#ff75a9") if alive else Color("#596077")
+		draw_circle(heart_center+Vector2(0,2),18,Color("#080c23"))
+		draw_circle(heart_center,16,Color("#692b5f") if alive else Color("#252a42"))
+		draw_arc(heart_center,17,0,TAU,28,
+			Color(tint.r,tint.g,tint.b,0.72 if alive else 0.26),1.8,true)
+		_center("♥",heart_center.x,heart_center.y+8,25,tint)
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO,size),Color("#080d24"))
 	draw_set_transform(_offset(),0,Vector2.ONE*_scale())
@@ -599,6 +660,7 @@ func _draw() -> void:
 	_draw_status()
 	_draw_pieces()
 	_draw_buttons()
+	_draw_tap_ripple()
 	if glow > 0.0:
 		draw_rect(Rect2(0,0,720,1280),Color(0.8,0.94,1.0,0.055*glow))
 	if praise_timer > 0.0 and phase != "over":
