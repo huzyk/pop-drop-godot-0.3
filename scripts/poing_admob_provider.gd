@@ -16,21 +16,24 @@ var _reward_listener = null
 func _ready() -> void:
 	# Update UMP on every launch; never load ads before the choice is resolved.
 	UserMessagingPlatform.consent_information.update(
-		ConsentRequestParameters.new(),
-		func(): _on_consent_ready(),
-		func(_error): _try_start_ads()
+		ConsentRequestParameters.new(), _on_consent_ready, _on_consent_failed
 	)
+
+func _on_consent_failed(_error) -> void:
+	_try_start_ads() # Only if a previously valid stored consent exists.
 
 func _on_consent_ready() -> void:
 	var info = UserMessagingPlatform.consent_information
 	if info.get_consent_status() == info.ConsentStatus.REQUIRED:
-		UserMessagingPlatform.load_consent_form(
-			func(form):
-				form.show(func(_error): _try_start_ads()),
-			func(_error): _try_start_ads()
-		)
+		UserMessagingPlatform.load_consent_form(_on_consent_form_loaded, _on_consent_failed)
 	else:
 		_try_start_ads()
+
+func _on_consent_form_loaded(form) -> void:
+	form.show(_on_consent_form_closed)
+
+func _on_consent_form_closed(_error) -> void:
+	_try_start_ads()
 
 func _try_start_ads() -> void:
 	var info = UserMessagingPlatform.consent_information
