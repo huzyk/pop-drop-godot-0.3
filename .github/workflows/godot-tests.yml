@@ -34,4 +34,6 @@ jobs:
       - name: Test daily missions and cosmetics
         run: godot --headless --path . --script res://tests/test_gravity_progression.gd
       - name: Test audio and haptics
-        run: godot --headless --path . --script res://tests/test_gravity_feedback.gd
+        run: timeout 40s godot --headless --path . --script res://tests/test_gravity_feedback.gd
+      - name: Smoke test actual main scene (including audio)
+        run: timeout 40s godot --headless --path . --quit-after 10
