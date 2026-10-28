@@ -669,21 +669,33 @@ func _draw() -> void:
 		_draw_game_over()
 	draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
 
-func _draw_praise() -> void:
-	var progress: float = clampf((praise_length-praise_timer)/0.16,0.0,1.0)
-	var bounce: float = 1.0+0.13*sin(progress*PI)
-	var opacity: float = minf(1.0,praise_timer*4.0)
-	var w: float = 370.0*bounce
-	var h: float = 91.0*bounce
-	var rect: Rect2 = Rect2(360.0-w*0.5,565.0-h*0.5,w,h)
-	draw_circle(Vector2(360,565),170,Color(praise_color.r,praise_color.g,praise_color.b,0.12*opacity))
-	_box(rect,Color("#122449"),27,Color("#647fa4"),3)
-	_box(Rect2(rect.position+Vector2(8,8),rect.size-Vector2(16,16)),
-		Color("#1b345d"),22,Color("#3d6284"),1)
-	_spark(Vector2(rect.position.x+21,rect.position.y+12),9,praise_color,opacity)
-	_spark(Vector2(rect.end.x-20,rect.end.y-12),8,praise_color,opacity)
-	_fit_center(praise,360,578,45,320,praise_color)
 
+func _draw_praise() -> void:
+	var progress: float = clampf((praise_length-praise_timer)/0.20,0.0,1.0)
+	var bounce: float = 1.0+0.16*sin(progress*PI)
+	var opacity: float = minf(1.0,praise_timer*4.0)
+	var center: Vector2 = Vector2(360,560)
+	for i in range(3):
+		var radius: float = (142.0+float(i)*44.0)*(0.8+progress*0.25)
+		draw_arc(center,radius,clock*0.42+float(i)*0.6,
+			clock*0.42+float(i)*0.6+PI*1.35,64,
+			Color(praise_color.r,praise_color.g,praise_color.b,
+				(0.21-float(i)*0.045)*opacity),3.5,true)
+	draw_circle(center,188.0,Color(praise_color.r,praise_color.g,praise_color.b,0.10*opacity))
+	var w: float = 420.0*bounce
+	var h: float = 109.0*bounce
+	var rect: Rect2 = Rect2(center-Vector2(w,h)*0.5,Vector2(w,h))
+	_box(Rect2(rect.position+Vector2(0,7),rect.size),Color("#030916"),30)
+	_box(rect,Color("#14142b"),29,Color(praise_color.r,praise_color.g,praise_color.b,0.85),3)
+	_box(Rect2(rect.position+Vector2(8,8),rect.size-Vector2(16,16)),
+		Color("#30204b"),23)
+	_spark(rect.position+Vector2(20,14),12,praise_color,opacity)
+	_spark(rect.end-Vector2(21,12),10,praise_color,opacity)
+	_fit_center(praise,360,center.y+16,54,370,
+		Color(praise_color.r,praise_color.g,praise_color.b,opacity))
+	if chain_depth > 1:
+		_fit_center("COMBO ×%d" % chain_depth,360,center.y-31,16,310,
+			Color("#ffdaaa",opacity))
 func _charged_cells() -> Array:
 	if pending_group.is_empty():
 		return []
@@ -693,11 +705,20 @@ func _charged_cells() -> Array:
 	return pending_group["cells"]
 
 func _draw_board() -> void:
-	# Multiple thin frames suggest a recessed arcade cabinet, not a debug grid.
-	draw_circle(BOARD.get_center(),415,Color("#59d1fa",0.033+glow*0.06))
-	_box(Rect2(20,250,680,680),Color("#111f3e"),38,Color("#293e69"),3)
-	_box(Rect2(27,257,666,666),Color("#263d67"),32,Color("#4c7598"),2)
-	_box(Rect2(36,266,648,648),Color("#0d1834"),23,Color("#132944"),1)
+	# Cabinet-depth border, four illuminated corners, and a living light rail.
+	draw_circle(BOARD.get_center(),430.0,Color("#7c46fd",0.065+glow*0.07))
+	draw_circle(BOARD.get_center(),394.0,Color("#37eafa",0.032+glow*0.05))
+	_box(Rect2(17,247,686,688),Color("#03091b"),39)
+	_box(Rect2(20,249,680,682),Color("#3a265d"),38,Color("#aa70f6",0.53),3)
+	_box(Rect2(26,255,668,670),Color("#10182e"),32,Color("#4f619a"),2)
+	_box(Rect2(35,265,650,650),Color("#080f24"),22,Color("#243b64"),2)
+	_corner(Vector2(36,265),Vector2(1,1),Color("#ff85cf"),32.0)
+	_corner(Vector2(684,265),Vector2(-1,1),Color("#83ecff"),32.0)
+	_corner(Vector2(36,915),Vector2(1,-1),Color("#b28bff"),32.0)
+	_corner(Vector2(684,915),Vector2(-1,-1),Color("#89ffd5"),32.0)
+	var rail: float = 0.5+0.5*sin(clock*1.4)
+	draw_line(Vector2(91,258),Vector2(297,258),Color("#ed8cff",0.29+rail*0.35),3,true)
+	draw_line(Vector2(421,921),Vector2(623,921),Color("#75dafa",0.29+rail*0.35),3,true)
 	# Highlight the whole target column so the 8-column touch mechanic reads.
 	if phase=="drop" and hover_column >= 0 and hover_column < 8:
 		var column_x: float = BOARD.position.x+float(hover_column)*CELL
@@ -713,13 +734,17 @@ func _draw_board() -> void:
 		for x in range(8):
 			var tile: Vector2 = BOARD.position+Vector2(x,y)*CELL
 			_box(Rect2(tile+Vector2(2.5,2.5),Vector2(CELL-5.0,CELL-5.0)),
-				Color("#17294c") if (x+y)%2==0 else Color("#1a2c50"),12,
-				Color("#21395b"),1)
+				Color("#131d38") if (x+y)%2==0 else Color("#192440"),12,
+				Color("#2b365a"),1)
+			# Light at the top of each recessed slot creates tactile separation.
+			draw_line(tile+Vector2(13,5),tile+Vector2(CELL-13,5),
+				Color("#9ebdff",0.085),1.7,true)
 			if phase=="drop" and x==hover_column:
 				draw_rect(Rect2(tile+Vector2(4,4),Vector2(CELL-8.0,CELL-8.0)),
 					Color("#9df7e8",0.085))
 			var center: Vector2 = tile+Vector2(CELL*0.5,CELL*0.5)
-			draw_circle(center,24.0,Color("#0b1834",0.35))
+			draw_circle(center,25.0,Color("#050c21",0.58))
+			draw_arc(center,25.0,PI*0.05,PI*0.92,16,Color("#8ca7f5",0.10),1.3,true)
 			var occupied: bool = board[y][x] != Rules.EMPTY
 			if occupied and not hidden.has(y*8+x):
 				var is_pop: bool = Vector2i(x,y) in flash
@@ -821,62 +846,70 @@ func _draw_particles() -> void:
 			var combo_label: String = "×%d" % int(item.combo)
 			_center(combo_label,location.x,location.y+27,24,Color(0.65,0.98,1.0,fade))
 
+
 func _draw_status() -> void:
-	_box(Rect2(35,931,650,69),Color("#1b2b4f"),23,Color("#344f72"),2)
-	_text(t("move")+" %d" % (moves+1),Vector2(53,959),18,Color("#e8f1ff"))
-	var progress: int = int(pending_group.get("count",0))
-	var actual: int = mini(progress,Rules.POP_THRESHOLD)
-	var cluster_color: Color = COLORS[int(pending_group.get("color",0))]
+	var accent: Color = Color("#8cf8e8")
+	_neon_panel(Rect2(35,935,650,76),accent)
+	var actual: int = mini(int(pending_group.get("count",0)),Rules.POP_THRESHOLD)
+	var bead_color: Color = COLORS[int(pending_group.get("color",0))]
+	_text("%s %02d" % [t("move"),moves+1],Vector2(54,967),22,Color("#faf6ff"))
+	_text(t("charge"),Vector2(232,957),15,Color("#9ab8d7"))
 	for i in range(Rules.POP_THRESHOLD):
-		var dot: Vector2 = Vector2(256+float(i)*35,963)
-		draw_circle(dot,12,Color("#0f1f3a"))
-		draw_circle(dot,8.2,cluster_color if i<actual else Color("#36506b"))
+		var center: Vector2 = Vector2(246+float(i)*40,986)
+		var filled: bool = i<actual
+		draw_circle(center,15,Color("#080d20"))
+		draw_circle(center,12.5,Color(bead_color.r,bead_color.g,bead_color.b,0.27)
+			if filled else Color("#263858"))
+		draw_circle(center,9.2,bead_color if filled else Color("#3b4669"))
+		if filled:
+			draw_circle(center-Vector2(3,3),2.9,Color(1,1,1,0.6))
 		if i==actual-1 and actual>0 and actual<Rules.POP_THRESHOLD:
-			draw_arc(dot,13.2,0,TAU,30,Color("#ffe2a3",0.4+0.3*sin(clock*3.0)),2.0,true)
-	_fit_center("%d/%d" % [actual,Rules.POP_THRESHOLD],326,991,18,135,Color("#ffd990"))
+			draw_arc(center,16.3,0.0,TAU,40,
+				Color("#ffecb9",0.56+0.35*sin(clock*4.5)),2.5,true)
+	_fit_center("%d/%d" % [actual,Rules.POP_THRESHOLD],485,988,22,77,Color("#fff3c2"))
 	var height_used: int = Rules.tallest_column(board)
-	var danger_color: Color = Color("#ff7e93") if height_used>=6 else Color("#b1c6e6")
-	_text("%s %d/8" % [t("danger"),height_used],Vector2(508,957),17,danger_color)
-	_box(Rect2(504,970,162,8),Color("#334463"),4)
-	if height_used>0:
-		draw_rect(Rect2(509,972,147.0*float(height_used)/8.0,4),
-			Color("#ff738c") if height_used>=6 else Color("#69dacc"))
-	if height_used>=6:
-		_fit_center(t("danger_soon"),585,991,13,166,Color("#ff9ead"))
-	else:
-		_fit_center(t("tap_short"),585,991,13,166,Color("#a6bbdd"))
+	var danger: bool = height_used>=6
+	var tint: Color = Color("#ff7fa8") if danger else Color("#7be4c8")
+	_text(t("danger"),Vector2(545,959),15,
+		Color("#ffc0cd") if danger else Color("#b4c1dc"))
+	_box(Rect2(539,971,121,12),Color("#080f26"),6)
+	_box(Rect2(542,974,115.0*float(height_used)/8.0,6),tint,3)
+	_fit_center("%d / 8" % height_used,602,1001,16,117,tint)
+	if danger:
+		draw_line(Vector2(539,1007),Vector2(659,1007),
+			Color("#ff819e",0.4+0.3*sin(clock*6.0)),2,true)
 
 func _draw_pieces() -> void:
-	_text(t("next"),Vector2(48,1016),15,Color("#a4bce1"))
+	_text(t("next"),Vector2(47,1033),16,Color("#e6dcff"))
 	for i in range(3):
-		var rect: Rect2 = Rect2(35+i*219,1026,207,79)
-		var highlight: bool = i==0
-		_box(rect,Color("#23456a") if highlight else Color("#192c4f"),19,
-			Color("#74eedb") if highlight else Color("#3b5278"),2)
-		if highlight:
-			_box(Rect2(rect.position+Vector2(4,4),rect.size-Vector2(8,8)),
-				Color("#235376"),16)
-			draw_circle(Vector2(rect.position.x+176,rect.position.y+17),6,
-				Color("#7ef8d7",0.8))
-		_text("%02d" % (i+1),rect.position+Vector2(12,22),15,
-			Color("#b3ffe8") if highlight else Color("#6e8aaa"))
+		var rect: Rect2 = Rect2(35+i*219,1042,207,71)
+		var active: bool = i==0
+		var accent: Color = Color("#a1fff1") if active else Color("#7388b7")
+		_neon_panel(rect,accent,active)
+		if active:
+			draw_rect(Rect2(rect.position+Vector2(8,8),Vector2(5,rect.size.y-16)),
+				Color("#9af4e5"))
+			_spark(rect.position+Vector2(rect.size.x-17,16),4,
+				Color("#fff3bf"),0.4+0.4*sin(clock*3.0))
+		_fit_center("%02d" % (i+1),rect.position.x+23,
+			rect.position.y+27,16,35,
+			Color("#d7fff5") if active else Color("#9ba9cc"))
 		if i>=pieces.size():
 			continue
 		var piece: Array = pieces[i]
-		var min_x: int = 0
 		var max_x: int = 0
-		var min_y: int = 0
 		var max_y: int = 0
 		for bead in piece:
 			max_x = maxi(max_x,int(bead[0]))
 			max_y = maxi(max_y,int(bead[1]))
-		var step: float = minf(28.0,minf(51.0/float(maxi(1,max_y)),138.0/float(maxi(1,max_x))))
-		var radius: float = minf(15.0,step*0.45)
-		var left: float = rect.get_center().x-float(max_x-min_x)*step*0.5
-		var top: float = rect.get_center().y-float(max_y-min_y)*step*0.5
+		var step: float = minf(29.0,minf(46.0/float(maxi(1,max_y)),
+			136.0/float(maxi(1,max_x))))
+		var radius: float = minf(16.0,step*0.45)
+		var left: float = rect.get_center().x+12.0-float(max_x)*step*0.5
+		var top: float = rect.get_center().y-float(max_y)*step*0.5
 		for bead in piece:
-			_ball(Vector2(left+float(bead[0])*step,top+float(bead[1])*step),
-				radius,int(bead[2]))
+			_ball(Vector2(left+float(bead[0])*step,
+				top+float(bead[1])*step),radius,int(bead[2]))
 func _draw_button_arrow(at: Vector2, clockwise: bool, tint: Color) -> void:
 	draw_arc(at,21.0,-PI*0.70 if clockwise else PI*0.30,
 		PI*0.70 if clockwise else PI*1.70,26,tint,4.0,true)
@@ -884,52 +917,74 @@ func _draw_button_arrow(at: Vector2, clockwise: bool, tint: Color) -> void:
 	draw_line(tip,tip+Vector2(-8,0) if clockwise else tip+Vector2(8,0),tint,3.8,true)
 	draw_line(tip,tip+Vector2(0,9),tint,3.8,true)
 
+
 func _draw_buttons() -> void:
 	var enabled: bool = phase=="drop"
 	for i in range(2):
 		var rect: Rect2 = LEFT_RECT if i==0 else RIGHT_RECT
 		var left: bool = i==0
-		var accent: Color = Color("#ff89a6") if left else Color("#77f0dd")
-		var base: Color = Color("#f86f9a") if left else Color("#55dfcd")
+		var accent: Color = Color("#fb76c0") if left else Color("#53e8e0")
+		var bright: Color = Color("#ffb6e6") if left else Color("#c0fff3")
 		var projected: int = int(preview_left.get("score",0)) if left else int(preview_right.get("score",0))
-		_box(Rect2(rect.position+Vector2(0,5),rect.size),Color("#080f29"),24)
-		_box(rect,base if enabled else Color("#263c61"),24,
-			accent if enabled else Color("#3f547a"),2)
-		_box(Rect2(rect.position+Vector2(5,5),Vector2(rect.size.x-10,rect.size.y*0.39)),
-			Color("#ffc0cb",0.32) if left and enabled else
-			Color("#bbfff3",0.29) if enabled else Color("#43577a"),20)
-		var text_color: Color = Color("#192546") if enabled else Color("#8292ab")
-		var icon_center: Vector2 = Vector2(rect.position.x+42,rect.get_center().y)
-		draw_circle(icon_center,30,Color("#ffffff",0.22) if enabled else Color("#233755"))
-		_draw_button_arrow(icon_center,not left,text_color)
-		_fit_center(t("left") if left else t("right"),rect.position.x+177,
-			rect.position.y+39,25,165,text_color)
-		_center("+%d" % projected if projected>0 else "—",
-			rect.position.x+177,rect.position.y+74,20,
-			Color("#7a2c4f") if left and enabled else
-			Color("#1d726b") if enabled else Color("#8391ac"))
+		var active: bool = enabled and tap_time>0.0 and rect.has_point(tap_point)
+		var base: Color = Color("#632d77") if left else Color("#185f75")
+		_box(Rect2(rect.position+Vector2(0,8),rect.size),Color("#04091b"),27)
+		_box(Rect2(rect.position-Vector2(2,2),rect.size+Vector2(4,4)),
+			Color(accent.r,accent.g,accent.b,0.14),29)
+		_box(rect,base if enabled else Color("#222840"),26,
+			accent if enabled else Color("#586079"),3)
+		_box(Rect2(rect.position+Vector2(6,6),Vector2(rect.size.x-12,35)),
+			Color("#b75b9e",0.24) if left and enabled else
+			Color("#8bf8ff",0.18) if enabled else Color("#555674",0.14),20)
+		draw_line(rect.position+Vector2(23,7),rect.position+Vector2(rect.size.x-23,7),
+			Color(bright.r,bright.g,bright.b,0.65 if enabled else 0.16),2.4,true)
+		var icon_at: Vector2 = rect.position+Vector2(53,46)
+		draw_circle(icon_at,37,Color(accent.r,accent.g,accent.b,0.15) if enabled
+			else Color("#2f3552"))
+		draw_arc(icon_at,33,0,TAU,40,
+			Color(bright.r,bright.g,bright.b,0.74 if enabled else 0.22),2.8,true)
+		_draw_button_arrow(icon_at,not left,
+			Color("#ffffff") if enabled else Color("#8490ad"))
+		_fit_center(t("left") if left else t("right"),
+			rect.position.x+181,rect.position.y+40,25,156,
+			Color.WHITE if enabled else Color("#9fa8c2"))
+		_fit_center("+%d %s" % [projected,"★"] if projected>0 else "↻ 90°",
+			rect.position.x+181,rect.position.y+70,18,164,
+			Color("#fff2bf") if projected>0 and enabled else
+			Color("#cbafd4") if left and enabled else Color("#acdfec"))
+		if active:
+			draw_rect(Rect2(rect.position+Vector2(4,4),rect.size-Vector2(8,8)),
+				Color(1,1,1,0.12))
 		if projected>0 and enabled:
-			_spark(rect.position+Vector2(270,17),6,Color("#fff6d4"),
-				0.6+0.3*sin(clock*3.0))
-	_fit_center(t("ready"),360,1250,17,662,Color("#93b4d6"))
+			_spark(rect.position+Vector2(rect.size.x-18,19),6,bright,
+				0.45+0.38*sin(clock*3.1))
+	_fit_center(t("ready"),360,1250,17,659,Color("#c7bce2"))
 
 func _draw_game_over() -> void:
-	draw_rect(Rect2(0,0,720,1280),Color("#050b1d",0.88))
-	draw_circle(Vector2(360,595),320,Color("#5d4596",0.21))
-	draw_circle(Vector2(360,567),240,Color("#3784a9",0.10))
-	for i in range(12):
-		var angle: float = TAU*float(i)/12.0+clock*0.09
-		var location: Vector2 = Vector2(360,620)+Vector2.from_angle(angle)*280
-		_spark(location,5.0+float(i%3),Color("#fff0c4"),0.35)
-	_box(Rect2(68,387,584,580),Color("#172b4d"),31,Color("#4b718e"),3)
-	_box(Rect2(78,397,564,560),Color("#1c355a"),27,Color("#35587b"),2)
-	_center("✦",360,468,39,Color("#ffe1a1"))
-	_fit_center(t("over"),360,535,48,510,Color("#f7faff"))
-	_center(str(score),360,635,76,Color("#ffdc93"))
-	_fit_center(t("best")+"  "+str(best),360,681,23,480,Color("#b8d2ef"))
-	_box(Rect2(RESTART_RECT.position+Vector2(0,5),RESTART_RECT.size),Color("#090e24"),24)
-	_box(RESTART_RECT,Color("#64ead2"),24,Color("#b5ffec"),2)
-	_fit_center(t("again"),360,774,30,470,Color("#112745"))
-	_box(RESCUE_RECT,Color("#314d76"),22,Color("#557da2"),2)
-	_fit_center(t("rescue"),360,870,26,468,Color.WHITE)
-	_center("DEMO  •  NO ADS",360,935,16,Color("#94b1d1"))
+	draw_rect(Rect2(0,0,720,1280),Color("#030618",0.91))
+	var center: Vector2 = Vector2(360,596)
+	draw_circle(center,360,Color("#69287e",0.18))
+	draw_circle(center,274,Color("#18a9ca",0.10))
+	for i in range(16):
+		var a: float = float(i)*TAU/16.0+clock*0.14
+		var where: Vector2 = center+Vector2.from_angle(a)*(304.0+9.0*sin(clock+float(i)))
+		_spark(where,5.0+float(i%4),Color("#ffdfac"),0.32+0.10*sin(clock*2.0+float(i)))
+	_neon_panel(Rect2(64,375,592,593),Color("#bd95ff"),true)
+	_box(Rect2(78,389,564,565),Color("#211b3d"),26,Color("#7161a4"),1)
+	draw_arc(Vector2(360,484),62,PI*0.1,PI*1.9,60,
+		Color("#e4b7ff",0.62),3.0,true)
+	for i in range(3):
+		var angle: float = clock*0.34+TAU*float(i)/3.0
+		_ball(Vector2(360,480)+Vector2.from_angle(angle)*54.0,18.0,i)
+	_fit_center(t("over"),360,567,51,520,Color.WHITE)
+	_fit_center(t("score"),360,604,18,420,Color("#b6c5e6"))
+	_fit_center(str(score),360,681,83,490,Color("#ffe5a9"))
+	_fit_center(t("best")+"  "+str(best),360,718,23,460,Color("#ddc9ff"))
+	_box(Rect2(RESTART_RECT.position+Vector2(0,7),RESTART_RECT.size),Color("#04091a"),25)
+	_box(RESTART_RECT,Color("#50e6c9"),25,Color("#b8fff0"),3)
+	_box(Rect2(RESTART_RECT.position+Vector2(7,7),Vector2(RESTART_RECT.size.x-14,26)),
+		Color("#c1fff2",0.32),16)
+	_fit_center(t("again"),360,777,30,462,Color("#102846"))
+	_box(RESCUE_RECT,Color("#34365e"),24,Color("#8881bf"),2)
+	_fit_center(t("rescue"),360,870,26,468,Color("#f3eaff"))
+	_center("DEMO · NO ADS",360,941,15,Color("#c0b5d8"))
