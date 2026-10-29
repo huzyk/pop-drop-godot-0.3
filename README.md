@@ -1,3 +1,9 @@
+# POP DROP Gravity 0.9 — polished arcade interface
+
+**UI redesign:** premium HUD at the top, 8×8 game board (576×576), separate enlarged three-card shape selector, spacious rotation controls, and dedicated power-up dock. Touch regions and graphics use the same geometry. Full details: [docs/ARCADE_UI.md](docs/ARCADE_UI.md).
+
+---
+
 # POP DROP Gravity 0.8 — sklep za monety
 
 **Nowość:** monety za POP-y, sklep z bombami 3×3, dodatkowymi 10 sekundami i trwałymi wyglądami kulek. Wynik i XP są odrębne od waluty. W grze kliknij **SKLEP** u góry; na dole są dwa przyciski pomocy. Więcej: [docs/SHOP.md](docs/SHOP.md).
