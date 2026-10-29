@@ -7,6 +7,7 @@ const Ads = preload("res://scripts/gravity_ads.gd")
 const Progression = preload("res://scripts/gravity_progression.gd")
 const Feedback = preload("res://scripts/gravity_feedback.gd")
 const Shop = preload("res://scripts/gravity_shop.gd")
+const BACKDROP: Texture2D = preload("res://assets/ui/arcade_backdrop.svg")
 const FONT = preload("res://fonts/ClearSans-Regular.ttf")
 const BOLD = preload("res://fonts/ClearSans-Bold.ttf")
 # Artist-authored vector sprites imported as textures by Godot (no more circle stacks).
@@ -1108,15 +1109,23 @@ func _spark(at: Vector2, radius: float, tint: Color, opacity: float=1.0) -> void
 
 
 func _neon_panel(rect: Rect2, accent: Color, strong: bool=false) -> void:
-	# Unified premium glass panel: one subtle shadow and one precise edge.
-	var curve: int = 22 if strong else 17
-	_box(Rect2(rect.position+Vector2(0,5),rect.size),Color("#030817",0.72),curve+2)
-	_box(rect,Color("#101a35") if strong else Color("#101a32"),curve,
-		Color(accent.r,accent.g,accent.b,0.60 if strong else 0.32),2 if strong else 1)
-	_box(Rect2(rect.position+Vector2(6,6),Vector2(rect.size.x-12,minf(25,rect.size.y*0.28))),
-		Color(0.65,0.78,1.0,0.045),maxi(5,curve-8))
-	draw_line(rect.position+Vector2(18,4),rect.position+Vector2(rect.size.x-18,4),
-		Color(accent.r,accent.g,accent.b,0.52 if strong else 0.29),1.8,true)
+	# Multi-layer faux glass: shadow, translucent bezel, rim and specular sweep.
+	var curve: int = 22 if strong else 18
+	var edge: float = 0.75 if strong else 0.52
+	_box(rect.grow(2).translated(Vector2(0,6)),Color("#020617",0.76),curve+2)
+	_box(rect.grow(2),Color(accent.r,accent.g,accent.b,0.074),curve+2)
+	_box(rect,Color("#101a35",0.97),curve,
+		Color(accent.r,accent.g,accent.b,edge),2)
+	_box(Rect2(rect.position+Vector2(6,6),
+		Vector2(rect.size.x-12,minf(31,rect.size.y*0.34))),
+		Color("#d4eaff",0.065),maxi(7,curve-7))
+	draw_line(rect.position+Vector2(17,4),
+		rect.position+Vector2(rect.size.x-17,4),
+		Color(accent.r,accent.g,accent.b,0.80 if strong else 0.50),
+		2.2,true)
+	draw_line(rect.position+Vector2(21,rect.size.y-5),
+		rect.position+Vector2(rect.size.x-21,rect.size.y-5),
+		Color("#c0d8ff",0.15),1.2,true)
 func _corner(at: Vector2, direction: Vector2, color: Color, length: float=34.0) -> void:
 	draw_line(at,at+Vector2(direction.x*length,0),Color(color.r,color.g,color.b,0.24),10.0,true)
 	draw_line(at,at+Vector2(0,direction.y*length),Color(color.r,color.g,color.b,0.24),10.0,true)
@@ -1136,9 +1145,11 @@ func _draw_tap_ripple() -> void:
 
 func _ball(center: Vector2, radius: float, color_index: int,
 		alpha: float=1.0, stretch: Vector2=Vector2.ONE) -> void:
-	# One actual high-resolution candy-glass sprite rather than 12 overlapping
-	# flat circles. The authored transparent margin contains the soft glow.
+	# High-resolution candy-glass sprite with a lit rim and subtle physical halo.
 	var marble: Texture2D = MARBLE_TEXTURES[clampi(color_index,0,2)]
+	var tint: Color = COLORS[clampi(color_index,0,2)]
+	draw_circle(center,radius*1.24,
+		Color(tint.r,tint.g,tint.b,0.11*alpha))
 	var half_width: float = radius*1.255*stretch.x
 	var half_height: float = radius*1.255*stretch.y
 	var box: Rect2 = Rect2(center-Vector2(half_width,half_height),
@@ -1147,6 +1158,10 @@ func _ball(center: Vector2, radius: float, color_index: int,
 		var tint: Color = COLORS[clampi(color_index,0,2)]
 		draw_circle(center,radius*1.16,Color(tint.r,tint.g,tint.b,0.13*alpha))
 	draw_texture_rect(marble,box,false,Color(1.0,1.0,1.0,alpha))
+	draw_arc(center,radius*0.992,0,TAU,40,
+		Color(tint.r,tint.g,tint.b,0.48*alpha),1.8,true)
+	draw_arc(center,radius*0.83,-PI*0.79,-PI*0.24,22,
+		Color("#ecfaff",0.47*alpha),1.5,true)
 	if shop != null and shop.equipped_skin == "neon":
 		var tint_neon: Color = COLORS[clampi(color_index,0,2)]
 		draw_arc(center,radius*1.07,0,TAU,42,
@@ -1168,33 +1183,31 @@ func _ball(center: Vector2, radius: float, color_index: int,
 		draw_line(gleam+Vector2(0,-5),gleam+Vector2(0,5),
 			Color(1,1,1,0.85*alpha),1.5,true)
 func _draw_background() -> void:
-	# Scenic but restrained arcade cabinet: a distant moon, stars and horizon.
-	_gradient(Rect2(0,0,720,1280),Color("#060d21"),Color("#1a1237"),36)
-	draw_circle(Vector2(754,477),225,Color("#4e70d9",0.075))
-	draw_circle(Vector2(752,477),152,Color("#7891eb",0.085))
-	draw_circle(Vector2(752,477),116,Color("#b6b2ff",0.055))
-	draw_arc(Vector2(752,477),153,PI*0.43,PI*1.53,52,Color("#cabaff",0.19),1.8,true)
-	draw_circle(Vector2(-110,717),246,Color("#ba409b",0.053))
-	draw_circle(Vector2(386,1217),287,Color("#593ed2",0.10))
-	# Parallax mountain silhouettes, deliberately outside the playable grid.
-	draw_colored_polygon(PackedVector2Array([
-		Vector2(0,966),Vector2(0,781),Vector2(33,824),Vector2(75,797),
-		Vector2(111,855),Vector2(145,824),Vector2(205,906),Vector2(273,861),
-		Vector2(362,952),Vector2(430,865),Vector2(504,922),Vector2(565,852),
-		Vector2(627,891),Vector2(685,822),Vector2(720,850),Vector2(720,966)
-	]),Color("#171b42",0.62))
-	var shimmer: float = 0.73+0.27*sin(clock*0.65)
-	for i in range(41):
-		var x: float = fposmod(float(i*241+59),700.0)+10.0
-		var y: float = fposmod(float(i*179+39),1254.0)+7.0
-		var density: float = 0.13+float(i%4)*0.045*shimmer
-		draw_circle(Vector2(x,y),0.7+float(i%3)*0.48,
-			Color("#c2d6ff",density))
-	# Separate physical control trays: no button touches the shape selection.
-	_box(DOCK_SHAPES.grow(3),Color("#101a35",0.95),27,Color("#5269b0",0.37),1)
-	_box(DOCK_ACTIONS.grow(3),Color("#0a1430",0.94),29,Color("#5867a1",0.31),1)
-	draw_line(Vector2(49,DOCK_SHAPES.position.y+4),
-		Vector2(666,DOCK_SHAPES.position.y+4),Color("#7ebef7",0.19),2,true)
+	# This is a real vector art layer, not a few procedural flat gradients.
+	draw_texture_rect(BACKDROP,Rect2(Vector2.ZERO,BASE),false)
+	# Slow non-distracting glints above the scenic planet and beside the board.
+	for i in range(7):
+		var px: float = 14.0+float(i*113%692)
+		var py: float = 235.0+float(i*137%647)
+		var alpha: float = 0.12+0.13*(0.5+0.5*sin(clock*0.9+float(i)*2.1))
+		_spark(Vector2(px,py),2.4+float(i%3),Color("#b6dfff"),alpha)
+	# Raised shape tray and secondary button deck, with separate light rims.
+	_box(DOCK_SHAPES.grow(3).translated(Vector2(0,7)),
+		Color("#030817",0.81),29)
+	_box(DOCK_SHAPES.grow(3),Color("#131e3e",0.97),27,
+		Color("#6c89d0",0.68),2)
+	_box(Rect2(DOCK_SHAPES.position+Vector2(7,7),
+		Vector2(DOCK_SHAPES.size.x-14,21)),Color("#b9caff",0.058),12)
+	draw_line(Vector2(54,DOCK_SHAPES.position.y+4),
+		Vector2(659,DOCK_SHAPES.position.y+4),
+		Color("#99c4ff",0.51),1.8,true)
+	_box(DOCK_ACTIONS.grow(3).translated(Vector2(0,7)),
+		Color("#030716",0.88),28)
+	_box(DOCK_ACTIONS.grow(3),Color("#101a35",0.96),28,
+		Color("#6d67b6",0.54),2)
+	draw_line(Vector2(57,DOCK_ACTIONS.position.y+4),
+		Vector2(660,DOCK_ACTIONS.position.y+4),
+		Color("#ba92f8",0.28),1.8,true)
 func _draw_header() -> void:
 	# Brand at top left, economy and utility actions on one predictable row.
 	_text("POP",Vector2(24,69),50,Color("#ffffff"))
