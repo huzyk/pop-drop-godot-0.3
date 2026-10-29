@@ -907,8 +907,9 @@ func _check_stuck() -> void:
 		pieces[0] = Rules.next_piece(rng,board,recent_shapes)
 		_remember_shape(pieces[0])
 		if not _any_piece_can_drop(board):
-			# Let the next input recover the board; no recursive losses.
-			board = Rules.empty_board()
+			# Preserve hard obstacles during the last-resort clear.
+			# Only adjacent POPs / bomb damage may actually destroy rocks.
+			board = Rules.clear_marbles(board)
 		selected_piece = 0
 		_refresh_targets()
 	queue_redraw()
