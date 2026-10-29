@@ -1209,37 +1209,44 @@ func _draw_background() -> void:
 		Vector2(660,DOCK_ACTIONS.position.y+4),
 		Color("#ba92f8",0.28),1.8,true)
 func _draw_header() -> void:
-	# Brand at top left, economy and utility actions on one predictable row.
-	_text("POP",Vector2(24,69),50,Color("#ffffff"))
-	_text("DROP",Vector2(133,69),50,Color("#a4fff2"))
-	_text("G R A V I T Y",Vector2(29,103),18,Color("#94aee0"))
-	draw_line(Vector2(26,110),Vector2(109,110),Color("#fb77ae"),3.0,true)
-	draw_line(Vector2(112,110),Vector2(220,110),Color("#53e6d6"),3.0,true)
+	# Brand sign has ambient chromatic edge-light rather than plain white text.
+	_text("POP",Vector2(25,71),51,Color("#334aaf",0.32))
+	_text("DROP",Vector2(137,71),51,Color("#20c6bc",0.25))
+	_text("POP",Vector2(24,69),50,Color("#fffaff"))
+	_text("DROP",Vector2(133,69),50,Color("#a5fff2"))
+	_text("G R A V I T Y",Vector2(29,104),18,Color("#aacaff"))
+	draw_line(Vector2(26,111),Vector2(100,111),Color("#ff79ba"),3.2,true)
+	draw_line(Vector2(107,111),Vector2(228,111),Color("#5ff8e6"),3.2,true)
+	# Distinctive orbital accent beside the title.
+	draw_arc(Vector2(274,59),20,PI*0.8,PI*1.97,27,Color("#fa6fb3",0.53),2.6,true)
+	draw_arc(Vector2(274,59),24,-PI*0.07,PI*0.62,14,Color("#7ceeff",0.55),2.2,true)
+	_spark(Vector2(291,45),3.2,Color("#f8daff"),0.78)
 	_neon_panel(COINS_OPEN,Color("#f7c879"))
-	draw_circle(COINS_OPEN.position+Vector2(24,27),14,Color("#f2af51"))
-	draw_arc(COINS_OPEN.position+Vector2(24,27),11,0,TAU,32,Color("#ffedb1"),2.0,true)
-	_center("★",COINS_OPEN.position.x+24,COINS_OPEN.position.y+34,16,Color("#fff0b8"))
-	_fit_center(str(shop.coins),COINS_OPEN.position.x+88,COINS_OPEN.position.y+36,23,64,Color("#fff2d4"))
+	draw_circle(COINS_OPEN.position+Vector2(24,27),16,Color("#9c5a2b",0.55))
+	draw_circle(COINS_OPEN.position+Vector2(24,27),13,Color("#f2b454"))
+	draw_arc(COINS_OPEN.position+Vector2(24,27),11.5,0,TAU,32,Color("#fff3cb"),2.2,true)
+	_center("★",COINS_OPEN.position.x+24,COINS_OPEN.position.y+34,16,Color("#fff8d9"))
+	_fit_center(str(shop.coins),COINS_OPEN.position.x+88,COINS_OPEN.position.y+36,23,66,Color("#fff4df"))
 	_neon_panel(SHOP_OPEN,Color("#ffd390"))
 	var bag: Vector2 = SHOP_OPEN.get_center()
-	_box(Rect2(bag-Vector2(12,7),Vector2(24,24)),Color("#f1c679"),5,Color("#ffeab3"),1)
-	draw_arc(bag+Vector2(0,-7),8,PI,TAU,20,Color("#fff0c0"),2.3,true)
-	draw_line(bag+Vector2(-6,4),bag+Vector2(6,4),Color("#6e4763"),2,true)
+	_box(Rect2(bag-Vector2(13,7),Vector2(26,25)),Color("#e9b96a"),6,Color("#fff0bd"),2)
+	draw_arc(bag+Vector2(0,-6),8,PI,TAU,20,Color("#fff0c0"),2.3,true)
+	draw_line(bag+Vector2(-7,5),bag+Vector2(7,5),Color("#805176"),2.1,true)
 	_neon_panel(PROFILE_OPEN,Color("#9bcaed"))
 	var person: Vector2 = PROFILE_OPEN.get_center()
-	draw_circle(person+Vector2(0,-7),8.5,Color("#deedff"))
-	draw_arc(person+Vector2(0,24),19,-PI*0.88,-PI*0.12,28,Color("#deedff"),5.3,true)
+	draw_circle(person+Vector2(0,-7),8.5,Color("#ebf5ff"))
+	draw_arc(person+Vector2(0,24),19,-PI*0.88,-PI*0.12,28,Color("#ecf5ff"),5.3,true)
 	_neon_panel(SETTINGS_OPEN,Color("#a7b2f2"))
 	var cog: Vector2 = SETTINGS_OPEN.get_center()
-	draw_arc(cog,13,0,TAU,32,Color("#e8e9ff"),3.1,true)
-	draw_circle(cog,4,Color("#e8e9ff"))
+	draw_arc(cog,13,0,TAU,32,Color("#f1efff"),3.1,true)
+	draw_circle(cog,4,Color("#f1efff"))
 	for spoke in range(8):
 		var angle: float = float(spoke)*TAU/8.0
 		draw_line(cog+Vector2.from_angle(angle)*13,cog+Vector2.from_angle(angle)*18,
-			Color("#e8e9ff"),2.4,true)
+			Color("#f1efff"),2.4,true)
 	_neon_panel(LANG_RECT,Color("#8496d7"))
-	_fit_center(language.to_upper(),LANG_RECT.get_center().x,LANG_RECT.position.y+36,19,
-		LANG_RECT.size.x-8,Color("#e9edff"))
+	_fit_center(language.to_upper(),LANG_RECT.get_center().x,LANG_RECT.position.y+36,
+		19,LANG_RECT.size.x-8,Color("#f2f4ff")
 func _draw_hud() -> void:
 	# The information hierarchy: score / upcoming wave / lives.
 	_neon_panel(HUD_SCORE,Color("#da7dab"))
@@ -1664,41 +1671,51 @@ func _draw_drag_overlay() -> void:
 
 
 func _draw_pieces() -> void:
-	# A dedicated product-like selector, not a tiny utility row.
-	_text(t("next").to_upper(),Vector2(39,944),15,Color("#b8c8e8"))
+	_text(t("next").to_upper(),Vector2(39,944),15,Color("#d0dafa"))
 	var instruction: String = "DOTKNIJ LUB PRZECIĄGNIJ" if language=="pl" else "TAP OR DRAG"
-	_fit_center(instruction,577,944,12,218,Color("#7997c4"))
+	_fit_center(instruction,577,944,12,218,Color("#a2b4d6"))
 	for i in range(pieces.size()):
 		var rect: Rect2 = _piece_card_rect(i)
 		var selected: bool = selected_piece==i
-		var accent: Color = Color("#67f1ef") if selected else Color("#647db0")
-		_box(Rect2(rect.position+Vector2(0,5),rect.size),Color("#030917",0.72),18)
+		var tint: Color = Color("#63f3ef") if selected else Color("#7e8fc2")
+		var pulsing: float = 0.76+0.20*sin(clock*3.6)
+		_box(rect.translated(Vector2(0,6)),Color("#030819",0.90),21)
 		if selected:
-			_box(rect.grow(3),Color("#2970a2",0.18),22)
-		_box(rect,Color("#122a43") if selected else Color("#17213e"),
-			18,Color(accent.r,accent.g,accent.b,0.91 if selected else 0.48),
+			_box(rect.grow(4),Color("#38d7f1",0.105),23)
+		_box(rect,Color("#0d334f") if selected else Color("#17223e"),19,
+			Color(tint.r,tint.g,tint.b,pulsing if selected else 0.52),
 			3 if selected else 2)
-		_box(Rect2(rect.position+Vector2(7,7),Vector2(rect.size.x-14,21)),
-			Color("#9cf9fc",0.10) if selected else Color("#a1b9f7",0.04),12)
-		var emblem: Vector2 = rect.position+Vector2(23,21)
-		draw_circle(emblem,16.3,Color("#1e9fa7") if selected else Color("#303d64"))
-		draw_arc(emblem,16.5,0,TAU,32,accent,2.0,true)
-		_center(str(i+1),emblem.x,emblem.y+6.5,17,Color.WHITE)
+		_box(Rect2(rect.position+Vector2(7,7),Vector2(rect.size.x-14,25)),
+			Color("#b6ffff",0.13) if selected else Color("#c4d4ff",0.07),12)
+		draw_line(rect.position+Vector2(23,rect.size.y-6),
+			rect.position+Vector2(rect.size.x-23,rect.size.y-6),
+			Color("#7afbfc",0.78) if selected else Color("#a4c7ff",0.16),
+			2.2,true)
+		# Fine micro-grid implies a physical capsule rather than a flat UI box.
+		for gx in range(3):
+			for gy in range(2):
+				draw_circle(rect.position+Vector2(72+gx*29,42+gy*28),
+					0.95,Color("#9acafb",0.12))
+		var medallion: Vector2 = rect.position+Vector2(23,20)
+		draw_circle(medallion,17,Color("#19abc3") if selected else Color("#343f69"))
+		draw_arc(medallion,17,0,TAU,32,tint,2,true)
+		_center(str(i+1),medallion.x,medallion.y+6,17,Color.WHITE)
 		var piece: Array = pieces[i]
 		var span: Vector2i = _piece_span(piece)
-		# Keep a four-ball silhouette fully inside the touch target.
-		var step: float = minf(35.0,minf(71.0/float(maxi(1,span.y-1)),
+		var step: float = minf(36.0,minf(72.0/float(maxi(1,span.y-1)),
 			151.0/float(maxi(1,span.x-1))))
-		var radius: float = minf(18.5,step*0.46)
-		var left: float = rect.get_center().x-float(span.x-1)*step*0.5
-		var top: float = rect.get_center().y+3.0-float(span.y-1)*step*0.5
+		var radius: float = minf(19.5,step*0.48)
+		var center_x: float = rect.get_center().x-float(span.x-1)*step*0.5
+		var center_y: float = rect.get_center().y+3.0-float(span.y-1)*step*0.5
 		for bead in piece:
-			_ball(Vector2(left+float(bead[0])*step,top+float(bead[1])*step),
-				radius,int(bead[2]),0.40 if dragging_piece and selected else 1.0)
-		if selected:
-			draw_line(rect.position+Vector2(26,rect.size.y-6),
-				rect.position+Vector2(rect.size.x-26,rect.size.y-6),
-				Color("#87fef0",0.65+0.23*sin(clock*3.2)),2.8,true)
+			var position: Vector2 = Vector2(
+				center_x+float(bead[0])*step,center_y+float(bead[1])*step)
+			var color: Color = COLORS[int(bead[2])]
+			if selected:
+				draw_circle(position,radius*1.48,
+					Color(color.r,color.g,color.b,0.11))
+			_ball(position,radius,int(bead[2]),
+				0.43 if dragging_piece and selected else 1.0)
 func _draw_button_arrow(at: Vector2, clockwise: bool, tint: Color) -> void:
 	# Clear direction glyph with arrowhead anchored to the actual arc.
 	var start: float = -PI*0.65 if clockwise else PI*0.15
