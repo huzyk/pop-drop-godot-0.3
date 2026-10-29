@@ -1,3 +1,9 @@
+# POP DROP Gravity 0.8 — sklep za monety
+
+**Nowość:** monety za POP-y, sklep z bombami 3×3, dodatkowymi 10 sekundami i trwałymi wyglądami kulek. Wynik i XP są odrębne od waluty. W grze kliknij **SKLEP** u góry; na dole są dwa przyciski pomocy. Więcej: [docs/SHOP.md](docs/SHOP.md).
+
+---
+
 # POP DROP Gravity 0.7 — progressive waves and three-hit rocks
 
 **Nowe:** fala napierająca od dołu po **15 sekundach**, potem po 19 / 23 / 27 / 31 / 35 / 39 s (maks. 39 s); 6 kulek w pierwszych falach, później 7 i 8. Co druga fala może dodać twardą skałę (maks. 3 na planszy), która pęka dopiero po **trzech odrębnych POP-ach przylegających bokiem**. Czas stoi podczas animacji i w menu. Zobacz [docs/PRESSURE.md](docs/PRESSURE.md).
