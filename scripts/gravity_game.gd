@@ -6,6 +6,7 @@ const Telemetry = preload("res://scripts/gravity_telemetry.gd")
 const Ads = preload("res://scripts/gravity_ads.gd")
 const Progression = preload("res://scripts/gravity_progression.gd")
 const Feedback = preload("res://scripts/gravity_feedback.gd")
+const Shop = preload("res://scripts/gravity_shop.gd")
 const FONT = preload("res://fonts/ClearSans-Regular.ttf")
 const BOLD = preload("res://fonts/ClearSans-Bold.ttf")
 # Artist-authored vector sprites imported as textures by Godot (no more circle stacks).
@@ -43,6 +44,12 @@ const SETTINGS_HAPTICS := Rect2(114,975,492,67)
 const PROFILE_OPEN := Rect2(365,116,173,42)
 const PROFILE_CLOSE := Rect2(512,265,120,54)
 const PROFILE_CARD := Rect2(54,224,612,906)
+const SHOP_OPEN := Rect2(210,116,143,42)
+const SHOP_CLOSE := Rect2(514,266,120,54)
+const SHOP_TAB_BOOST := Rect2(94,410,251,57)
+const SHOP_TAB_SKINS := Rect2(375,410,251,57)
+const BOOST_BOMB := Rect2(38,1224,308,46)
+const BOOST_TIME := Rect2(374,1224,308,46)
 const PROFILE_TR := {
 	"pl":{"profile":"POSTĘP","level":"POZIOM","short":"POZ.","daily":"DZISIEJSZE MISJE","streak":"SERIA DNI","cosmetics":"WYGLĄD KULEK","drops":"ZRZUĆ KSZTAŁTY","pops":"WYWOŁAJ POP","points":"ZDOBĄDŹ PUNKTY","classic":"KLASYCZNE","aurora":"AURORA","starlight":"GWIEZDNE","locked":"POZ.","selected":"WYBRANE","close":"ZAMKNIJ","done":"UKOŃCZONA","autoclaim":"XP przyznaje się automatycznie"},
 	"en":{"profile":"PROGRESS","level":"LEVEL","short":"LVL","daily":"TODAY'S MISSIONS","streak":"DAY STREAK","cosmetics":"MARBLE SKINS","drops":"DROP PIECES","pops":"TRIGGER POPS","points":"EARN POINTS","classic":"CLASSIC","aurora":"AURORA","starlight":"STARLIGHT","locked":"LVL","selected":"SELECTED","close":"CLOSE","done":"COMPLETE","autoclaim":"XP is awarded automatically"},
@@ -107,6 +114,13 @@ var telemetry = null
 var ads = null
 var feedback = null
 var progression = null
+var shop = null
+var shop_open: bool = false
+var shop_tab: int = 0
+var bomb_aim: bool = false
+var bomb_hover: Vector2i = Vector2i(-1,-1)
+var shop_notice: String = ""
+var shop_notice_time: float = 0.0
 var profile_open: bool = false
 var action_serial: int = 0
 var action_id: String = ""
@@ -150,6 +164,8 @@ func _ready() -> void:
 	progression.load_data()
 	progression.mission_completed.connect(_on_mission_completed)
 	progression.level_reached.connect(_on_level_reached)
+	shop = Shop.new()
+	shop.load_data()
 	var previous: Dictionary = Session.read_progress()
 	if previous.is_empty():
 		new_game()
@@ -197,6 +213,11 @@ func new_game() -> void:
 	action_id = ""
 	mission_notice = ""
 	mission_notice_time = 0.0
+	shop_notice = ""
+	shop_notice_time = 0.0
+	shop_open = false
+	bomb_aim = false
+	bomb_hover = Vector2i(-1,-1)
 	level_fx_time = 0.0
 	wave_number = 0
 	wave_time_left = Rules.wave_interval(0)
@@ -279,6 +300,8 @@ func _restore_progress(data: Dictionary) -> void:
 	wave_number = maxi(0,int(data.get("wave_number",0)))
 	wave_time_left = clampf(float(data.get("wave_time_left",Rules.wave_interval(wave_number))),0.0,Rules.wave_interval(wave_number))
 	wave_queued = false
+	bomb_aim = false
+	shop_open = false
 	best = maxi(best,score)
 	display_score = float(score)
 	selected_piece = 0
@@ -333,10 +356,11 @@ func _on_ad_reward(_transaction: int) -> void:
 func _process(delta: float) -> void:
 	clock += delta
 	mission_notice_time = maxf(0.0,mission_notice_time-delta)
+	shop_notice_time = maxf(0.0,shop_notice_time-delta)
 	level_fx_time = maxf(0.0,level_fx_time-delta)
 	tap_time = maxf(0.0,tap_time-delta)
 	# No countdown during interactions, modal screens, or animated cascades.
-	if phase == "drop" and not settings_open and not profile_open and not wave_queued:
+	if phase == "drop" and not settings_open and not profile_open and not shop_open and not wave_queued:
 		wave_time_left = maxf(0.0,wave_time_left-minf(delta,0.15))
 		if wave_time_left <= 0.0:
 			wave_queued = true
@@ -819,6 +843,10 @@ func _resolve_cascades(fluid: bool=false) -> void:
 				"destroyed":rocks.destroyed.size(),"wave":wave_number
 			})
 		score += payout
+		var earned_coins: int = shop.credit_pop(action_id+":coins:"+str(chain_depth),payout)
+		if earned_coins > 0:
+			shop_notice = "+%d ◉" % earned_coins
+			shop_notice_time = 1.4
 		progression.record_pop(action_id+":pop:"+str(chain_depth),
 			groups.size(),hits.size(),payout,chain_depth)
 		telemetry.track("pop_triggered", {
@@ -960,6 +988,15 @@ func _ball(center: Vector2, radius: float, color_index: int,
 		var tint: Color = COLORS[clampi(color_index,0,2)]
 		draw_circle(center,radius*1.16,Color(tint.r,tint.g,tint.b,0.13*alpha))
 	draw_texture_rect(marble,box,false,Color(1.0,1.0,1.0,alpha))
+	if shop != null and shop.equipped_skin == "neon":
+		var tint_neon: Color = COLORS[clampi(color_index,0,2)]
+		draw_arc(center,radius*1.07,0,TAU,42,
+			Color(tint_neon.r,tint_neon.g,tint_neon.b,0.83*alpha),3.0,true)
+		draw_arc(center,radius*0.79,-PI*0.82,-PI*0.17,19,Color("#ffffff",0.84*alpha),2.8,true)
+	elif shop != null and shop.equipped_skin == "gold":
+		draw_arc(center,radius*1.06,0,TAU,46,Color("#ffd37e",0.96*alpha),3.4,true)
+		draw_circle(center+Vector2(-radius*0.35,-radius*0.49),radius*0.14,
+			Color("#fff4cc",0.74*alpha))
 	if progression != null and progression.skin == "aurora":
 		draw_arc(center,radius*0.91,-PI*0.90,PI*0.12,30,
 			Color("#ddfcff",0.55*alpha),2.3,true)
