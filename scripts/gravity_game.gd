@@ -16,8 +16,21 @@ const MARBLE_TEXTURES = [
 	preload("res://assets/marbles/blue.svg")
 ]
 const BASE := Vector2(720,1280)
-const BOARD := Rect2(44,274,632,632)
-const CELL := 79.0
+# Single 720x1280 design grid; all hit tests share these exact rectangles.
+# Top 0–228 HUD, center 244–820 gameplay, bottom 830–1264 input dock.
+const BOARD := Rect2(72,244,576,576)
+const CELL := 72.0
+const HUD_SCORE := Rect2(23,133,228,90)
+const HUD_WAVE := Rect2(263,133,281,90)
+const HUD_LIVES := Rect2(556,133,141,90)
+const COINS_OPEN := Rect2(296,37,129,55)
+const SHOP_OPEN := Rect2(434,37,54,55)
+const PROFILE_OPEN := Rect2(500,37,55,55)
+const SETTINGS_OPEN := Rect2(565,37,55,55)
+const LANG_RECT := Rect2(630,37,58,55)
+const DOCK_STATUS := Rect2(28,829,664,54)
+const DOCK_SHAPES := Rect2(20,891,680,136)
+const DOCK_ACTIONS := Rect2(20,1038,680,213)
 const COLORS := [Color("#ff7096"),Color("#55dcad"),Color("#62b5ff")]
 const SAVE_FILE := "user://pop_drop_gravity.json"
 const LOCALES := ["pl","en","es","pt","de","fr","ru"]
@@ -30,26 +43,23 @@ const TR := {
 	"fr":{"life":"VIES","tap_short":"TOUCHE COLONNE","score":"SCORE","best":"RECORD","move":"COUP","drop":"TOUCHE UNE COLONNE POUR LÂCHER","turn":"TOURNE OU CONTINUE","left":"GAUCHE","right":"DROITE","skip":"SUITE","next":"CHOISIS UNE FORME","ready":"5 BILLES CONNECTÉES = POP  •  HAUT = -1 VIE","over":"PARTIE FINIE","again":"REJOUER","rescue":"TEST : +1 VIE","lost":"VIE PERDUE","rotate_controls":"TOURNE AVEC LES BOUTONS","rotate_help":"TOURNE POUR LIBÉRER DE LA PLACE","charge":"GROUPE","danger":"HAUTEUR","danger_soon":"ATTENTION AU SOMMET!","overflow":"VIE PERDUE!","hint":"Choisis une colonne pour les billes"},
 	"ru":{"life":"ЖИЗНИ","tap_short":"ВЫБЕРИ СТОЛБЕЦ","score":"ОЧКИ","best":"РЕКОРД","move":"ХОД","drop":"НАЖМИ СТОЛБЕЦ ДЛЯ СБРОСА","turn":"ПОВЕРНИ ИЛИ ПРОДОЛЖИ","left":"ВЛЕВО","right":"ВПРАВО","skip":"ДАЛЕЕ","next":"ВЫБЕРИ ФИГУРУ","ready":"5 СОЕДИНЁННЫХ ШАРОВ = POP  •  ВЕРХ = -1 ЖИЗНЬ","over":"ИГРА ОКОНЧЕНА","again":"ИГРАТЬ СНОВА","rescue":"ТЕСТ: +1 ЖИЗНЬ","lost":"МИНУС ЖИЗНЬ","rotate_controls":"ПОВОРОТ КНОПКАМИ ВНИЗУ","rotate_help":"ПОВЕРНИ, ЧТОБЫ ОСВОБОДИТЬ МЕСТО","charge":"ГРУППА","danger":"ВЫСОТА","danger_soon":"ВНИМАНИЕ: ВЕРХ!","overflow":"МИНУС ЖИЗНЬ!","hint":"Выбери столбец для шариков"}
 }
-const LEFT_RECT := Rect2(35,1123,285,92)
-const RIGHT_RECT := Rect2(400,1123,285,92)
+const LEFT_RECT := Rect2(30,1052,315,94)
+const RIGHT_RECT := Rect2(375,1052,315,94)
 const RESTART_RECT := Rect2(104,722,512,84)
 const RESCUE_RECT := Rect2(104,821,512,79)
-const SETTINGS_OPEN := Rect2(553,116,132,42)
 const SETTINGS_CLOSE := Rect2(476,384,118,54)
 const SETTINGS_TOGGLE := Rect2(120,550,480,80)
 const SETTINGS_ERASE := Rect2(120,654,480,74)
 const SETTINGS_AD_PRIVACY := Rect2(120,748,480,68)
 const SETTINGS_SOUND := Rect2(114,886,492,67)
 const SETTINGS_HAPTICS := Rect2(114,975,492,67)
-const PROFILE_OPEN := Rect2(365,116,173,42)
 const PROFILE_CLOSE := Rect2(512,265,120,54)
 const PROFILE_CARD := Rect2(54,224,612,906)
-const SHOP_OPEN := Rect2(210,116,143,42)
 const SHOP_CLOSE := Rect2(514,266,120,54)
 const SHOP_TAB_BOOST := Rect2(94,410,251,57)
 const SHOP_TAB_SKINS := Rect2(375,410,251,57)
-const BOOST_BOMB := Rect2(38,1224,308,46)
-const BOOST_TIME := Rect2(374,1224,308,46)
+const BOOST_BOMB := Rect2(99,1173,239,63)
+const BOOST_TIME := Rect2(382,1173,239,63)
 const PROFILE_TR := {
 	"pl":{"profile":"POSTĘP","level":"POZIOM","short":"POZ.","daily":"DZISIEJSZE MISJE","streak":"SERIA DNI","cosmetics":"WYGLĄD KULEK","drops":"ZRZUĆ KSZTAŁTY","pops":"WYWOŁAJ POP","points":"ZDOBĄDŹ PUNKTY","classic":"KLASYCZNE","aurora":"AURORA","starlight":"GWIEZDNE","locked":"POZ.","selected":"WYBRANE","close":"ZAMKNIJ","done":"UKOŃCZONA","autoclaim":"XP przyznaje się automatycznie"},
 	"en":{"profile":"PROGRESS","level":"LEVEL","short":"LVL","daily":"TODAY'S MISSIONS","streak":"DAY STREAK","cosmetics":"MARBLE SKINS","drops":"DROP PIECES","pops":"TRIGGER POPS","points":"EARN POINTS","classic":"CLASSIC","aurora":"AURORA","starlight":"STARLIGHT","locked":"LVL","selected":"SELECTED","close":"CLOSE","done":"COMPLETE","autoclaim":"XP is awarded automatically"},
@@ -588,7 +598,7 @@ func _gui_input(event: InputEvent) -> void:
 			ads.show_privacy_options()
 		queue_redraw()
 		return
-	if SHOP_OPEN.has_point(pt) and phase != "anim":
+	if (SHOP_OPEN.has_point(pt) or COINS_OPEN.has_point(pt)) and phase != "anim":
 		shop_open = true
 		shop_tab = 0
 		bomb_aim = false
@@ -628,7 +638,7 @@ func _gui_input(event: InputEvent) -> void:
 				ad_note = "LOADING AD..." if language != "pl" else "ŁADOWANIE REKLAMY..."
 			queue_redraw()
 		return
-	if Rect2(576,53,100,53).has_point(pt):
+	if LANG_RECT.has_point(pt):
 		var index: int = LOCALES.find(language)
 		language = LOCALES[(index+1)%LOCALES.size()]
 		_save()
@@ -1097,19 +1107,15 @@ func _spark(at: Vector2, radius: float, tint: Color, opacity: float=1.0) -> void
 
 
 func _neon_panel(rect: Rect2, accent: Color, strong: bool=false) -> void:
-	# Five depth layers. Keeps shapes readable on small mobile screens.
-	var radius: int = 26 if strong else 20
-	_box(Rect2(rect.position+Vector2(0,7),rect.size),Color("#030817",0.85),radius+2)
-	_box(Rect2(rect.position-Vector2(3,3),rect.size+Vector2(6,6)),
-		Color(accent.r,accent.g,accent.b,0.10),radius+3)
-	_box(rect,Color("#111930") if strong else Color("#131b34"),
-		radius,Color(accent.r,accent.g,accent.b,0.62 if strong else 0.33),2)
-	_box(Rect2(rect.position+Vector2(6,6),rect.size-Vector2(12,12)),
-		Color("#212947",0.48),maxi(9,radius-6))
-	draw_line(rect.position+Vector2(22,8),rect.position+Vector2(rect.size.x-22,8),
-		Color(accent.r,accent.g,accent.b,0.52),2.0,true)
-	draw_circle(rect.position+Vector2(21,18),2.0,Color(1,1,1,0.45))
-
+	# Unified premium glass panel: one subtle shadow and one precise edge.
+	var curve: int = 22 if strong else 17
+	_box(Rect2(rect.position+Vector2(0,5),rect.size),Color("#030817",0.72),curve+2)
+	_box(rect,Color("#101a35") if strong else Color("#101a32"),curve,
+		Color(accent.r,accent.g,accent.b,0.60 if strong else 0.32),2 if strong else 1)
+	_box(Rect2(rect.position+Vector2(6,6),Vector2(rect.size.x-12,minf(25,rect.size.y*0.28))),
+		Color(0.65,0.78,1.0,0.045),maxi(5,curve-8))
+	draw_line(rect.position+Vector2(18,4),rect.position+Vector2(rect.size.x-18,4),
+		Color(accent.r,accent.g,accent.b,0.52 if strong else 0.29),1.8,true)
 func _corner(at: Vector2, direction: Vector2, color: Color, length: float=34.0) -> void:
 	draw_line(at,at+Vector2(direction.x*length,0),Color(color.r,color.g,color.b,0.24),10.0,true)
 	draw_line(at,at+Vector2(0,direction.y*length),Color(color.r,color.g,color.b,0.24),10.0,true)
@@ -1161,80 +1167,89 @@ func _ball(center: Vector2, radius: float, color_index: int,
 		draw_line(gleam+Vector2(0,-5),gleam+Vector2(0,5),
 			Color(1,1,1,0.85*alpha),1.5,true)
 func _draw_background() -> void:
-	_gradient(Rect2(0,0,720,1280),Color("#07081a"),Color("#130b30"),44)
-	# Atmospheric stage lighting with subtle motion, not a static wallpaper.
-	var breathe: float = 0.5+0.5*sin(clock*0.68)
-	draw_circle(Vector2(-140,135),420,Color("#e23f9b",0.055+0.022*breathe))
-	draw_circle(Vector2(817,470),480,Color("#3caaf5",0.085+0.020*breathe))
-	draw_circle(Vector2(360,1130),440,Color("#a04ffe",0.085))
-	draw_circle(Vector2(340,542),480,Color("#294893",0.053))
-	draw_arc(Vector2(380,602),470,PI*0.06,PI*1.65,100,
-		Color("#6384e4",0.12),2.3,true)
-	draw_arc(Vector2(345,598),511,PI*1.15,PI*1.93,70,
-		Color("#ff5da8",0.10),2.1,true)
-	for line_index in range(7):
-		var x: float = float(line_index)*142.0-195.0
-		draw_line(Vector2(x,-10),Vector2(x+470,1280),
-			Color("#a185ef",0.018),1.6,true)
-	for i in range(52):
-		var speed: float = 5.0+float(i%6)*2.2
-		var y: float = fposmod(float(i*173+31)-clock*speed,1320.0)
-		var x: float = fposmod(float(i*257+29),694.0)+13.0
-		var light: float = 0.20+0.24*(0.5+0.5*sin(clock*1.9+float(i)*1.6))
-		if i%7==0:
-			_spark(Vector2(x,y),3.5+float(i%3),Color("#e2efff"),light)
-		else:
-			draw_circle(Vector2(x,y),0.8+float(i%3)*0.6,
-				Color(0.77,0.82,1.0,light))
-
+	# Quiet aurora-and-stars stage; game information remains the focal point.
+	_gradient(Rect2(0,0,720,1280),Color("#070f24"),Color("#15102f"),32)
+	draw_circle(Vector2(748,400),342,Color("#3778d8",0.085))
+	draw_circle(Vector2(-120,840),330,Color("#b64ad4",0.063))
+	draw_circle(Vector2(365,1180),335,Color("#5743c2",0.094))
+	draw_circle(Vector2(652,650),200,Color("#76aeec",0.035))
+	# A calm distant horizon and a few bright dust particles, not random UI noise.
+	draw_arc(Vector2(681,612),344,PI*0.69,PI*1.56,70,Color("#6d85e6",0.09),1.8,true)
+	var shimmer: float = 0.67+0.33*sin(clock*0.7)
+	for i in range(28):
+		var x: float = fposmod(float(i*257+41),706.0)+7.0
+		var y: float = fposmod(float(i*173+91),1258.0)+6.0
+		draw_circle(Vector2(x,y),0.7+float(i%3)*0.4,
+			Color("#c0d2ff",0.13+float(i%4)*0.06*shimmer))
+	# Bottom tray has its own dark material, visually separated from the board.
+	_box(Rect2(7,881,706,382),Color("#0d1430",0.93),29,Color("#4e608f",0.31),1)
+	draw_line(Vector2(34,888),Vector2(687,888),Color("#6b83c8",0.24),1.8,true)
 func _draw_header() -> void:
-	# Branded display typography, rainbow underline and subtle floating emblem.
-	_text("POP",Vector2(36,103),72,Color("#f4f5ff"))
-	_text("DROP",Vector2(188,103),72,Color("#91fff0"))
-	_text("POP",Vector2(37,100),72,Color("#ffffff"))
-	_text("DROP",Vector2(188,100),72,Color("#b8fff3"))
-	for i in range(3):
-		var x: float = 50.0+float(i)*109.0
-		var width: float = 108.0 if i<2 else 73.0
-		draw_line(Vector2(x,116),Vector2(x+width,116),COLORS[i],4.0,true)
-	# Animated mini-molecule gives the header its own recognisable icon.
-	var logo_center: Vector2 = Vector2(447,76)
-	draw_arc(logo_center,27,0,TAU,52,Color("#8394d4",0.31),2.0,true)
-	for i in range(3):
-		var angle: float = clock*0.40+float(i)*TAU/3.0
-		_ball(logo_center+Vector2.from_angle(angle)*22.0,8.5,i)
-	_neon_panel(Rect2(575,48,110,54),Color("#b5b1ff"))
-	_fit_center(language.to_upper(),629,82,22,94,Color("#f7f6ff"))
-	_neon_panel(SETTINGS_OPEN,Color("#b5b1ff"))
-	_fit_center("⚙ DATA",619,144,17,118,Color("#e9e6ff"))
-	_neon_panel(PROFILE_OPEN,Color("#ffdf8b"))
-	_fit_center("%s %d  •  XP" % [profile_t("short"),progression.level()],451,143,17,159,Color("#ffefd3"))
-	_neon_panel(SHOP_OPEN,Color("#ffe2a6"))
-	_fit_center("◉ "+shop_t("shop"),282,144,17,133,Color("#fff0d1"))
-	_text("✦ GRAVITY",Vector2(49,151),18,Color("#d4c2ff"))
-	draw_line(Vector2(316,144),Vector2(551,144),Color("#c695ff",0.23),1.5,true)
-
+	# Brand at top left, economy and utility actions on one predictable row.
+	_text("POP",Vector2(24,69),50,Color("#ffffff"))
+	_text("DROP",Vector2(133,69),50,Color("#a4fff2"))
+	_text("G R A V I T Y",Vector2(29,103),18,Color("#94aee0"))
+	draw_line(Vector2(26,110),Vector2(109,110),Color("#fb77ae"),3.0,true)
+	draw_line(Vector2(112,110),Vector2(220,110),Color("#53e6d6"),3.0,true)
+	_neon_panel(COINS_OPEN,Color("#f7c879"))
+	draw_circle(COINS_OPEN.position+Vector2(24,27),14,Color("#f2af51"))
+	draw_arc(COINS_OPEN.position+Vector2(24,27),11,0,TAU,32,Color("#ffedb1"),2.0,true)
+	_center("★",COINS_OPEN.position.x+24,COINS_OPEN.position.y+34,16,Color("#fff0b8"))
+	_fit_center(str(shop.coins),COINS_OPEN.position.x+88,COINS_OPEN.position.y+36,23,64,Color("#fff2d4"))
+	_neon_panel(SHOP_OPEN,Color("#ffd390"))
+	var bag: Vector2 = SHOP_OPEN.get_center()
+	_box(Rect2(bag-Vector2(12,7),Vector2(24,24)),Color("#f1c679"),5,Color("#ffeab3"),1)
+	draw_arc(bag+Vector2(0,-7),8,PI,TAU,20,Color("#fff0c0"),2.3,true)
+	draw_line(bag+Vector2(-6,4),bag+Vector2(6,4),Color("#6e4763"),2,true)
+	_neon_panel(PROFILE_OPEN,Color("#9bcaed"))
+	var person: Vector2 = PROFILE_OPEN.get_center()
+	draw_circle(person+Vector2(0,-7),8.5,Color("#deedff"))
+	draw_arc(person+Vector2(0,24),19,-PI*0.88,-PI*0.12,28,Color("#deedff"),5.3,true)
+	_neon_panel(SETTINGS_OPEN,Color("#a7b2f2"))
+	var cog: Vector2 = SETTINGS_OPEN.get_center()
+	draw_arc(cog,13,0,TAU,32,Color("#e8e9ff"),3.1,true)
+	draw_circle(cog,4,Color("#e8e9ff"))
+	for spoke in range(8):
+		var angle: float = float(spoke)*TAU/8.0
+		draw_line(cog+Vector2.from_angle(angle)*13,cog+Vector2.from_angle(angle)*18,
+			Color("#e8e9ff"),2.4,true)
+	_neon_panel(LANG_RECT,Color("#8496d7"))
+	_fit_center(language.to_upper(),LANG_RECT.get_center().x,LANG_RECT.position.y+36,19,
+		LANG_RECT.size.x-8,Color("#e9edff"))
 func _draw_hud() -> void:
-	# Score is the hero. Best and hearts become a compact game dashboard.
-	_neon_panel(Rect2(35,170,337,89),Color("#ff79bb"),true)
-	draw_rect(Rect2(51,189,4,49),Color("#ff81b9"))
-	_text(t("score"),Vector2(69,196),16,Color("#f7b7d4"))
-	_text(str(int(round(display_score))),Vector2(67,246),48,Color.WHITE)
-	_spark(Vector2(346,190),5,Color("#ffa6d1"),0.40+0.35*sin(clock*2.6))
-	_neon_panel(Rect2(385,170,139,89),Color("#ffd48d"))
-	_fit_center(t("best"),455,197,15,124,Color("#e4caad"))
-	_fit_center(str(best),455,242,34,121,Color("#fff0b6"))
-	_neon_panel(Rect2(537,170,148,89),Color("#ff729e"))
-	_fit_center(t("life"),609,194,14,136,Color("#edbad4"))
+	# The information hierarchy: score / upcoming wave / lives.
+	_neon_panel(HUD_SCORE,Color("#da7dab"))
+	_text(t("score").to_upper(),Vector2(39,158),14,Color("#bdadd4"))
+	_fit_center(str(int(round(display_score))),HUD_SCORE.position.x+86,HUD_SCORE.position.y+72,
+		37,177,Color("#ffffff"))
+	_fit_center(t("best")+": "+str(best),HUD_SCORE.position.x+150,HUD_SCORE.position.y+24,
+		12,125,Color("#f0cd91"))
+	_neon_panel(HUD_WAVE,Color("#ba91fa"))
+	_fit_center(("FALA" if language=="pl" else "WAVE")+" %d" % (wave_number+1),
+		HUD_WAVE.position.x+70,HUD_WAVE.position.y+30,19,123,Color("#b9dcff"))
+	var warning: bool = wave_time_left<=5.0
+	_fit_center("%02d:%02d" % [int(wave_time_left)/60,int(ceil(wave_time_left))%60],
+		HUD_WAVE.position.x+220,HUD_WAVE.position.y+33,25,96,
+		Color("#ffb1b8") if warning else Color("#ffffff"))
+	var interval: float = maxf(1.0,Rules.wave_interval(wave_number))
+	var progress: float = 1.0-clampf(wave_time_left/interval,0.0,1.0)
+	_box(Rect2(HUD_WAVE.position+Vector2(19,54),Vector2(243,13)),Color("#070f25"),7,
+		Color("#4e4c86"),1)
+	_box(Rect2(HUD_WAVE.position+Vector2(23,58),Vector2(maxf(1.0,235.0*progress),5)),
+		Color("#ff819f") if warning else Color("#bb86fb"),4)
+	if warning:
+		_spark(HUD_WAVE.position+Vector2(255,63),4,Color("#ffd6af"),0.6+0.4*sin(clock*9.0))
+	_neon_panel(HUD_LIVES,Color("#fb8fb6"))
+	_fit_center(t("life").to_upper(),HUD_LIVES.get_center().x,HUD_LIVES.position.y+24,
+		14,119,Color("#dec2d4"))
 	for i in range(3):
-		var heart_center: Vector2 = Vector2(567+float(i)*43,229)
 		var alive: bool = i<lives
-		var tint: Color = Color("#ff75a9") if alive else Color("#596077")
-		draw_circle(heart_center+Vector2(0,2),18,Color("#080c23"))
-		draw_circle(heart_center,16,Color("#692b5f") if alive else Color("#252a42"))
-		draw_arc(heart_center,17,0,TAU,28,
-			Color(tint.r,tint.g,tint.b,0.72 if alive else 0.26),1.8,true)
-		_center("♥",heart_center.x,heart_center.y+8,25,tint)
+		var position: Vector2 = Vector2(HUD_LIVES.position.x+29+i*43,HUD_LIVES.position.y+64)
+		draw_circle(position,18,Color("#3b284d") if alive else Color("#1d2643"))
+		draw_arc(position,18,0,TAU,34,
+			Color("#fca6bf",0.5) if alive else Color("#4c5a7f",0.38),1.5,true)
+		_center("♥",position.x,position.y+9,26,
+			Color("#ff8cb0") if alive else Color("#556582"))
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO,size),Color("#080d24"))
 	draw_set_transform(_offset(),0,Vector2.ONE*_scale())
@@ -1264,12 +1279,8 @@ func _draw() -> void:
 		_draw_praise()
 	if phase == "over":
 		_draw_game_over()
-		_neon_panel(SETTINGS_OPEN,Color("#b5b1ff"))
-		_fit_center("⚙ DATA",619,144,17,118,Color("#e9e6ff"))
-		_neon_panel(PROFILE_OPEN,Color("#ffdf8b"))
-		_fit_center("%s %d  •  XP" % [profile_t("short"),progression.level()],451,143,17,159,Color("#ffefd3"))
-		_neon_panel(SHOP_OPEN,Color("#ffe2a6"))
-		_fit_center("◉ "+shop_t("shop"),282,144,17,133,Color("#fff0d1"))
+		# Keep the same familiar shop/profile/settings positions on the end screen.
+		_draw_header()
 	if shop_notice_time > 0 and not settings_open and not profile_open and not shop_open:
 		_draw_shop_notice()
 	if mission_notice_time > 0 and not settings_open and not profile_open:
@@ -1368,19 +1379,20 @@ func _draw_rock(center: Vector2, stone: int, alpha: float = 1.0) -> void:
 
 func _draw_board() -> void:
 	# Cabinet-depth border, four illuminated corners, and a living light rail.
-	draw_circle(BOARD.get_center(),430.0,Color("#7c46fd",0.065+glow*0.07))
-	draw_circle(BOARD.get_center(),394.0,Color("#37eafa",0.032+glow*0.05))
-	_box(Rect2(17,247,686,688),Color("#03091b"),39)
-	_box(Rect2(20,249,680,682),Color("#3a265d"),38,Color("#aa70f6",0.53),3)
-	_box(Rect2(26,255,668,670),Color("#10182e"),32,Color("#4f619a"),2)
-	_box(Rect2(35,265,650,650),Color("#080f24"),22,Color("#243b64"),2)
-	_corner(Vector2(36,265),Vector2(1,1),Color("#ff85cf"),32.0)
-	_corner(Vector2(684,265),Vector2(-1,1),Color("#83ecff"),32.0)
-	_corner(Vector2(36,915),Vector2(1,-1),Color("#b28bff"),32.0)
-	_corner(Vector2(684,915),Vector2(-1,-1),Color("#89ffd5"),32.0)
-	var rail: float = 0.5+0.5*sin(clock*1.4)
-	draw_line(Vector2(91,258),Vector2(297,258),Color("#ed8cff",0.29+rail*0.35),3,true)
-	draw_line(Vector2(421,921),Vector2(623,921),Color("#75dafa",0.29+rail*0.35),3,true)
+	# Slim luminous cabinet, with depth but without four competing outlines.
+	var frame: Rect2 = BOARD.grow(13)
+	_box(frame.grow(5),Color("#020716",0.84),30)
+	_box(frame,Color("#263453"),25,Color("#8799df",0.55),2)
+	_box(BOARD.grow(5),Color("#080f23"),18,Color("#263d64"),2)
+	var rail: float = 0.66+0.28*sin(clock*1.35)
+	draw_line(frame.position+Vector2(30,3),
+		frame.position+Vector2(frame.size.x*0.45,3),
+		Color("#fb7ab9",0.75*rail),3.4,true)
+	draw_line(frame.position+Vector2(frame.size.x*0.56,frame.size.y-3),
+		frame.position+Vector2(frame.size.x-30,frame.size.y-3),
+		Color("#71e9ec",0.77*rail),3.4,true)
+	_corner(frame.position+Vector2(5,5),Vector2(1,1),Color("#ff85bd"),18)
+	_corner(frame.position+frame.size-Vector2(5,5),Vector2(-1,-1),Color("#75e9f2"),18)
 	# Highlight the whole target column so the 8-column touch mechanic reads.
 	if phase=="drop" and hover_column >= 0 and hover_column < 8:
 		var column_x: float = BOARD.position.x+float(hover_column)*CELL
@@ -1395,18 +1407,18 @@ func _draw_board() -> void:
 	for y in range(8):
 		for x in range(8):
 			var tile: Vector2 = BOARD.position+Vector2(x,y)*CELL
-			_box(Rect2(tile+Vector2(2.5,2.5),Vector2(CELL-5.0,CELL-5.0)),
-				Color("#131d38") if (x+y)%2==0 else Color("#192440"),12,
-				Color("#2b365a"),1)
-			# Light at the top of each recessed slot creates tactile separation.
-			draw_line(tile+Vector2(13,5),tile+Vector2(CELL-13,5),
-				Color("#9ebdff",0.085),1.7,true)
+			_box(Rect2(tile+Vector2(2,2),Vector2(CELL-4.0,CELL-4.0)),
+				Color("#101c36") if (x+y)%2==0 else Color("#14213c"),10,
+				Color("#334468",0.75),1)
+			draw_line(tile+Vector2(14,5),tile+Vector2(CELL-14,5),
+				Color("#a8c7fd",0.10),1.4,true)
 			if phase=="drop" and x==hover_column:
 				draw_rect(Rect2(tile+Vector2(4,4),Vector2(CELL-8.0,CELL-8.0)),
 					Color("#9df7e8",0.085))
 			var center: Vector2 = tile+Vector2(CELL*0.5,CELL*0.5)
-			draw_circle(center,25.0,Color("#050c21",0.58))
-			draw_arc(center,25.0,PI*0.05,PI*0.92,16,Color("#8ca7f5",0.10),1.3,true)
+			draw_circle(center,CELL*0.32,Color("#060c20",0.68))
+			draw_arc(center,CELL*0.32,-PI*0.87,-PI*0.06,22,
+				Color("#8aa7ef",0.09),1.5,true)
 			var occupied: bool = board[y][x] != Rules.EMPTY
 			if occupied and not hidden.has(y*8+x) and Rules.is_rock(int(board[y][x])):
 				_draw_rock(center,int(board[y][x]))
@@ -1542,58 +1554,33 @@ func _draw_particles() -> void:
 
 
 func _draw_status() -> void:
-	var accent: Color = Color("#8cf8e8")
-	_neon_panel(Rect2(35,935,650,76),accent)
+	_neon_panel(DOCK_STATUS,Color("#6d99c6"))
+	_fit_center("%s %02d" % [t("move"),moves+1],112,865,19,159,Color("#f2f6ff"))
+	draw_line(Vector2(205,839),Vector2(205,873),Color("#54668a",0.50),1.2,true)
 	var actual: int = mini(int(pending_group.get("count",0)),Rules.POP_THRESHOLD)
-	var bead_color: Color = COLORS[int(pending_group.get("color",0))]
-	_text("%s %02d" % [t("move"),moves+1],Vector2(54,967),22,Color("#faf6ff"))
-	_text(t("charge"),Vector2(232,957),15,Color("#9ab8d7"))
+	var bead_color: Color = COLORS[clampi(int(pending_group.get("color",0)),0,2)]
+	_fit_center(t("charge").to_upper(),286,845,13,124,Color("#9aaccd"))
 	for i in range(Rules.POP_THRESHOLD):
-		var center: Vector2 = Vector2(246+float(i)*40,986)
-		var filled: bool = i<actual
-		draw_circle(center,15,Color("#080d20"))
-		draw_circle(center,12.5,Color(bead_color.r,bead_color.g,bead_color.b,0.27)
-			if filled else Color("#263858"))
-		draw_circle(center,9.2,bead_color if filled else Color("#3b4669"))
-		if filled:
-			draw_circle(center-Vector2(3,3),2.9,Color(1,1,1,0.6))
-		if i==actual-1 and actual>0 and actual<Rules.POP_THRESHOLD:
-			draw_arc(center,16.3,0.0,TAU,40,
-				Color("#ffecb9",0.56+0.35*sin(clock*4.5)),2.5,true)
-	_fit_center("%d/%d" % [actual,Rules.POP_THRESHOLD],485,988,22,77,Color("#fff3c2"))
+		var center: Vector2 = Vector2(236+float(i)*31,863)
+		var lit: bool = i<actual
+		draw_circle(center,11.8,Color("#080f24"))
+		draw_circle(center,9.3,bead_color if lit else Color("#394463"))
+		if lit:
+			draw_circle(center+Vector2(-3,-3),2.4,Color(1,1,1,0.62))
+	_fit_center("%d/5" % actual,436,865,21,70,Color("#ffdfbd"))
+	draw_line(Vector2(478,840),Vector2(478,873),Color("#54668a",0.50),1.2,true)
 	var height_used: int = Rules.tallest_column(board)
-	var danger: bool = height_used>=6
-	var tint: Color = Color("#ff7fa8") if danger else Color("#7be4c8")
-	_text(t("danger"),Vector2(545,959),15,
-		Color("#ffc0cd") if danger else Color("#b4c1dc"))
-	_box(Rect2(539,971,121,12),Color("#080f26"),6)
-	_box(Rect2(542,974,115.0*float(height_used)/8.0,6),tint,3)
-	_fit_center("%d / 8" % height_used,602,1001,16,117,tint)
-	if danger:
-		draw_line(Vector2(539,1007),Vector2(659,1007),
-			Color("#ff819e",0.4+0.3*sin(clock*6.0)),2,true)
-
-
-# Shared layout / gameplay mapping so mouse, drag and ghost cannot disagree.
+	var warning: bool = height_used>=6
+	var accent: Color = Color("#fb799e") if warning else Color("#82e3c6")
+	_fit_center(t("danger").to_upper(),574,845,13,157,Color("#a2b4d4"))
+	_box(Rect2(510,853,129,9),Color("#080f22"),5)
+	_box(Rect2(512,855,125.0*float(height_used)/8.0,5),accent,4)
+	_fit_center("%d/8" % height_used,662,865,17,49,accent)
 func _draw_wave_timer() -> void:
-	# Narrow cabinet-edge display: always in view, never blocks a touch target.
-	if phase == "over":
-		return
-	var warning: bool = wave_time_left <= 5.0
-	var accent: Color = Color("#ff7891") if warning else Color("#ffcb93")
-	var glow_power: float = 0.58+0.34*sin(clock*10.0) if warning else 0.90
-	_box(Rect2(230,253,260,23),Color("#0a1025",0.94),11,
-		Color(accent.r,accent.g,accent.b,0.73*glow_power),1)
-	var current: float = Rules.wave_interval(wave_number)
-	var fraction: float = clampf(wave_time_left/current,0.0,1.0)
-	_box(Rect2(235,271,250.0*fraction,3),accent,2)
-	var text_value: String = ("FALA" if language == "pl" else "WAVE")
-	text_value += " %02d  •  %02ds" % [wave_number+1,int(ceil(wave_time_left))]
-	_fit_center(text_value,360,270,16,247,Color("#fff6ec") if warning else Color("#f5dfc9"))
-
+	# Integrated into the HUD; keep a single timer instead of duplicate strips.
+	pass
 func _piece_card_rect(index: int) -> Rect2:
-	return Rect2(35+index*219,1042,207,71)
-
+	return Rect2(28+index*229,912,207,106)
 func _piece_span(piece: Array) -> Vector2i:
 	var largest: Vector2i = Vector2i.ZERO
 	for bead in piece:
@@ -1651,82 +1638,78 @@ func _draw_drag_overlay() -> void:
 
 
 func _draw_pieces() -> void:
-	_text(t("next"),Vector2(47,1033),17,Color("#e6dcff"))
+	# Shape selector is now its own dock: 34px clear of the rotate controls.
+	_text(t("next").to_upper(),Vector2(35,905),15,Color("#aab9df"))
 	for i in range(pieces.size()):
 		var rect: Rect2 = _piece_card_rect(i)
-		var active: bool = selected_piece==i
-		var accent: Color = Color("#a1fff1") if active else Color("#8792c8")
-		_neon_panel(rect,accent,active)
-		if active:
-			draw_rect(Rect2(rect.position+Vector2(8,8),Vector2(5,rect.size.y-16)),Color("#9af4e5"))
-			_spark(rect.position+Vector2(rect.size.x-17,16),5,
-				Color("#fff3bf"),0.4+0.4*sin(clock*3.0))
+		var active: bool = selected_piece == i
+		var pulse: float = 0.72+0.19*sin(clock*3.2)
+		var accent: Color = Color("#73f7eb") if active else Color("#667aa9")
+		_box(Rect2(rect.position+Vector2(0,4),rect.size),Color("#060b1b",0.8),18)
+		_box(rect,Color("#122d42") if active else Color("#17213b"),17,
+			Color(accent.r,accent.g,accent.b,pulse if active else 0.44),
+			3 if active else 1)
+		_box(Rect2(rect.position+Vector2(7,8),Vector2(rect.size.x-14,23)),
+			Color("#b3fff4",0.075) if active else Color("#a4bdf0",0.032),9)
+		draw_circle(rect.position+Vector2(25,22),18,
+			Color("#37baa9") if active else Color("#303b5c"))
+		draw_arc(rect.position+Vector2(25,22),18,0,TAU,28,accent,1.5,true)
+		_center(str(i+1),rect.position.x+25,rect.position.y+29,19,
+			Color.WHITE if active else Color("#c8d0e7"))
 		var piece: Array = pieces[i]
 		var span: Vector2i = _piece_span(piece)
-		var step: float = minf(29.0,minf(46.0/float(maxi(1,span.y-1)),
-			136.0/float(maxi(1,span.x-1))))
-		var radius: float = minf(16.0,step*0.45)
-		var left: float = rect.get_center().x+12.0-float(span.x-1)*step*0.5
-		var top: float = rect.get_center().y-float(span.y-1)*step*0.5
-		_fit_center("%02d" % (i+1),rect.position.x+23,
-			rect.position.y+27,16,35,
-			Color("#d7fff5") if active else Color("#9ba9cc"))
+		var step: float = minf(33.0,minf(66.0/float(maxi(1,span.y-1)),
+			146.0/float(maxi(1,span.x-1))))
+		var radius: float = minf(19.0,step*0.48)
+		var left: float = rect.get_center().x-float(span.x-1)*step*0.5
+		var top: float = rect.get_center().y+9.0-float(span.y-1)*step*0.5
 		for bead in piece:
 			_ball(Vector2(left+float(bead[0])*step,top+float(bead[1])*step),
-				radius,int(bead[2]),0.42 if dragging_piece and active else 1.0)
+				radius,int(bead[2]),0.40 if dragging_piece and active else 1.0)
 		if active and not dragging_piece:
-			draw_line(rect.position+Vector2(64,62),rect.position+Vector2(178,62),
-				Color("#b6fff4",0.62),2.4,true)
+			draw_line(rect.position+Vector2(24,rect.size.y-7),
+				rect.position+Vector2(rect.size.x-24,rect.size.y-7),
+				Color("#79f8e6",0.50+0.28*sin(clock*3.0)),2.2,true)
 func _draw_button_arrow(at: Vector2, clockwise: bool, tint: Color) -> void:
-	draw_arc(at,21.0,-PI*0.70 if clockwise else PI*0.30,
-		PI*0.70 if clockwise else PI*1.70,26,tint,4.0,true)
-	var tip: Vector2 = at+Vector2(15.0,-15.0) if clockwise else at+Vector2(-15.0,-15.0)
-	draw_line(tip,tip+Vector2(-8,0) if clockwise else tip+Vector2(8,0),tint,3.8,true)
-	draw_line(tip,tip+Vector2(0,9),tint,3.8,true)
-
-
+	# Clear direction glyph with arrowhead anchored to the actual arc.
+	var start: float = -PI*0.65 if clockwise else PI*0.15
+	var finish: float = PI*0.73 if clockwise else PI*1.52
+	draw_arc(at,24,start,finish,40,tint,4.4,true)
+	var tip: Vector2 = at+Vector2.from_angle(finish if clockwise else start)*24
+	var direction: Vector2 = Vector2.from_angle(finish+PI*0.77 if clockwise else start-PI*0.77)
+	draw_line(tip,tip+direction*12,tint,4.5,true)
+	draw_line(tip,tip+direction.rotated(PI*0.49)*12,tint,4.5,true)
 func _draw_buttons() -> void:
 	var enabled: bool = phase=="drop"
 	for i in range(2):
-		var rect: Rect2 = LEFT_RECT if i==0 else RIGHT_RECT
 		var left: bool = i==0
-		var accent: Color = Color("#fb76c0") if left else Color("#53e8e0")
-		var bright: Color = Color("#ffb6e6") if left else Color("#c0fff3")
-		var projected: int = int(preview_left.get("score",0)) if left else int(preview_right.get("score",0))
-		var active: bool = enabled and tap_time>0.0 and rect.has_point(tap_point)
-		var base: Color = Color("#632d77") if left else Color("#185f75")
-		_box(Rect2(rect.position+Vector2(0,8),rect.size),Color("#04091b"),27)
-		_box(Rect2(rect.position-Vector2(2,2),rect.size+Vector2(4,4)),
-			Color(accent.r,accent.g,accent.b,0.14),29)
-		_box(rect,base if enabled else Color("#222840"),26,
-			accent if enabled else Color("#586079"),3)
-		_box(Rect2(rect.position+Vector2(6,6),Vector2(rect.size.x-12,35)),
-			Color("#b75b9e",0.24) if left and enabled else
-			Color("#8bf8ff",0.18) if enabled else Color("#555674",0.14),20)
-		draw_line(rect.position+Vector2(23,7),rect.position+Vector2(rect.size.x-23,7),
-			Color(bright.r,bright.g,bright.b,0.65 if enabled else 0.16),2.4,true)
-		var icon_at: Vector2 = rect.position+Vector2(53,46)
-		draw_circle(icon_at,37,Color(accent.r,accent.g,accent.b,0.15) if enabled
-			else Color("#2f3552"))
-		draw_arc(icon_at,33,0,TAU,40,
-			Color(bright.r,bright.g,bright.b,0.74 if enabled else 0.22),2.8,true)
-		_draw_button_arrow(icon_at,not left,
-			Color("#ffffff") if enabled else Color("#8490ad"))
+		var rect: Rect2 = LEFT_RECT if left else RIGHT_RECT
+		var accent: Color = Color("#ff82c6") if left else Color("#66f4f2")
+		var highlight: Color = Color("#ffd3eb") if left else Color("#d6fffd")
+		var base: Color = Color("#773a81") if left else Color("#1a7081")
+		var score_hint: int = int(preview_left.get("score",0)) if left else int(preview_right.get("score",0))
+		var pressed: bool = enabled and tap_time>0.0 and rect.has_point(tap_point)
+		var shadow: Rect2 = Rect2(rect.position+Vector2(0,7),rect.size)
+		_box(shadow,Color("#030914",0.85),23)
+		_box(rect,base if enabled else Color("#30384c"),23,
+			accent if enabled else Color("#61718e"),3)
+		_box(Rect2(rect.position+Vector2(8,7),Vector2(rect.size.x-16,32)),
+			Color(1,1,1,0.095 if enabled else 0.028),15)
+		var disc: Vector2 = rect.position+Vector2(56,48)
+		draw_circle(disc,33,Color("#0a1730",0.33))
+		draw_arc(disc,31,0,TAU,34,Color(highlight.r,highlight.g,highlight.b,0.62),2,true)
+		_draw_button_arrow(disc,not left,Color.WHITE if enabled else Color("#8695a9"))
 		_fit_center(t("left") if left else t("right"),
-			rect.position.x+181,rect.position.y+40,25,156,
-			Color.WHITE if enabled else Color("#9fa8c2"))
-		_fit_center("+%d %s" % [projected,"★"] if projected>0 else "↻ 90°",
-			rect.position.x+181,rect.position.y+70,18,164,
-			Color("#fff2bf") if projected>0 and enabled else
-			Color("#cbafd4") if left and enabled else Color("#acdfec"))
-		if active:
-			draw_rect(Rect2(rect.position+Vector2(4,4),rect.size-Vector2(8,8)),
-				Color(1,1,1,0.12))
-		if projected>0 and enabled:
-			_spark(rect.position+Vector2(rect.size.x-18,19),6,bright,
-				0.45+0.38*sin(clock*3.1))
-	# The bottom safe strip now contains two one-use boost buttons.
-
+			rect.position.x+207,rect.position.y+39,26,198,
+			Color.WHITE if enabled else Color("#a2adc1"))
+		_fit_center("+%d ★" % score_hint if score_hint>0 else "↻ 90°",
+			rect.position.x+207,rect.position.y+73,19,185,
+			Color("#fff2b9") if score_hint>0 else Color("#cee9ee"))
+		if pressed:
+			_box(Rect2(rect.position+Vector2(6,6),rect.size-Vector2(12,12)),
+				Color(1,1,1,0.09),19)
+		if score_hint>0 and enabled:
+			_spark(rect.position+Vector2(rect.size.x-18,15),5,highlight,0.7)
 func _draw_game_over() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#030618",0.91))
 	var center: Vector2 = Vector2(360,596)
@@ -1763,8 +1746,8 @@ func _draw_game_over() -> void:
 
 func _draw_settings() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#030618",0.94))
-	_neon_panel(Rect2(72,342,576,735),Color("#88e4ec"),true)
-	_fit_center("PRYWATNOŚĆ" if language == "pl" else "PRIVACY",308,414,40,420,Color.WHITE)
+	_neon_panel(Rect2(72,342,576,735),Color("#8bbde0"),true)
+	_fit_center("USTAWIENIA" if language == "pl" else "SETTINGS",304,414,38,390,Color.WHITE)
 	_box(SETTINGS_CLOSE,Color("#494e78"),18,Color("#a2b0d9"),2)
 	_fit_center("ZAMKNIJ" if language == "pl" else "CLOSE",535,420,17,106,Color.WHITE)
 	_fit_center("ANALITYKA GRY" if language == "pl" else "GAME ANALYTICS",360,513,22,445,Color("#d0e8fa"))
@@ -1811,14 +1794,14 @@ func _draw_level_celebration() -> void:
 
 func _draw_mission_toast() -> void:
 	var strength: float = minf(1.0,mission_notice_time/0.24)
-	_box(Rect2(166,879,388,56),Color("#162943",0.94*strength),22,
+	_box(Rect2(166,755,388,56),Color("#162943",0.94*strength),22,
 		Color("#f8d99e",0.7*strength),2)
-	_fit_center(mission_notice,360,916,24,359,
+	_fit_center(mission_notice,360,792,24,359,
 		Color(1.0,0.91,0.66,strength))
 
 func _draw_profile() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#030618",0.95))
-	_neon_panel(PROFILE_CARD,Color("#b9a0ff"),true)
+	_neon_panel(PROFILE_CARD,Color("#9bb9ed"),true)
 	_box(Rect2(66,236,588,880),Color("#141b38"),28,Color("#657ab2"),2)
 	_fit_center(profile_t("profile"),295,309,39,440,Color.WHITE)
 	_box(PROFILE_CLOSE,Color("#414b77"),18,Color("#8d9ed1"),2)
@@ -1864,38 +1847,56 @@ func _draw_profile() -> void:
 
 func _draw_shop_notice() -> void:
 	var alpha: float = minf(1.0,shop_notice_time/0.25)
-	_box(Rect2(183,872,354,59),Color("#252740",0.95*alpha),21,
-		Color("#f9dba4",0.67*alpha),2)
-	_fit_center(shop_notice,360,910,23,327,Color(1,0.93,0.72,alpha))
+	_box(Rect2(198,739,324,56),Color("#252740",0.94*alpha),19,
+		Color("#f9dba4",0.73*alpha),2)
+	_fit_center(shop_notice,360,774,23,303,Color(1,0.93,0.72,alpha))
 
 func _draw_boost_controls() -> void:
 	if phase=="over":
 		return
 	var active: bool = phase=="drop"
-	_box(BOOST_BOMB,Color("#894857") if bomb_aim else Color("#39334e"),
-		15,Color("#ffbf99") if active else Color("#66637a"),2)
-	_fit_center(("× " if bomb_aim else "✦ ")+shop_t("bomb")+"  ×"+str(shop.stock("bomb")),
-		BOOST_BOMB.get_center().x,1255,20,292,
-		Color("#ffeddc") if active else Color("#aab1c5"))
-	_box(BOOST_TIME,Color("#235866") if active else Color("#323448"),
-		15,Color("#7bebe6") if active else Color("#66637a"),2)
-	_fit_center("◷ "+shop_t("time")+"  ×"+str(shop.stock("time")),
-		BOOST_TIME.get_center().x,1255,20,292,
-		Color("#d7fffa") if active else Color("#aab1c5"))
-
+	for i in range(2):
+		var bomb: bool = i==0
+		var rect: Rect2 = BOOST_BOMB if bomb else BOOST_TIME
+		var stocked: int = shop.stock("bomb" if bomb else "time")
+		var accent: Color = Color("#ffc47e") if bomb else Color("#7dc9ff")
+		var usable: bool = active and stocked>0
+		var focus: bool = bomb and bomb_aim
+		_box(Rect2(rect.position+Vector2(0,5),rect.size),Color("#050b19",0.72),18)
+		_box(rect,
+			Color("#7a4a43") if focus else Color("#423246") if bomb else Color("#203d61"),
+			18,accent if usable or focus else Color("#526684"),2)
+		_box(Rect2(rect.position+Vector2(6,6),Vector2(rect.size.x-12,22)),
+			Color(1,1,1,0.08),11)
+		var icon_at: Vector2 = rect.position+Vector2(33,31)
+		if bomb:
+			draw_circle(icon_at,20,Color("#e2a551") if usable else Color("#716358"))
+			draw_circle(icon_at-Vector2(4,5),8,Color("#fff0c4",0.54))
+			draw_line(icon_at+Vector2(9,-17),icon_at+Vector2(15,-26),
+				Color("#ffe19b"),3.0,true)
+		else:
+			draw_arc(icon_at,20,0,TAU,42,Color("#b2e5ff") if usable else Color("#71849b"),3.0,true)
+			draw_line(icon_at-Vector2(10,0),icon_at+Vector2(10,0),Color("#e8f6ff"),3.5,true)
+			draw_line(icon_at-Vector2(0,10),icon_at+Vector2(0,10),Color("#e8f6ff"),3.5,true)
+		_fit_center(shop_t("bomb") if bomb else shop_t("time"),
+			rect.position.x+133,rect.position.y+40,22,140,
+			Color("#fff3e4") if bomb else Color("#dff7ff"))
+		draw_circle(rect.position+Vector2(rect.size.x-23,rect.size.y-18),18,Color("#0b1429",0.9))
+		_center(str(stocked),rect.position.x+rect.size.x-23,rect.position.y+rect.size.y-11,
+			19,Color("#fff3cf") if stocked>0 else Color("#8b9cb8"))
 func _draw_bomb_target() -> void:
-	if bomb_hover.x < 0:
-		return
-	for y in range(maxi(0,bomb_hover.y-1),mini(8,bomb_hover.y+2)):
-		for x in range(maxi(0,bomb_hover.x-1),mini(8,bomb_hover.x+2)):
-			var rect: Rect2 = Rect2(BOARD.position+Vector2(x,y)*CELL,Vector2(CELL,CELL))
-			draw_rect(rect,Color("#ffa777",0.25+0.1*sin(clock*9.0)))
-			draw_rect(rect,Color("#ffd1a4",0.63),false,2.3)
-	_fit_center(shop_t("aim"),360,1028,17,636,Color("#fff0d9"))
-
+	if bomb_hover.x >= 0:
+		for y in range(maxi(0,bomb_hover.y-1),mini(8,bomb_hover.y+2)):
+			for x in range(maxi(0,bomb_hover.x-1),mini(8,bomb_hover.x+2)):
+				var rect: Rect2 = Rect2(BOARD.position+Vector2(x,y)*CELL,Vector2(CELL,CELL))
+				draw_rect(rect,Color("#ffa777",0.25+0.11*sin(clock*9.0)))
+				draw_rect(rect,Color("#ffd1a4",0.68),false,2.3)
+	# Visible instruction lives in the dedicated status strip, not over the shape cards.
+	_box(Rect2(147,828,426,51),Color("#624152",0.97),16,Color("#ffc18f"),2)
+	_fit_center(shop_t("aim"),360,862,19,407,Color("#fff2d9"))
 func _draw_shop() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#050819",0.96))
-	_neon_panel(Rect2(54,225,612,863),Color("#ffde9a"),true)
+	_neon_panel(Rect2(54,225,612,863),Color("#f1cb91"),true)
 	_box(Rect2(67,238,586,837),Color("#191d38"),27,Color("#7c679d"),2)
 	_fit_center("✦ "+shop_t("shop"),292,313,43,429,Color("#fff1d9"))
 	_box(SHOP_CLOSE,Color("#474a70"),18,Color("#9eadd0"),2)
