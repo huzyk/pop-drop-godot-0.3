@@ -37,6 +37,8 @@ jobs:
         run: timeout 40s godot --headless --path . --script res://tests/test_gravity_pressure.gd
       - name: Test coin economy and bomb
         run: timeout 40s godot --headless --path . --script res://tests/test_gravity_shop.gd
+      - name: Test mobile arcade layout and touch zones
+        run: timeout 40s godot --headless --path . --script res://tests/test_gravity_layout.gd
       - name: Test audio and haptics
         run: timeout 40s godot --headless --path . --script res://tests/test_gravity_feedback.gd
       - name: Smoke test actual main scene (including audio)
