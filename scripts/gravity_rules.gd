@@ -160,9 +160,10 @@ static func empty_board() -> Array:
 	return result
 
 static func ceiling_reached(board: Array) -> bool:
-	# One shared, visible game-over boundary: the top row of the grid.
-	for color in board[0]:
-		if color != EMPTY:
+	# Only marbles can overflow the ceiling. Rocks are permanent obstacles:
+	# rotating one into the top row must not instantly erase it via rescue.
+	for cell in board[0]:
+		if is_marble(int(cell)):
 			return true
 	return false
 
@@ -179,6 +180,15 @@ static func copy_board(board: Array) -> Array:
 	var result: Array = []
 	for row in board:
 		result.append(row.duplicate())
+	return result
+
+static func clear_marbles(board: Array) -> Array:
+	# Emergency clear may reset the balls, never a rock that needs 3 POP hits.
+	var result: Array = copy_board(board)
+	for y in range(SIZE):
+		for x in range(SIZE):
+			if is_marble(int(result[y][x])):
+				result[y][x] = EMPTY
 	return result
 
 static func filled(board: Array) -> int:
@@ -496,17 +506,17 @@ static func next_piece(rng: RandomNumberGenerator, board: Array, avoid_shapes: A
 
 static func rescue(board: Array) -> Array:
 	var result: Array = copy_board(board)
-	# Clear the two highest occupied rows, then settle again.
-	var rows: int = 0
+	# Clear marbles from the two highest marble-bearing rows.
+	# Rocks survive rescue (including after a rotation or a wave overflow).
+	var cleared_rows: int = 0
 	for y in range(SIZE):
-		var occupied: bool = false
+		var has_marbles: bool = false
 		for x in range(SIZE):
-			if result[y][x] != EMPTY:
-				occupied = true
-		if occupied:
-			for x in range(SIZE):
+			if is_marble(int(result[y][x])):
+				has_marbles = true
 				result[y][x] = EMPTY
-			rows += 1
-			if rows >= 2:
+		if has_marbles:
+			cleared_rows += 1
+			if cleared_rows >= 2:
 				break
 	return settle(result).board
