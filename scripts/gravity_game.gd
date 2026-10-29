@@ -1678,7 +1678,7 @@ func _draw_pieces() -> void:
 			151.0/float(maxi(1,span.x-1))))
 		var radius: float = minf(18.5,step*0.46)
 		var left: float = rect.get_center().x-float(span.x-1)*step*0.5
-		var top: float = rect.get_center().y+8.0-float(span.y-1)*step*0.5
+		var top: float = rect.get_center().y+3.0-float(span.y-1)*step*0.5
 		for bead in piece:
 			_ball(Vector2(left+float(bead[0])*step,top+float(bead[1])*step),
 				radius,int(bead[2]),0.40 if dragging_piece and selected else 1.0)
