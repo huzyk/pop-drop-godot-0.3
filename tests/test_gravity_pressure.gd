@@ -76,6 +76,58 @@ func _initialize() -> void:
 	for x in range(5):
 		board[7][x] = Rules.ROCK_MAX
 	assert(Rules.find_matches(board).is_empty())
+	# Regression: a rock reaching the roof after rotation previously triggered
+	# ceiling loss -> rescue, which erased the supposedly three-hit rock.
+	board = Rules.empty_board()
+	board[2][0] = Rules.ROCK_MAX
+	board[2][2] = Rules.ROCK_MAX - 1
+	board[5][7] = Rules.ROCK_MIN
+	var original_rock_count: int = Rules.rock_count(board)
+	var rotated_rocks: Dictionary = Rules.rotate(board,true)
+	assert(Rules.rock_count(rotated_rocks.board) == original_rock_count)
+	assert(rotated_rocks.board[0][5] == Rules.ROCK_MAX)
+	assert(not Rules.ceiling_reached(rotated_rocks.board))
+	var after_gravity: Array = Rules.settle(rotated_rocks.board).board
+	assert(after_gravity[0][5] == Rules.ROCK_MAX)
+	assert(Rules.rock_count(after_gravity) == original_rock_count)
+	var after_spill: Array = Rules.spill_after_rotation(after_gravity,true).board
+	assert(Rules.rock_count(after_spill) == original_rock_count)
+	var after_rescue: Array = Rules.rescue(after_spill)
+	assert(Rules.rock_count(after_rescue) == original_rock_count)
+	assert(after_rescue[0][5] == Rules.ROCK_MAX)
+	var reversed_rocks: Array = Rules.rotate(rotated_rocks.board,false).board
+	assert(reversed_rocks == board)
+	var reset_rocks: Array = Rules.clear_marbles(after_spill)
+	assert(Rules.rock_count(reset_rocks) == original_rock_count)
+	assert(reset_rocks == after_spill)
+
+	# A rescue should only remove marbles and retain each rock's hit points,
+	# including one on a row that contains a marble.
+	board = Rules.empty_board()
+	board[0][0] = Rules.ROCK_MIN
+	board[0][1] = 0
+	board[1][1] = 1
+	board[1][7] = Rules.ROCK_MAX
+	board[3][4] = Rules.ROCK_MAX - 1
+	board[7][4] = 2
+	assert(Rules.ceiling_reached(board))
+	var saved_rocks: Array = Rules.rescue(board)
+	assert(Rules.rock_count(saved_rocks) == 3)
+	assert(saved_rocks[0][0] == Rules.ROCK_MIN)
+	assert(saved_rocks[1][7] == Rules.ROCK_MAX)
+	assert(saved_rocks[3][4] == Rules.ROCK_MAX - 1)
+	assert(not Rules.ceiling_reached(saved_rocks))
+	var only_rocks: Array = Rules.clear_marbles(board)
+	assert(Rules.rock_count(only_rocks) == 3)
+	assert(only_rocks[7][4] == Rules.EMPTY)
+	assert(only_rocks[0][1] == Rules.EMPTY)
+
+	# A wave cannot discard a top-row rock even after rescue.
+	var blocked_wave: Dictionary = Rules.rise_wave(saved_rocks,random,6)
+	assert(not blocked_wave.valid and blocked_wave.overflow)
+	assert(Rules.rock_count(blocked_wave.board) == 3)
+	assert(Rules.rock_count(Rules.rescue(blocked_wave.board)) == 3)
+
 	# Spawn maximum: no more than three simultaneously.
 	board = Rules.empty_board()
 	for i in range(3):
@@ -94,5 +146,5 @@ func _initialize() -> void:
 	assert(Session.valid(state))
 	state["wave_time_left"] = 99.0
 	assert(not Session.valid(state))
-	print("PASS: rising intervals, pressure rows, anchored rocks, three adjacent POP hits, saves")
+	print("PASS: rising waves, three-hit rocks, rotate/rescue preserves every rock, saves")
 	quit()
