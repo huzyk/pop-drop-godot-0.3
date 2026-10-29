@@ -25,6 +25,15 @@ jobs:
           include-templates: false
       - name: Import assets and scripts
         run: godot --headless --editor --path . --import --quit
+      - name: Check Godot 4.7 project config and generated-file rules
+        shell: bash
+        run: |
+          git diff -- project.godot
+          git diff --exit-code -- project.godot
+          git check-ignore -q assets/marbles/blue.svg.import
+          git check-ignore -q assets/ui/arcade_backdrop.svg.import
+          git check-ignore -q scripts/gravity_game.gd.uid
+          test "$(git check-attr eol -- project.godot)" = "project.godot: eol: lf"
       - name: Test core Gravity rules
         run: godot --headless --path . --script res://tests/test_gravity_rules.gd
       - name: Test checkpoints and parsing

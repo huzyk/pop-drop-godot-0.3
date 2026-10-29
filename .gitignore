@@ -1,6 +1,9 @@
-# Godot local editor/import cache
+# Godot local editor/import cache; ignore per-asset generated sidecars too
 .godot/
 .import/
+*.import
+# Godot 4.7 regenerates script UID sidecars. This project references scripts by path.
+*.gd.uid
 # Android builds and signing secrets
 build/
 dist/

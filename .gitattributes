@@ -1,2 +1,12 @@
-# Auto detect text files and perform LF normalization
+# Godot writes LF even on Windows; never check out project assets as CRLF.
 * text=auto
+project.godot text eol=lf
+*.gd text eol=lf
+*.tscn text eol=lf
+*.tres text eol=lf
+*.godot text eol=lf
+*.svg text eol=lf
+*.shader text eol=lf
+*.gdshader text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
