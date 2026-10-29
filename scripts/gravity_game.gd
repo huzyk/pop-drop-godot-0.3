@@ -1390,20 +1390,21 @@ func _draw_rock(center: Vector2, stone: int, alpha: float = 1.0) -> void:
 
 func _draw_board() -> void:
 	# Cabinet-depth border, four illuminated corners, and a living light rail.
-	# Slim luminous cabinet, with depth but without four competing outlines.
-	var frame: Rect2 = BOARD.grow(13)
-	_box(frame.grow(5),Color("#020716",0.84),30)
-	_box(frame,Color("#263453"),25,Color("#8799df",0.55),2)
-	_box(BOARD.grow(5),Color("#080f23"),18,Color("#263d64"),2)
-	var rail: float = 0.66+0.28*sin(clock*1.35)
-	draw_line(frame.position+Vector2(30,3),
-		frame.position+Vector2(frame.size.x*0.45,3),
-		Color("#fb7ab9",0.75*rail),3.4,true)
-	draw_line(frame.position+Vector2(frame.size.x*0.56,frame.size.y-3),
-		frame.position+Vector2(frame.size.x-30,frame.size.y-3),
-		Color("#71e9ec",0.77*rail),3.4,true)
-	_corner(frame.position+Vector2(5,5),Vector2(1,1),Color("#ff85bd"),18)
-	_corner(frame.position+frame.size-Vector2(5,5),Vector2(-1,-1),Color("#75e9f2"),18)
+	# Premium board cabinet: restrained luminous bezel, focus on marbles.
+	var frame: Rect2 = BOARD.grow(12)
+	draw_circle(BOARD.get_center(),BOARD.size.x*0.61,Color("#346fdb",0.038))
+	_box(frame.grow(5),Color("#030816",0.86),29)
+	_box(frame,Color("#1c2b4f"),24,Color("#667fcb",0.65),2)
+	_box(BOARD.grow(4),Color("#080f26"),16,Color("#304975"),2)
+	var rail: float = 0.67+0.21*sin(clock*1.6)
+	draw_line(frame.position+Vector2(27,4),
+		frame.position+Vector2(frame.size.x*0.49,4),
+		Color("#f681d1",rail),2.7,true)
+	draw_line(frame.position+Vector2(frame.size.x*0.54,frame.size.y-4),
+		frame.position+Vector2(frame.size.x-27,frame.size.y-4),
+		Color("#78e5ff",rail),2.7,true)
+	draw_arc(frame.get_center(),frame.size.x*0.54,PI*0.93,PI*1.14,24,
+		Color("#6fe8ff",0.10),2.0,true)
 	# Highlight the whole target column so the 8-column touch mechanic reads.
 	if phase=="drop" and hover_column >= 0 and hover_column < 8:
 		var column_x: float = BOARD.position.x+float(hover_column)*CELL
@@ -1419,17 +1420,17 @@ func _draw_board() -> void:
 		for x in range(8):
 			var tile: Vector2 = BOARD.position+Vector2(x,y)*CELL
 			_box(Rect2(tile+Vector2(2,2),Vector2(CELL-4.0,CELL-4.0)),
-				Color("#101c36") if (x+y)%2==0 else Color("#14213c"),10,
-				Color("#334468",0.75),1)
-			draw_line(tile+Vector2(14,5),tile+Vector2(CELL-14,5),
-				Color("#a8c7fd",0.10),1.4,true)
+				Color("#101c38") if (x+y)%2==0 else Color("#15223e"),11,
+				Color("#405583",0.69),1)
+			draw_line(tile+Vector2(14,6),tile+Vector2(CELL-14,6),
+				Color("#b6caff",0.13),1.4,true)
 			if phase=="drop" and x==hover_column:
 				draw_rect(Rect2(tile+Vector2(4,4),Vector2(CELL-8.0,CELL-8.0)),
 					Color("#9df7e8",0.085))
 			var center: Vector2 = tile+Vector2(CELL*0.5,CELL*0.5)
-			draw_circle(center,CELL*0.32,Color("#060c20",0.68))
-			draw_arc(center,CELL*0.32,-PI*0.87,-PI*0.06,22,
-				Color("#8aa7ef",0.09),1.5,true)
+			draw_circle(center,CELL*0.32,Color("#050b1c",0.78))
+			draw_arc(center,CELL*0.32,-PI*0.86,-PI*0.12,22,
+				Color("#9bb5ff",0.12),1.4,true)
 			var occupied: bool = board[y][x] != Rules.EMPTY
 			if occupied and not hidden.has(y*8+x) and Rules.is_rock(int(board[y][x])):
 				_draw_rock(center,int(board[y][x]))
@@ -1439,12 +1440,12 @@ func _draw_board() -> void:
 					var progress: float = 1.0-pop_time/pop_length
 					var swell: float = 1.0+0.30*sin(progress*PI)
 					var tint: Color = COLORS[int(board[y][x])]
-					draw_circle(center,42.0+18.0*progress,
-						Color(tint.r,tint.g,tint.b,0.31*(1.0-progress)))
-					_ball(center,CELL*0.365*swell,int(board[y][x]))
+					draw_circle(center,CELL*0.54+19.0*progress,
+						Color(tint.r,tint.g,tint.b,0.28*(1.0-progress)))
+					_ball(center,CELL*0.367*swell,int(board[y][x]))
 					_spark(center,13.0+progress*23.0,Color.WHITE,progress*0.8)
 				else:
-					_ball(center,CELL*0.365,int(board[y][x]))
+					_ball(center,CELL*0.367,int(board[y][x]))
 				if Vector2i(x,y) in charged and phase == "drop":
 					var pulse: float = 0.46+0.25*sin(clock*3.8)
 					draw_arc(center,CELL*0.445,-PI*0.75,PI*1.25,42,
@@ -1455,7 +1456,7 @@ func _draw_board() -> void:
 		var step: float = clampf(motion_time/motion_duration,0.0,1.0)
 		for i in range(4):
 			var angle: float = float(i)*TAU/4.0+step*(PI*0.5 if spin_clockwise else -PI*0.5)
-			var at: Vector2 = BOARD.get_center()+Vector2.from_angle(angle)*385
+			var at: Vector2 = BOARD.get_center()+Vector2.from_angle(angle)*(BOARD.size.x*0.5+26.0)
 			_spark(at,7+6*sin(step*PI),Color("#adf8ff"),0.54)
 	if animating:
 		var raw: float = clampf(motion_time/motion_duration,0.0,1.0)
