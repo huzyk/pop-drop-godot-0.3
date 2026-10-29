@@ -97,6 +97,32 @@ static func damage_rocks(board: Array, popped: Array) -> Dictionary:
 
 
 
+static func explode(board: Array, center: Vector2i) -> Dictionary:
+	# Bomb destroys marbles in a 3x3 square and cracks each rock once.
+	# It does not award score/XP/coins for the directly removed marbles.
+	if center.x < 0 or center.y < 0 or center.x >= SIZE or center.y >= SIZE:
+		return {"valid":false,"board":copy_board(board),"removed":0,"rocks_hit":0}
+	var result: Array = copy_board(board)
+	var removed: int = 0
+	var stones: int = 0
+	var cleared_cells: Array = []
+	for y in range(maxi(0,center.y-1),mini(SIZE,center.y+2)):
+		for x in range(maxi(0,center.x-1),mini(SIZE,center.x+2)):
+			var value: int = int(result[y][x])
+			if is_marble(value):
+				result[y][x] = EMPTY
+				removed += 1
+				cleared_cells.append(Vector2i(x,y))
+			elif is_rock(value):
+				result[y][x] = EMPTY if value == ROCK_MIN else value-1
+				stones += 1
+	if removed == 0 and stones == 0:
+		return {"valid":false,"board":copy_board(board),"removed":0,"rocks_hit":0}
+	return {
+		"valid":true,"board":result,"removed":removed,
+		"rocks_hit":stones,"cells":cleared_cells
+	}
+
 const SHAPES_BY_SIZE := [
 	# Twelve recognisable silhouettes. The Z and S are intentionally separate.
 	# 1 single
