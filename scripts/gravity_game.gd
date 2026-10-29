@@ -16,10 +16,11 @@ const MARBLE_TEXTURES = [
 	preload("res://assets/marbles/blue.svg")
 ]
 const BASE := Vector2(720,1280)
-# Single 720x1280 design grid; all hit tests share these exact rectangles.
-# Top 0–228 HUD, center 244–820 gameplay, bottom 830–1264 input dock.
-const BOARD := Rect2(72,244,576,576)
-const CELL := 72.0
+# 720x1280 reference layout. Visuals AND hit-testing share these rectangles.
+# HUD 0..224 / board 247..855 / status 874..918 / cards 952..1054
+# / rotation 1086..1172 / boosts 1193..1261.
+const BOARD := Rect2(56,247,608,608)
+const CELL := 76.0
 const HUD_SCORE := Rect2(23,133,228,90)
 const HUD_WAVE := Rect2(263,133,281,90)
 const HUD_LIVES := Rect2(556,133,141,90)
@@ -28,9 +29,9 @@ const SHOP_OPEN := Rect2(434,37,54,55)
 const PROFILE_OPEN := Rect2(500,37,55,55)
 const SETTINGS_OPEN := Rect2(565,37,55,55)
 const LANG_RECT := Rect2(630,37,58,55)
-const DOCK_STATUS := Rect2(28,829,664,54)
-const DOCK_SHAPES := Rect2(20,891,680,136)
-const DOCK_ACTIONS := Rect2(20,1038,680,213)
+const DOCK_STATUS := Rect2(27,874,666,44)
+const DOCK_SHAPES := Rect2(20,925,680,138)
+const DOCK_ACTIONS := Rect2(20,1078,680,188)
 const COLORS := [Color("#ff7096"),Color("#55dcad"),Color("#62b5ff")]
 const SAVE_FILE := "user://pop_drop_gravity.json"
 const LOCALES := ["pl","en","es","pt","de","fr","ru"]
@@ -43,8 +44,8 @@ const TR := {
 	"fr":{"life":"VIES","tap_short":"TOUCHE COLONNE","score":"SCORE","best":"RECORD","move":"COUP","drop":"TOUCHE UNE COLONNE POUR LÂCHER","turn":"TOURNE OU CONTINUE","left":"GAUCHE","right":"DROITE","skip":"SUITE","next":"CHOISIS UNE FORME","ready":"5 BILLES CONNECTÉES = POP  •  HAUT = -1 VIE","over":"PARTIE FINIE","again":"REJOUER","rescue":"TEST : +1 VIE","lost":"VIE PERDUE","rotate_controls":"TOURNE AVEC LES BOUTONS","rotate_help":"TOURNE POUR LIBÉRER DE LA PLACE","charge":"GROUPE","danger":"HAUTEUR","danger_soon":"ATTENTION AU SOMMET!","overflow":"VIE PERDUE!","hint":"Choisis une colonne pour les billes"},
 	"ru":{"life":"ЖИЗНИ","tap_short":"ВЫБЕРИ СТОЛБЕЦ","score":"ОЧКИ","best":"РЕКОРД","move":"ХОД","drop":"НАЖМИ СТОЛБЕЦ ДЛЯ СБРОСА","turn":"ПОВЕРНИ ИЛИ ПРОДОЛЖИ","left":"ВЛЕВО","right":"ВПРАВО","skip":"ДАЛЕЕ","next":"ВЫБЕРИ ФИГУРУ","ready":"5 СОЕДИНЁННЫХ ШАРОВ = POP  •  ВЕРХ = -1 ЖИЗНЬ","over":"ИГРА ОКОНЧЕНА","again":"ИГРАТЬ СНОВА","rescue":"ТЕСТ: +1 ЖИЗНЬ","lost":"МИНУС ЖИЗНЬ","rotate_controls":"ПОВОРОТ КНОПКАМИ ВНИЗУ","rotate_help":"ПОВЕРНИ, ЧТОБЫ ОСВОБОДИТЬ МЕСТО","charge":"ГРУППА","danger":"ВЫСОТА","danger_soon":"ВНИМАНИЕ: ВЕРХ!","overflow":"МИНУС ЖИЗНЬ!","hint":"Выбери столбец для шариков"}
 }
-const LEFT_RECT := Rect2(30,1052,315,94)
-const RIGHT_RECT := Rect2(375,1052,315,94)
+const LEFT_RECT := Rect2(29,1086,317,86)
+const RIGHT_RECT := Rect2(374,1086,317,86)
 const RESTART_RECT := Rect2(104,722,512,84)
 const RESCUE_RECT := Rect2(104,821,512,79)
 const SETTINGS_CLOSE := Rect2(476,384,118,54)
@@ -58,8 +59,8 @@ const PROFILE_CARD := Rect2(54,224,612,906)
 const SHOP_CLOSE := Rect2(514,266,120,54)
 const SHOP_TAB_BOOST := Rect2(94,410,251,57)
 const SHOP_TAB_SKINS := Rect2(375,410,251,57)
-const BOOST_BOMB := Rect2(99,1173,239,63)
-const BOOST_TIME := Rect2(382,1173,239,63)
+const BOOST_BOMB := Rect2(101,1192,238,66)
+const BOOST_TIME := Rect2(381,1192,238,66)
 const PROFILE_TR := {
 	"pl":{"profile":"POSTĘP","level":"POZIOM","short":"POZ.","daily":"DZISIEJSZE MISJE","streak":"SERIA DNI","cosmetics":"WYGLĄD KULEK","drops":"ZRZUĆ KSZTAŁTY","pops":"WYWOŁAJ POP","points":"ZDOBĄDŹ PUNKTY","classic":"KLASYCZNE","aurora":"AURORA","starlight":"GWIEZDNE","locked":"POZ.","selected":"WYBRANE","close":"ZAMKNIJ","done":"UKOŃCZONA","autoclaim":"XP przyznaje się automatycznie"},
 	"en":{"profile":"PROGRESS","level":"LEVEL","short":"LVL","daily":"TODAY'S MISSIONS","streak":"DAY STREAK","cosmetics":"MARBLE SKINS","drops":"DROP PIECES","pops":"TRIGGER POPS","points":"EARN POINTS","classic":"CLASSIC","aurora":"AURORA","starlight":"STARLIGHT","locked":"LVL","selected":"SELECTED","close":"CLOSE","done":"COMPLETE","autoclaim":"XP is awarded automatically"},
@@ -1167,23 +1168,33 @@ func _ball(center: Vector2, radius: float, color_index: int,
 		draw_line(gleam+Vector2(0,-5),gleam+Vector2(0,5),
 			Color(1,1,1,0.85*alpha),1.5,true)
 func _draw_background() -> void:
-	# Quiet aurora-and-stars stage; game information remains the focal point.
-	_gradient(Rect2(0,0,720,1280),Color("#070f24"),Color("#15102f"),32)
-	draw_circle(Vector2(748,400),342,Color("#3778d8",0.085))
-	draw_circle(Vector2(-120,840),330,Color("#b64ad4",0.063))
-	draw_circle(Vector2(365,1180),335,Color("#5743c2",0.094))
-	draw_circle(Vector2(652,650),200,Color("#76aeec",0.035))
-	# A calm distant horizon and a few bright dust particles, not random UI noise.
-	draw_arc(Vector2(681,612),344,PI*0.69,PI*1.56,70,Color("#6d85e6",0.09),1.8,true)
-	var shimmer: float = 0.67+0.33*sin(clock*0.7)
-	for i in range(28):
-		var x: float = fposmod(float(i*257+41),706.0)+7.0
-		var y: float = fposmod(float(i*173+91),1258.0)+6.0
-		draw_circle(Vector2(x,y),0.7+float(i%3)*0.4,
-			Color("#c0d2ff",0.13+float(i%4)*0.06*shimmer))
-	# Bottom tray has its own dark material, visually separated from the board.
-	_box(Rect2(7,881,706,382),Color("#0d1430",0.93),29,Color("#4e608f",0.31),1)
-	draw_line(Vector2(34,888),Vector2(687,888),Color("#6b83c8",0.24),1.8,true)
+	# Scenic but restrained arcade cabinet: a distant moon, stars and horizon.
+	_gradient(Rect2(0,0,720,1280),Color("#060d21"),Color("#1a1237"),36)
+	draw_circle(Vector2(754,477),225,Color("#4e70d9",0.075))
+	draw_circle(Vector2(752,477),152,Color("#7891eb",0.085))
+	draw_circle(Vector2(752,477),116,Color("#b6b2ff",0.055))
+	draw_arc(Vector2(752,477),153,PI*0.43,PI*1.53,52,Color("#cabaff",0.19),1.8,true)
+	draw_circle(Vector2(-110,717),246,Color("#ba409b",0.053))
+	draw_circle(Vector2(386,1217),287,Color("#593ed2",0.10))
+	# Parallax mountain silhouettes, deliberately outside the playable grid.
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(0,966),Vector2(0,781),Vector2(33,824),Vector2(75,797),
+		Vector2(111,855),Vector2(145,824),Vector2(205,906),Vector2(273,861),
+		Vector2(362,952),Vector2(430,865),Vector2(504,922),Vector2(565,852),
+		Vector2(627,891),Vector2(685,822),Vector2(720,850),Vector2(720,966)
+	]),Color("#171b42",0.62))
+	var shimmer: float = 0.73+0.27*sin(clock*0.65)
+	for i in range(41):
+		var x: float = fposmod(float(i*241+59),700.0)+10.0
+		var y: float = fposmod(float(i*179+39),1254.0)+7.0
+		var density: float = 0.13+float(i%4)*0.045*shimmer
+		draw_circle(Vector2(x,y),0.7+float(i%3)*0.48,
+			Color("#c2d6ff",density))
+	# Separate physical control trays: no button touches the shape selection.
+	_box(DOCK_SHAPES.grow(3),Color("#101a35",0.95),27,Color("#5269b0",0.37),1)
+	_box(DOCK_ACTIONS.grow(3),Color("#0a1430",0.94),29,Color("#5867a1",0.31),1)
+	draw_line(Vector2(49,DOCK_SHAPES.position.y+4),
+		Vector2(666,DOCK_SHAPES.position.y+4),Color("#7ebef7",0.19),2,true)
 func _draw_header() -> void:
 	# Brand at top left, economy and utility actions on one predictable row.
 	_text("POP",Vector2(24,69),50,Color("#ffffff"))
@@ -1554,33 +1565,34 @@ func _draw_particles() -> void:
 
 
 func _draw_status() -> void:
-	_neon_panel(DOCK_STATUS,Color("#6d99c6"))
-	_fit_center("%s %02d" % [t("move"),moves+1],112,865,19,159,Color("#f2f6ff"))
-	draw_line(Vector2(205,839),Vector2(205,873),Color("#54668a",0.50),1.2,true)
+	# Single compact status line gives shapes room; no second full HUD.
+	_neon_panel(DOCK_STATUS,Color("#607da6"))
+	_fit_center("%s %02d" % [t("move"),moves+1],109,904,17,147,Color("#f4f6ff"))
+	draw_line(Vector2(202,882),Vector2(202,909),Color("#637292",0.48),1.1,true)
 	var actual: int = mini(int(pending_group.get("count",0)),Rules.POP_THRESHOLD)
 	var bead_color: Color = COLORS[clampi(int(pending_group.get("color",0)),0,2)]
-	_fit_center(t("charge").to_upper(),286,845,13,124,Color("#9aaccd"))
+	_fit_center(t("charge").to_upper(),266,892,12,100,Color("#9daccc"))
 	for i in range(Rules.POP_THRESHOLD):
-		var center: Vector2 = Vector2(236+float(i)*31,863)
+		var center: Vector2 = Vector2(237+float(i)*31,902)
 		var lit: bool = i<actual
-		draw_circle(center,11.8,Color("#080f24"))
-		draw_circle(center,9.3,bead_color if lit else Color("#394463"))
+		draw_circle(center,10.1,Color("#0b142a"))
+		draw_circle(center,7.7,bead_color if lit else Color("#394663"))
 		if lit:
-			draw_circle(center+Vector2(-3,-3),2.4,Color(1,1,1,0.62))
-	_fit_center("%d/5" % actual,436,865,21,70,Color("#ffdfbd"))
-	draw_line(Vector2(478,840),Vector2(478,873),Color("#54668a",0.50),1.2,true)
+			draw_circle(center+Vector2(-2,-2),2.1,Color(1,1,1,0.65))
+	_fit_center("%d/5" % actual,436,905,18,69,Color("#ffe7c3"))
+	draw_line(Vector2(478,882),Vector2(478,909),Color("#637292",0.48),1.1,true)
 	var height_used: int = Rules.tallest_column(board)
 	var warning: bool = height_used>=6
-	var accent: Color = Color("#fb799e") if warning else Color("#82e3c6")
-	_fit_center(t("danger").to_upper(),574,845,13,157,Color("#a2b4d4"))
-	_box(Rect2(510,853,129,9),Color("#080f22"),5)
-	_box(Rect2(512,855,125.0*float(height_used)/8.0,5),accent,4)
-	_fit_center("%d/8" % height_used,662,865,17,49,accent)
+	var accent: Color = Color("#ff819f") if warning else Color("#86e8ce")
+	_fit_center(t("danger").to_upper(),556,889,12,126,Color("#9cafd1"))
+	_box(Rect2(502,896,130,8),Color("#090e22"),5)
+	_box(Rect2(504,898,126.0*float(height_used)/8.0,4),accent,3)
+	_fit_center("%d/8" % height_used,657,906,16,55,accent)
 func _draw_wave_timer() -> void:
 	# Integrated into the HUD; keep a single timer instead of duplicate strips.
 	pass
 func _piece_card_rect(index: int) -> Rect2:
-	return Rect2(28+index*229,912,207,106)
+	return Rect2(29+index*229,953,205,101)
 func _piece_span(piece: Array) -> Vector2i:
 	var largest: Vector2i = Vector2i.ZERO
 	for bead in piece:
