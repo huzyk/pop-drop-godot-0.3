@@ -5,11 +5,11 @@ const Rules = preload("res://scripts/gravity_rules.gd")
 
 func _initialize() -> void:
 	var screen = Game.new()
-	# Every drawn and clickable board cell must share the same 72px grid.
-	assert(Game.BOARD.size == Vector2(576,576))
+	# Every drawn and clickable board cell must share the same 76px grid.
+	assert(Game.BOARD.size == Vector2(608,608))
 	assert(Game.CELL * Rules.SIZE == Game.BOARD.size.x)
-	assert(Game.BOARD.position == Vector2(72,244))
-	assert(Game.BOARD.end.y <= 824.0)
+	assert(Game.BOARD.position == Vector2(56,247))
+	assert(Game.BOARD.end.y <= 856.0)
 	assert(Game.BOARD.position.y > Game.HUD_SCORE.end.y)
 	assert(not Game.HUD_SCORE.intersects(Game.HUD_WAVE))
 	assert(not Game.HUD_WAVE.intersects(Game.HUD_LIVES))
@@ -32,8 +32,8 @@ func _initialize() -> void:
 	assert(not Game.BOOST_BOMB.intersects(Game.BOOST_TIME))
 	assert(Game.BOOST_BOMB.position.y - Game.LEFT_RECT.end.y >= 18.0)
 	assert(Game.BOOST_TIME.position.y - Game.RIGHT_RECT.end.y >= 18.0)
-	assert(Game.BOOST_BOMB.end.y <= 1252.0)
-	assert(Game.BOOST_TIME.end.y <= 1252.0)
+	assert(Game.BOOST_BOMB.end.y <= 1262.0)
+	assert(Game.BOOST_TIME.end.y <= 1262.0)
 	assert(Game.SETTINGS_OPEN.end.y <= Game.HUD_SCORE.position.y)
 	assert(Game.SHOP_OPEN.end.y <= Game.HUD_WAVE.position.y)
 	# The touch map and visuals agree for board corners.
@@ -48,5 +48,5 @@ func _initialize() -> void:
 	assert(screen._drop_column_at(Game.BOARD.position+Vector2(10,200)) == 0)
 	assert(screen._drop_column_at(Vector2(714,400)) == -1)
 	screen.free()
-	print("PASS: 720x1280 layout, board mapping, HUD, large shape cards, 28px+ spacing and distinct boosters")
+	print("PASS: 720x1280 premium arcade layout, 608px board, 32px+ cards-to-turn gap and boosters")
 	quit()
