@@ -179,6 +179,111 @@ func t(key: String) -> String:
 func profile_t(key: String) -> String:
 	return str(PROFILE_TR.get(language,PROFILE_TR["en"]).get(key,key))
 
+const SHOP_PL := {
+	"shop":"SKLEP","boosts":"POMOCE","skins":"WYGLĄDY","close":"ZAMKNIJ",
+	"coins":"MONETY","bomb":"BOMBA","time":"CZAS +10s",
+	"neon":"NEON","gold":"ZŁOTO","buy":"KUP","owned":"KUPIONE",
+	"active":"AKTYWNE","equip":"WYBIERZ","stock":"POSIADASZ",
+	"poor":"ZA MAŁO MONET","bought":"ZAKUPIONE!","full":"LIMIT ZAPASU",
+	"aim":"DOTKNIJ POLA — BOMBA 3×3","tip":"Wynik rundy pozostaje bez zmian",
+	"bomb_desc":"Czyści 3×3, osłabia skały o 1","time_desc":"Opóźnia następną falę o 10 s",
+	"neon_desc":"Elektryczna poświata kulek","gold_desc":"Złote obwódki i refleksy"}
+const SHOP_EN := {
+	"shop":"SHOP","boosts":"BOOSTS","skins":"SKINS","close":"CLOSE",
+	"coins":"COINS","bomb":"BOMB","time":"TIME +10s",
+	"neon":"NEON","gold":"GOLD","buy":"BUY","owned":"OWNED",
+	"active":"ACTIVE","equip":"EQUIP","stock":"IN STOCK",
+	"poor":"NOT ENOUGH COINS","bought":"PURCHASED!","full":"INVENTORY FULL",
+	"aim":"TAP A CELL — 3×3 BOMB","tip":"Your round score does not change",
+	"bomb_desc":"Clear 3×3, damage rocks once","time_desc":"Delay the next wave by 10s",
+	"neon_desc":"Electric marble glow","gold_desc":"Golden rings and highlights"}
+
+func shop_t(key: String) -> String:
+	return str((SHOP_PL if language=="pl" else SHOP_EN).get(key,key))
+
+func _shop_card(index: int) -> Rect2:
+	return Rect2(91,498+index*231,538,213)
+
+func _shop_items() -> Array:
+	return ["bomb","time"] if shop_tab==0 else ["neon","gold"]
+
+func _shop_activate(id: String) -> void:
+	var offer: Dictionary = Shop.item(id)
+	if offer.is_empty():
+		return
+	if str(offer["kind"])=="skin" and shop.owns_skin(id):
+		shop.equip_skin(id)
+		shop_notice = shop_t("active")
+		telemetry.track("shop_skin_equip",{"skin":id})
+	elif shop.purchase(id):
+		if str(offer["kind"])=="skin":
+			shop.equip_skin(id)
+		shop_notice = shop_t("bought")
+		if feedback != null:
+			feedback.cue("mission")
+		telemetry.track("shop_purchase",{"item":id,"price_coins":int(offer["price"])})
+	else:
+		shop_notice = shop_t("poor") if shop.coins < int(offer["price"]) else shop_t("full")
+	shop_notice_time = 2.0
+	queue_redraw()
+
+func _use_time_boost() -> void:
+	if phase!="drop":
+		return
+	if not shop.use_boost("time"):
+		shop_open = true
+		shop_tab = 0
+		return
+	wave_time_left = minf(45.0,wave_time_left+10.0)
+	_praise("+10s",Color("#8af6e7"),1.1)
+	if feedback != null:
+		feedback.cue("mission")
+	telemetry.track("powerup_used",{"run_id":run_id,"item":"time"})
+	_save_progress()
+	queue_redraw()
+
+func _use_bomb(target: Vector2i) -> void:
+	if phase!="drop" or not bomb_aim:
+		return
+	var blast: Dictionary = Rules.explode(board,target)
+	if not bool(blast.get("valid",false)):
+		shop_notice = shop_t("aim")
+		shop_notice_time = 1.1
+		return
+	if not shop.use_boost("bomb"):
+		bomb_aim = false
+		shop_open = true
+		shop_tab = 0
+		return
+	bomb_aim = false
+	bomb_hover = Vector2i(-1,-1)
+	phase = "anim"
+	action_serial += 1
+	action_id = "action:%s:%d" % [run_id,action_serial]
+	board = Rules.copy_board(blast.board)
+	for y in range(maxi(0,target.y-1),mini(8,target.y+2)):
+		for x in range(maxi(0,target.x-1),mini(8,target.x+2)):
+			_burst(Vector2i(x,y),6)
+	_shock(BOARD.position+(Vector2(target)+Vector2(0.5,0.5))*CELL,3.7,Color("#ffc089"))
+	if feedback != null:
+		feedback.cue("cascade")
+	telemetry.track("powerup_used",{"run_id":run_id,"item":"bomb",
+		"removed":int(blast["removed"]),"rocks_hit":int(blast["rocks_hit"])})
+	var fallen: Dictionary = Rules.settle(board)
+	await _animate_to(fallen.board,fallen.motions,0.23,"fall")
+	chain_depth = 0
+	await _resolve_cascades()
+	phase = "drop"
+	_check_ceiling()
+	if phase == "drop":
+		_refresh_targets()
+		_check_stuck()
+	if phase == "over":
+		_on_game_over()
+	_save_progress()
+	queue_redraw()
+
+
 func _on_mission_completed(mission_id: String, bonus_xp: int) -> void:
 	mission_notice = "%s +%d XP" % [profile_t("done"),bonus_xp]
 	mission_notice_time = 2.6
@@ -413,6 +518,8 @@ func _logical(screen: Vector2) -> Vector2:
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		var pointer: Vector2 = _logical(event.position)
+		if bomb_aim:
+			bomb_hover = _board_cell(pointer)
 		if dragging_piece:
 			drag_point = pointer
 			drag_column = _drop_column_at(pointer)
@@ -438,6 +545,19 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	tap_point = pt
 	tap_time = 0.42
+	if shop_open:
+		if SHOP_CLOSE.has_point(pt):
+			shop_open = false
+		elif SHOP_TAB_BOOST.has_point(pt):
+			shop_tab = 0
+		elif SHOP_TAB_SKINS.has_point(pt):
+			shop_tab = 1
+		else:
+			for i in range(2):
+				if _shop_card(i).has_point(pt):
+					_shop_activate(str(_shop_items()[i]))
+		queue_redraw()
+		return
 	if profile_open:
 		if PROFILE_CLOSE.has_point(pt):
 			profile_open = false
@@ -466,6 +586,13 @@ func _gui_input(event: InputEvent) -> void:
 			feedback.cue("tap")
 		elif SETTINGS_AD_PRIVACY.has_point(pt):
 			ads.show_privacy_options()
+		queue_redraw()
+		return
+	if SHOP_OPEN.has_point(pt) and phase != "anim":
+		shop_open = true
+		shop_tab = 0
+		bomb_aim = false
+		telemetry.track("shop_open",{"coins":shop.coins})
 		queue_redraw()
 		return
 	if SETTINGS_OPEN.has_point(pt) and phase != "anim":
@@ -508,6 +635,30 @@ func _gui_input(event: InputEvent) -> void:
 		queue_redraw()
 		return
 	if phase!="drop":
+		return
+	if BOOST_BOMB.has_point(pt):
+		if bomb_aim:
+			bomb_aim = false
+		elif shop.stock("bomb") > 0:
+			bomb_aim = true
+			bomb_hover = Vector2i(-1,-1)
+		else:
+			shop_open = true
+			shop_tab = 0
+		queue_redraw()
+		return
+	if BOOST_TIME.has_point(pt):
+		bomb_aim = false
+		_use_time_boost()
+		return
+	if bomb_aim and BOARD.has_point(pt):
+		var chosen: Vector2i = _board_cell(pt)
+		if chosen.x>=0:
+			_use_bomb(chosen)
+		return
+	if bomb_aim:
+		bomb_aim = false
+		queue_redraw()
 		return
 	if LEFT_RECT.has_point(pt):
 		_rotate_board(false)
@@ -1437,6 +1588,14 @@ func _piece_span(piece: Array) -> Vector2i:
 		largest.x = maxi(largest.x,int(bead[0]))
 		largest.y = maxi(largest.y,int(bead[1]))
 	return largest+Vector2i.ONE
+
+func _board_cell(pt: Vector2) -> Vector2i:
+	if not BOARD.has_point(pt):
+		return Vector2i(-1,-1)
+	return Vector2i(
+		clampi(int((pt.x-BOARD.position.x)/CELL),0,7),
+		clampi(int((pt.y-BOARD.position.y)/CELL),0,7)
+	)
 
 func _drop_column_at(pt: Vector2) -> int:
 	if not BOARD.has_point(pt) or pieces.is_empty():
