@@ -1155,7 +1155,6 @@ func _ball(center: Vector2, radius: float, color_index: int,
 	var box: Rect2 = Rect2(center-Vector2(half_width,half_height),
 		Vector2(half_width*2.0,half_height*2.0))
 	if progression != null and progression.skin == "aurora":
-		var tint: Color = COLORS[clampi(color_index,0,2)]
 		draw_circle(center,radius*1.16,Color(tint.r,tint.g,tint.b,0.13*alpha))
 	draw_texture_rect(marble,box,false,Color(1.0,1.0,1.0,alpha))
 	draw_arc(center,radius*0.992,0,TAU,40,
