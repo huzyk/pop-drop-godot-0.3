@@ -1268,12 +1268,8 @@ func _draw() -> void:
 		_draw_praise()
 	if phase == "over":
 		_draw_game_over()
-		_neon_panel(SETTINGS_OPEN,Color("#b5b1ff"))
-		_fit_center("⚙ DATA",619,144,17,118,Color("#e9e6ff"))
-		_neon_panel(PROFILE_OPEN,Color("#ffdf8b"))
-		_fit_center("%s %d  •  XP" % [profile_t("short"),progression.level()],451,143,17,159,Color("#ffefd3"))
-		_neon_panel(SHOP_OPEN,Color("#ffe2a6"))
-		_fit_center("◉ "+shop_t("shop"),282,144,17,133,Color("#fff0d1"))
+		# Keep the same familiar shop/profile/settings positions on the end screen.
+		_draw_header()
 	if shop_notice_time > 0 and not settings_open and not profile_open and not shop_open:
 		_draw_shop_notice()
 	if mission_notice_time > 0 and not settings_open and not profile_open:
@@ -1787,9 +1783,9 @@ func _draw_level_celebration() -> void:
 
 func _draw_mission_toast() -> void:
 	var strength: float = minf(1.0,mission_notice_time/0.24)
-	_box(Rect2(166,879,388,56),Color("#162943",0.94*strength),22,
+	_box(Rect2(166,755,388,56),Color("#162943",0.94*strength),22,
 		Color("#f8d99e",0.7*strength),2)
-	_fit_center(mission_notice,360,916,24,359,
+	_fit_center(mission_notice,360,792,24,359,
 		Color(1.0,0.91,0.66,strength))
 
 func _draw_profile() -> void:
@@ -1840,9 +1836,9 @@ func _draw_profile() -> void:
 
 func _draw_shop_notice() -> void:
 	var alpha: float = minf(1.0,shop_notice_time/0.25)
-	_box(Rect2(183,872,354,59),Color("#252740",0.95*alpha),21,
-		Color("#f9dba4",0.67*alpha),2)
-	_fit_center(shop_notice,360,910,23,327,Color(1,0.93,0.72,alpha))
+	_box(Rect2(198,739,324,56),Color("#252740",0.94*alpha),19,
+		Color("#f9dba4",0.73*alpha),2)
+	_fit_center(shop_notice,360,774,23,303,Color(1,0.93,0.72,alpha))
 
 func _draw_boost_controls() -> void:
 	if phase=="over":
