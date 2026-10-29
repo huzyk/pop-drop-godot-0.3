@@ -5,6 +5,10 @@ const Game = preload("res://scripts/gravity_game.gd")
 func _initialize() -> void:
 	var view = Game.new()
 	assert(view != null)
+	# Keep the art screen-sized and resolvable by the runtime importer.
+	assert(ResourceLoader.exists("res://assets/ui/arcade_backdrop.svg"))
+	assert(Game.BACKDROP != null)
+	assert(Game.BACKDROP.get_size() == Game.BASE)
 	assert(Game.CELL * 8.0 == Game.BOARD.size.x)
 	assert(Game.BOARD.size.x == Game.BOARD.size.y)
 	assert(Game.BOARD.size.x >= 600.0)
