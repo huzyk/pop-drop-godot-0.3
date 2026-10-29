@@ -1245,7 +1245,7 @@ func _draw_header() -> void:
 			Color("#f1efff"),2.4,true)
 	_neon_panel(LANG_RECT,Color("#8496d7"))
 	_fit_center(language.to_upper(),LANG_RECT.get_center().x,LANG_RECT.position.y+36,
-		19,LANG_RECT.size.x-8,Color("#f2f4ff")
+		19,LANG_RECT.size.x-8,Color("#f2f4ff"))
 func _draw_hud() -> void:
 	# The information hierarchy: score / upcoming wave / lives.
 	_neon_panel(HUD_SCORE,Color("#da7dab"))
