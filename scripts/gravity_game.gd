@@ -403,7 +403,7 @@ func _restore_progress(data: Dictionary) -> void:
 	action_serial = maxi(0,int(data.get("action_serial",0)))
 	action_id = ""
 	wave_number = maxi(0,int(data.get("wave_number",0)))
-	wave_time_left = clampf(float(data.get("wave_time_left",Rules.wave_interval(wave_number))),0.0,Rules.wave_interval(wave_number))
+	wave_time_left = clampf(float(data.get("wave_time_left",Rules.wave_interval(wave_number))),0.0,45.0)
 	wave_queued = false
 	bomb_aim = false
 	shop_open = false
@@ -1208,7 +1208,9 @@ func _draw_header() -> void:
 	_fit_center("⚙ DATA",619,144,17,118,Color("#e9e6ff"))
 	_neon_panel(PROFILE_OPEN,Color("#ffdf8b"))
 	_fit_center("%s %d  •  XP" % [profile_t("short"),progression.level()],451,143,17,159,Color("#ffefd3"))
-	_text("✦ GRAVITY EDITION",Vector2(49,151),18,Color("#d4c2ff"))
+	_neon_panel(SHOP_OPEN,Color("#ffe2a6"))
+	_fit_center("◉ "+shop_t("shop"),282,144,17,133,Color("#fff0d1"))
+	_text("✦ GRAVITY",Vector2(49,151),18,Color("#d4c2ff"))
 	draw_line(Vector2(316,144),Vector2(551,144),Color("#c695ff",0.23),1.5,true)
 
 func _draw_hud() -> void:
@@ -1250,8 +1252,11 @@ func _draw() -> void:
 	_draw_wave_timer()
 	_draw_pieces()
 	_draw_buttons()
+	_draw_boost_controls()
 	_draw_drag_overlay()
 	_draw_tap_ripple()
+	if bomb_aim and phase == "drop":
+		_draw_bomb_target()
 	if glow > 0.0:
 		draw_rect(Rect2(0,0,720,1280),Color(0.8,0.94,1.0,0.055*glow))
 	if praise_timer > 0.0 and phase != "over":
@@ -1262,6 +1267,10 @@ func _draw() -> void:
 		_fit_center("⚙ DATA",619,144,17,118,Color("#e9e6ff"))
 		_neon_panel(PROFILE_OPEN,Color("#ffdf8b"))
 		_fit_center("%s %d  •  XP" % [profile_t("short"),progression.level()],451,143,17,159,Color("#ffefd3"))
+		_neon_panel(SHOP_OPEN,Color("#ffe2a6"))
+		_fit_center("◉ "+shop_t("shop"),282,144,17,133,Color("#fff0d1"))
+	if shop_notice_time > 0 and not settings_open and not profile_open and not shop_open:
+		_draw_shop_notice()
 	if mission_notice_time > 0 and not settings_open and not profile_open:
 		_draw_mission_toast()
 	if level_fx_time > 0 and not settings_open and not profile_open:
@@ -1270,6 +1279,8 @@ func _draw() -> void:
 		_draw_settings()
 	if profile_open:
 		_draw_profile()
+	if shop_open:
+		_draw_shop()
 	draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
 
 
@@ -1713,7 +1724,7 @@ func _draw_buttons() -> void:
 		if projected>0 and enabled:
 			_spark(rect.position+Vector2(rect.size.x-18,19),6,bright,
 				0.45+0.38*sin(clock*3.1))
-	_fit_center(t("ready"),360,1250,17,659,Color("#c7bce2"))
+	# The bottom safe strip now contains two one-use boost buttons.
 
 func _draw_game_over() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#030618",0.91))
@@ -1849,3 +1860,92 @@ func _draw_profile() -> void:
 		_fit_center(caption,x+82,1030,15,144,
 			Color("#8bf8d8") if chosen else Color("#bac4e4"))
 	_fit_center(profile_t("autoclaim"),360,1091,15,508,Color("#99a9ca"))
+
+func _draw_shop_notice() -> void:
+	var alpha: float = minf(1.0,shop_notice_time/0.25)
+	_box(Rect2(183,872,354,59),Color("#252740",0.95*alpha),21,
+		Color("#f9dba4",0.67*alpha),2)
+	_fit_center(shop_notice,360,910,23,327,Color(1,0.93,0.72,alpha))
+
+func _draw_boost_controls() -> void:
+	if phase=="over":
+		return
+	var active: bool = phase=="drop"
+	_box(BOOST_BOMB,Color("#894857") if bomb_aim else Color("#39334e"),
+		15,Color("#ffbf99") if active else Color("#66637a"),2)
+	_fit_center(("× " if bomb_aim else "✦ ")+shop_t("bomb")+"  ×"+str(shop.stock("bomb")),
+		BOOST_BOMB.get_center().x,1255,20,292,
+		Color("#ffeddc") if active else Color("#aab1c5"))
+	_box(BOOST_TIME,Color("#235866") if active else Color("#323448"),
+		15,Color("#7bebe6") if active else Color("#66637a"),2)
+	_fit_center("◷ "+shop_t("time")+"  ×"+str(shop.stock("time")),
+		BOOST_TIME.get_center().x,1255,20,292,
+		Color("#d7fffa") if active else Color("#aab1c5"))
+
+func _draw_bomb_target() -> void:
+	if bomb_hover.x < 0:
+		return
+	for y in range(maxi(0,bomb_hover.y-1),mini(8,bomb_hover.y+2)):
+		for x in range(maxi(0,bomb_hover.x-1),mini(8,bomb_hover.x+2)):
+			var rect: Rect2 = Rect2(BOARD.position+Vector2(x,y)*CELL,Vector2(CELL,CELL))
+			draw_rect(rect,Color("#ffa777",0.25+0.1*sin(clock*9.0)))
+			draw_rect(rect,Color("#ffd1a4",0.63),false,2.3)
+	_fit_center(shop_t("aim"),360,1028,17,636,Color("#fff0d9"))
+
+func _draw_shop() -> void:
+	draw_rect(Rect2(0,0,720,1280),Color("#050819",0.96))
+	_neon_panel(Rect2(54,225,612,863),Color("#ffde9a"),true)
+	_box(Rect2(67,238,586,837),Color("#191d38"),27,Color("#7c679d"),2)
+	_fit_center("✦ "+shop_t("shop"),292,313,43,429,Color("#fff1d9"))
+	_box(SHOP_CLOSE,Color("#474a70"),18,Color("#9eadd0"),2)
+	_fit_center(shop_t("close"),574,301,17,108,Color.WHITE)
+	_neon_panel(Rect2(98,338,522,51),Color("#ffd487"))
+	_fit_center(shop_t("coins")+"   ◉ "+str(shop.coins),360,371,25,482,Color("#ffe8b3"))
+	for tab in range(2):
+		var rect: Rect2 = SHOP_TAB_BOOST if tab==0 else SHOP_TAB_SKINS
+		var selected: bool = shop_tab==tab
+		_box(rect,Color("#266259") if selected else Color("#262b4d"),
+			19,Color("#86f0d8") if selected else Color("#6475a6"),2)
+		_fit_center(shop_t("boosts") if tab==0 else shop_t("skins"),
+			rect.get_center().x,447,22,225,
+			Color.WHITE if selected else Color("#bac4d9"))
+	for i in range(2):
+		var id: String = str(_shop_items()[i])
+		var product: Dictionary = Shop.item(id)
+		var is_skin: bool = str(product["kind"])=="skin"
+		var is_owned: bool = shop.owns_skin(id) if is_skin else false
+		var is_active: bool = is_skin and shop.equipped_skin==id
+		var purchasable: bool = shop.can_purchase(id)
+		var rect: Rect2 = _shop_card(i)
+		var accent: Color = Color("#ffcc91") if i==0 else Color("#91e5ed")
+		_box(rect,Color("#252d49"),22,Color("#82efd5") if is_active else Color("#687397"),2)
+		var at: Vector2 = rect.position+Vector2(80,86)
+		draw_circle(at,54,Color(accent.r,accent.g,accent.b,0.10))
+		if id=="bomb":
+			draw_circle(at,33,Color("#ef986b"))
+			draw_circle(at,25,Color("#302840"))
+			draw_arc(at,26,0,TAU,38,Color("#ffe4b1"),3.2,true)
+			_spark(at+Vector2(20,-23),8,Color("#fff1bc"))
+		elif id=="time":
+			draw_arc(at,33,0,TAU,40,Color("#7bf9e6"),4.5,true)
+			draw_line(at,at+Vector2(0,-20),Color.WHITE,4,true)
+			draw_line(at,at+Vector2(16,9),Color.WHITE,4,true)
+		else:
+			_ball(at,29,0)
+			draw_arc(at,37,0,TAU,43,Color("#ffe3a2") if id=="gold" else Color("#65f6fa"),3.8,true)
+		_fit_center(shop_t(id),rect.position.x+339,rect.position.y+58,29,354,Color.WHITE)
+		_fit_center(shop_t(id+"_desc"),rect.position.x+333,rect.position.y+99,
+			16,385,Color("#cbd3e8"))
+		var label: String = shop_t("active") if is_active else (
+			shop_t("equip") if is_owned else shop_t("buy")+"  ◉ "+str(product["price"]))
+		_box(Rect2(rect.position+Vector2(199,131),Vector2(311,60)),
+			Color("#296157") if purchasable or is_owned else Color("#46445d"),
+			17,Color("#8bf3d8") if purchasable or is_owned else Color("#74708b"),2)
+		_fit_center(label,rect.position.x+354,rect.position.y+172,21,294,
+			Color.WHITE if purchasable or is_owned else Color("#b6b5c8"))
+		if not is_skin:
+			_fit_center(shop_t("stock")+": "+str(shop.stock(id)),
+				rect.position.x+85,rect.position.y+175,15,166,Color("#d7d9e9"))
+	_fit_center(shop_t("tip"),360,1005,18,522,Color("#b9c7e0"))
+	if shop_notice_time>0:
+		_fit_center(shop_notice,360,1043,22,526,Color("#ffe6b5"))
