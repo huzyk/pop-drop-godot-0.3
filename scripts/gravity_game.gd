@@ -7,6 +7,7 @@ const Ads = preload("res://scripts/gravity_ads.gd")
 const Progression = preload("res://scripts/gravity_progression.gd")
 const Feedback = preload("res://scripts/gravity_feedback.gd")
 const Shop = preload("res://scripts/gravity_shop.gd")
+const BACKDROP = preload("res://assets/ui/arcade_backdrop.svg")
 const FONT = preload("res://fonts/ClearSans-Regular.ttf")
 const BOLD = preload("res://fonts/ClearSans-Bold.ttf")
 # Artist-authored vector sprites imported as textures by Godot (no more circle stacks).
@@ -1108,15 +1109,23 @@ func _spark(at: Vector2, radius: float, tint: Color, opacity: float=1.0) -> void
 
 
 func _neon_panel(rect: Rect2, accent: Color, strong: bool=false) -> void:
-	# Unified premium glass panel: one subtle shadow and one precise edge.
-	var curve: int = 22 if strong else 17
-	_box(Rect2(rect.position+Vector2(0,5),rect.size),Color("#030817",0.72),curve+2)
-	_box(rect,Color("#101a35") if strong else Color("#101a32"),curve,
-		Color(accent.r,accent.g,accent.b,0.60 if strong else 0.32),2 if strong else 1)
-	_box(Rect2(rect.position+Vector2(6,6),Vector2(rect.size.x-12,minf(25,rect.size.y*0.28))),
-		Color(0.65,0.78,1.0,0.045),maxi(5,curve-8))
-	draw_line(rect.position+Vector2(18,4),rect.position+Vector2(rect.size.x-18,4),
-		Color(accent.r,accent.g,accent.b,0.52 if strong else 0.29),1.8,true)
+	# Multi-layer faux glass: shadow, translucent bezel, rim and specular sweep.
+	var curve: int = 22 if strong else 18
+	var edge: float = 0.75 if strong else 0.52
+	_box(Rect2(rect.grow(2).position+Vector2(0,6),rect.grow(2).size),Color("#020617",0.76),curve+2)
+	_box(rect.grow(2),Color(accent.r,accent.g,accent.b,0.074),curve+2)
+	_box(rect,Color("#101a35",0.97),curve,
+		Color(accent.r,accent.g,accent.b,edge),2)
+	_box(Rect2(rect.position+Vector2(6,6),
+		Vector2(rect.size.x-12,minf(31,rect.size.y*0.34))),
+		Color("#d4eaff",0.065),maxi(7,curve-7))
+	draw_line(rect.position+Vector2(17,4),
+		rect.position+Vector2(rect.size.x-17,4),
+		Color(accent.r,accent.g,accent.b,0.80 if strong else 0.50),
+		2.2,true)
+	draw_line(rect.position+Vector2(21,rect.size.y-5),
+		rect.position+Vector2(rect.size.x-21,rect.size.y-5),
+		Color("#c0d8ff",0.15),1.2,true)
 func _corner(at: Vector2, direction: Vector2, color: Color, length: float=34.0) -> void:
 	draw_line(at,at+Vector2(direction.x*length,0),Color(color.r,color.g,color.b,0.24),10.0,true)
 	draw_line(at,at+Vector2(0,direction.y*length),Color(color.r,color.g,color.b,0.24),10.0,true)
@@ -1136,17 +1145,22 @@ func _draw_tap_ripple() -> void:
 
 func _ball(center: Vector2, radius: float, color_index: int,
 		alpha: float=1.0, stretch: Vector2=Vector2.ONE) -> void:
-	# One actual high-resolution candy-glass sprite rather than 12 overlapping
-	# flat circles. The authored transparent margin contains the soft glow.
+	# High-resolution candy-glass sprite with a lit rim and subtle physical halo.
 	var marble: Texture2D = MARBLE_TEXTURES[clampi(color_index,0,2)]
+	var tint: Color = COLORS[clampi(color_index,0,2)]
+	draw_circle(center,radius*1.24,
+		Color(tint.r,tint.g,tint.b,0.11*alpha))
 	var half_width: float = radius*1.255*stretch.x
 	var half_height: float = radius*1.255*stretch.y
 	var box: Rect2 = Rect2(center-Vector2(half_width,half_height),
 		Vector2(half_width*2.0,half_height*2.0))
 	if progression != null and progression.skin == "aurora":
-		var tint: Color = COLORS[clampi(color_index,0,2)]
 		draw_circle(center,radius*1.16,Color(tint.r,tint.g,tint.b,0.13*alpha))
 	draw_texture_rect(marble,box,false,Color(1.0,1.0,1.0,alpha))
+	draw_arc(center,radius*0.992,0,TAU,40,
+		Color(tint.r,tint.g,tint.b,0.48*alpha),1.8,true)
+	draw_arc(center,radius*0.83,-PI*0.79,-PI*0.24,22,
+		Color("#ecfaff",0.47*alpha),1.5,true)
 	if shop != null and shop.equipped_skin == "neon":
 		var tint_neon: Color = COLORS[clampi(color_index,0,2)]
 		draw_arc(center,radius*1.07,0,TAU,42,
@@ -1168,65 +1182,70 @@ func _ball(center: Vector2, radius: float, color_index: int,
 		draw_line(gleam+Vector2(0,-5),gleam+Vector2(0,5),
 			Color(1,1,1,0.85*alpha),1.5,true)
 func _draw_background() -> void:
-	# Scenic but restrained arcade cabinet: a distant moon, stars and horizon.
-	_gradient(Rect2(0,0,720,1280),Color("#060d21"),Color("#1a1237"),36)
-	draw_circle(Vector2(754,477),225,Color("#4e70d9",0.075))
-	draw_circle(Vector2(752,477),152,Color("#7891eb",0.085))
-	draw_circle(Vector2(752,477),116,Color("#b6b2ff",0.055))
-	draw_arc(Vector2(752,477),153,PI*0.43,PI*1.53,52,Color("#cabaff",0.19),1.8,true)
-	draw_circle(Vector2(-110,717),246,Color("#ba409b",0.053))
-	draw_circle(Vector2(386,1217),287,Color("#593ed2",0.10))
-	# Parallax mountain silhouettes, deliberately outside the playable grid.
-	draw_colored_polygon(PackedVector2Array([
-		Vector2(0,966),Vector2(0,781),Vector2(33,824),Vector2(75,797),
-		Vector2(111,855),Vector2(145,824),Vector2(205,906),Vector2(273,861),
-		Vector2(362,952),Vector2(430,865),Vector2(504,922),Vector2(565,852),
-		Vector2(627,891),Vector2(685,822),Vector2(720,850),Vector2(720,966)
-	]),Color("#171b42",0.62))
-	var shimmer: float = 0.73+0.27*sin(clock*0.65)
-	for i in range(41):
-		var x: float = fposmod(float(i*241+59),700.0)+10.0
-		var y: float = fposmod(float(i*179+39),1254.0)+7.0
-		var density: float = 0.13+float(i%4)*0.045*shimmer
-		draw_circle(Vector2(x,y),0.7+float(i%3)*0.48,
-			Color("#c2d6ff",density))
-	# Separate physical control trays: no button touches the shape selection.
-	_box(DOCK_SHAPES.grow(3),Color("#101a35",0.95),27,Color("#5269b0",0.37),1)
-	_box(DOCK_ACTIONS.grow(3),Color("#0a1430",0.94),29,Color("#5867a1",0.31),1)
-	draw_line(Vector2(49,DOCK_SHAPES.position.y+4),
-		Vector2(666,DOCK_SHAPES.position.y+4),Color("#7ebef7",0.19),2,true)
+	# This is a real vector art layer, not a few procedural flat gradients.
+	draw_texture_rect(BACKDROP,Rect2(Vector2.ZERO,BASE),false)
+	# Slow non-distracting glints above the scenic planet and beside the board.
+	for i in range(7):
+		var px: float = 14.0+float(i*113%692)
+		var py: float = 235.0+float(i*137%647)
+		var alpha: float = 0.12+0.13*(0.5+0.5*sin(clock*0.9+float(i)*2.1))
+		_spark(Vector2(px,py),2.4+float(i%3),Color("#b6dfff"),alpha)
+	# Raised shape tray and secondary button deck, with separate light rims.
+	_box(Rect2(DOCK_SHAPES.grow(3).position+Vector2(0,7),DOCK_SHAPES.grow(3).size),
+		Color("#030817",0.81),29)
+	_box(DOCK_SHAPES.grow(3),Color("#131e3e",0.97),27,
+		Color("#6c89d0",0.68),2)
+	_box(Rect2(DOCK_SHAPES.position+Vector2(7,7),
+		Vector2(DOCK_SHAPES.size.x-14,21)),Color("#b9caff",0.058),12)
+	draw_line(Vector2(54,DOCK_SHAPES.position.y+4),
+		Vector2(659,DOCK_SHAPES.position.y+4),
+		Color("#99c4ff",0.51),1.8,true)
+	_box(Rect2(DOCK_ACTIONS.grow(3).position+Vector2(0,7),DOCK_ACTIONS.grow(3).size),
+		Color("#030716",0.88),28)
+	_box(DOCK_ACTIONS.grow(3),Color("#101a35",0.96),28,
+		Color("#6d67b6",0.54),2)
+	draw_line(Vector2(57,DOCK_ACTIONS.position.y+4),
+		Vector2(660,DOCK_ACTIONS.position.y+4),
+		Color("#ba92f8",0.28),1.8,true)
 func _draw_header() -> void:
-	# Brand at top left, economy and utility actions on one predictable row.
-	_text("POP",Vector2(24,69),50,Color("#ffffff"))
-	_text("DROP",Vector2(133,69),50,Color("#a4fff2"))
-	_text("G R A V I T Y",Vector2(29,103),18,Color("#94aee0"))
-	draw_line(Vector2(26,110),Vector2(109,110),Color("#fb77ae"),3.0,true)
-	draw_line(Vector2(112,110),Vector2(220,110),Color("#53e6d6"),3.0,true)
+	# Brand sign has ambient chromatic edge-light rather than plain white text.
+	_text("POP",Vector2(25,71),51,Color("#334aaf",0.32))
+	_text("DROP",Vector2(137,71),51,Color("#20c6bc",0.25))
+	_text("POP",Vector2(24,69),50,Color("#fffaff"))
+	_text("DROP",Vector2(133,69),50,Color("#a5fff2"))
+	_text("G R A V I T Y",Vector2(29,104),18,Color("#aacaff"))
+	draw_line(Vector2(26,111),Vector2(100,111),Color("#ff79ba"),3.2,true)
+	draw_line(Vector2(107,111),Vector2(228,111),Color("#5ff8e6"),3.2,true)
+	# Distinctive orbital accent beside the title.
+	draw_arc(Vector2(274,59),20,PI*0.8,PI*1.97,27,Color("#fa6fb3",0.53),2.6,true)
+	draw_arc(Vector2(274,59),24,-PI*0.07,PI*0.62,14,Color("#7ceeff",0.55),2.2,true)
+	_spark(Vector2(291,45),3.2,Color("#f8daff"),0.78)
 	_neon_panel(COINS_OPEN,Color("#f7c879"))
-	draw_circle(COINS_OPEN.position+Vector2(24,27),14,Color("#f2af51"))
-	draw_arc(COINS_OPEN.position+Vector2(24,27),11,0,TAU,32,Color("#ffedb1"),2.0,true)
-	_center("★",COINS_OPEN.position.x+24,COINS_OPEN.position.y+34,16,Color("#fff0b8"))
-	_fit_center(str(shop.coins),COINS_OPEN.position.x+88,COINS_OPEN.position.y+36,23,64,Color("#fff2d4"))
+	draw_circle(COINS_OPEN.position+Vector2(24,27),16,Color("#9c5a2b",0.55))
+	draw_circle(COINS_OPEN.position+Vector2(24,27),13,Color("#f2b454"))
+	draw_arc(COINS_OPEN.position+Vector2(24,27),11.5,0,TAU,32,Color("#fff3cb"),2.2,true)
+	_center("★",COINS_OPEN.position.x+24,COINS_OPEN.position.y+34,16,Color("#fff8d9"))
+	_fit_center(str(shop.coins),COINS_OPEN.position.x+88,COINS_OPEN.position.y+36,23,66,Color("#fff4df"))
 	_neon_panel(SHOP_OPEN,Color("#ffd390"))
 	var bag: Vector2 = SHOP_OPEN.get_center()
-	_box(Rect2(bag-Vector2(12,7),Vector2(24,24)),Color("#f1c679"),5,Color("#ffeab3"),1)
-	draw_arc(bag+Vector2(0,-7),8,PI,TAU,20,Color("#fff0c0"),2.3,true)
-	draw_line(bag+Vector2(-6,4),bag+Vector2(6,4),Color("#6e4763"),2,true)
+	_box(Rect2(bag-Vector2(13,7),Vector2(26,25)),Color("#e9b96a"),6,Color("#fff0bd"),2)
+	draw_arc(bag+Vector2(0,-6),8,PI,TAU,20,Color("#fff0c0"),2.3,true)
+	draw_line(bag+Vector2(-7,5),bag+Vector2(7,5),Color("#805176"),2.1,true)
 	_neon_panel(PROFILE_OPEN,Color("#9bcaed"))
 	var person: Vector2 = PROFILE_OPEN.get_center()
-	draw_circle(person+Vector2(0,-7),8.5,Color("#deedff"))
-	draw_arc(person+Vector2(0,24),19,-PI*0.88,-PI*0.12,28,Color("#deedff"),5.3,true)
+	draw_circle(person+Vector2(0,-7),8.5,Color("#ebf5ff"))
+	draw_arc(person+Vector2(0,24),19,-PI*0.88,-PI*0.12,28,Color("#ecf5ff"),5.3,true)
 	_neon_panel(SETTINGS_OPEN,Color("#a7b2f2"))
 	var cog: Vector2 = SETTINGS_OPEN.get_center()
-	draw_arc(cog,13,0,TAU,32,Color("#e8e9ff"),3.1,true)
-	draw_circle(cog,4,Color("#e8e9ff"))
+	draw_arc(cog,13,0,TAU,32,Color("#f1efff"),3.1,true)
+	draw_circle(cog,4,Color("#f1efff"))
 	for spoke in range(8):
 		var angle: float = float(spoke)*TAU/8.0
 		draw_line(cog+Vector2.from_angle(angle)*13,cog+Vector2.from_angle(angle)*18,
-			Color("#e8e9ff"),2.4,true)
+			Color("#f1efff"),2.4,true)
 	_neon_panel(LANG_RECT,Color("#8496d7"))
-	_fit_center(language.to_upper(),LANG_RECT.get_center().x,LANG_RECT.position.y+36,19,
-		LANG_RECT.size.x-8,Color("#e9edff"))
+	_fit_center(language.to_upper(),LANG_RECT.get_center().x,LANG_RECT.position.y+36,
+		19,LANG_RECT.size.x-8,Color("#f2f4ff"))
 func _draw_hud() -> void:
 	# The information hierarchy: score / upcoming wave / lives.
 	_neon_panel(HUD_SCORE,Color("#da7dab"))
@@ -1651,41 +1670,51 @@ func _draw_drag_overlay() -> void:
 
 
 func _draw_pieces() -> void:
-	# A dedicated product-like selector, not a tiny utility row.
-	_text(t("next").to_upper(),Vector2(39,944),15,Color("#b8c8e8"))
+	_text(t("next").to_upper(),Vector2(39,944),15,Color("#d0dafa"))
 	var instruction: String = "DOTKNIJ LUB PRZECIĄGNIJ" if language=="pl" else "TAP OR DRAG"
-	_fit_center(instruction,577,944,12,218,Color("#7997c4"))
+	_fit_center(instruction,577,944,12,218,Color("#a2b4d6"))
 	for i in range(pieces.size()):
 		var rect: Rect2 = _piece_card_rect(i)
 		var selected: bool = selected_piece==i
-		var accent: Color = Color("#67f1ef") if selected else Color("#647db0")
-		_box(Rect2(rect.position+Vector2(0,5),rect.size),Color("#030917",0.72),18)
+		var tint: Color = Color("#63f3ef") if selected else Color("#7e8fc2")
+		var pulsing: float = 0.76+0.20*sin(clock*3.6)
+		_box(Rect2(rect.position+Vector2(0,6),rect.size),Color("#030819",0.90),21)
 		if selected:
-			_box(rect.grow(3),Color("#2970a2",0.18),22)
-		_box(rect,Color("#122a43") if selected else Color("#17213e"),
-			18,Color(accent.r,accent.g,accent.b,0.91 if selected else 0.48),
+			_box(rect.grow(4),Color("#38d7f1",0.105),23)
+		_box(rect,Color("#0d334f") if selected else Color("#17223e"),19,
+			Color(tint.r,tint.g,tint.b,pulsing if selected else 0.52),
 			3 if selected else 2)
-		_box(Rect2(rect.position+Vector2(7,7),Vector2(rect.size.x-14,21)),
-			Color("#9cf9fc",0.10) if selected else Color("#a1b9f7",0.04),12)
-		var emblem: Vector2 = rect.position+Vector2(23,21)
-		draw_circle(emblem,16.3,Color("#1e9fa7") if selected else Color("#303d64"))
-		draw_arc(emblem,16.5,0,TAU,32,accent,2.0,true)
-		_center(str(i+1),emblem.x,emblem.y+6.5,17,Color.WHITE)
+		_box(Rect2(rect.position+Vector2(7,7),Vector2(rect.size.x-14,25)),
+			Color("#b6ffff",0.13) if selected else Color("#c4d4ff",0.07),12)
+		draw_line(rect.position+Vector2(23,rect.size.y-6),
+			rect.position+Vector2(rect.size.x-23,rect.size.y-6),
+			Color("#7afbfc",0.78) if selected else Color("#a4c7ff",0.16),
+			2.2,true)
+		# Fine micro-grid implies a physical capsule rather than a flat UI box.
+		for gx in range(3):
+			for gy in range(2):
+				draw_circle(rect.position+Vector2(72+gx*29,42+gy*28),
+					0.95,Color("#9acafb",0.12))
+		var medallion: Vector2 = rect.position+Vector2(23,20)
+		draw_circle(medallion,17,Color("#19abc3") if selected else Color("#343f69"))
+		draw_arc(medallion,17,0,TAU,32,tint,2,true)
+		_center(str(i+1),medallion.x,medallion.y+6,17,Color.WHITE)
 		var piece: Array = pieces[i]
 		var span: Vector2i = _piece_span(piece)
-		# Keep a four-ball silhouette fully inside the touch target.
-		var step: float = minf(35.0,minf(71.0/float(maxi(1,span.y-1)),
+		var step: float = minf(36.0,minf(72.0/float(maxi(1,span.y-1)),
 			151.0/float(maxi(1,span.x-1))))
-		var radius: float = minf(18.5,step*0.46)
-		var left: float = rect.get_center().x-float(span.x-1)*step*0.5
-		var top: float = rect.get_center().y+3.0-float(span.y-1)*step*0.5
+		var radius: float = minf(19.5,step*0.48)
+		var center_x: float = rect.get_center().x-float(span.x-1)*step*0.5
+		var center_y: float = rect.get_center().y+3.0-float(span.y-1)*step*0.5
 		for bead in piece:
-			_ball(Vector2(left+float(bead[0])*step,top+float(bead[1])*step),
-				radius,int(bead[2]),0.40 if dragging_piece and selected else 1.0)
-		if selected:
-			draw_line(rect.position+Vector2(26,rect.size.y-6),
-				rect.position+Vector2(rect.size.x-26,rect.size.y-6),
-				Color("#87fef0",0.65+0.23*sin(clock*3.2)),2.8,true)
+			var position: Vector2 = Vector2(
+				center_x+float(bead[0])*step,center_y+float(bead[1])*step)
+			var color: Color = COLORS[int(bead[2])]
+			if selected:
+				draw_circle(position,radius*1.48,
+					Color(color.r,color.g,color.b,0.11))
+			_ball(position,radius,int(bead[2]),
+				0.43 if dragging_piece and selected else 1.0)
 func _draw_button_arrow(at: Vector2, clockwise: bool, tint: Color) -> void:
 	# Clear direction glyph with arrowhead anchored to the actual arc.
 	var start: float = -PI*0.65 if clockwise else PI*0.15

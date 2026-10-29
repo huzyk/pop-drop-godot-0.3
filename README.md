@@ -1,3 +1,11 @@
+# POP DROP Gravity 0.11 alpha — nowa warstwa graficzna
+
+Wersja 0.10 porządkowała **geometrię**, ale wyglądała znacznie bardziej płasko niż makieta graficzna. W 0.11 dodana została rzeczywista, importowana przez Godot scena wektorowa `assets/ui/arcade_backdrop.svg` (planeta, mgławice, niebo, góry, gwiazdy), dopracowane wielowarstwowe panele „glass”, mocniejsze poświaty kulek, odświeżony pasek marki i wyraźniej podświetlone karty kształtów.
+
+Przyciski, rozmiary planszy, sterowanie, sklep i mechanika nie zmieniły położenia ani działania. Test Godot sprawdza import wektorowego tła i geometrię hitboxów. **To nadal grafika runtime z płaskimi warstwami, nie fotorealistyczny render z koncepcyjnej ilustracji** — pełna zgodność z makietą wymaga osobno przygotowanych tekstur UI, materiałów i dedykowanej artystycznej kompozycji.
+
+---
+
 # POP DROP Gravity 0.10 alpha — premium mobile UI refresh
 
 Główny ekran jest przebudowany: większa plansza 8×8 (608px), osobny 44px pasek stanu, wyraźna strefa trzech kart kształtów, 32px odstępu przed głównymi przyciskami obrotu i osobny rząd bomb/stopera. Wygodna strefa przycisków na ekranie 720×1280; sceniczne tło arcade, ciemne szkło i czytelniejsze elementy. Geometrię przycisków testuje `tests/test_gravity_ui_layout.gd`.
