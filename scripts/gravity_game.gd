@@ -1651,38 +1651,41 @@ func _draw_drag_overlay() -> void:
 
 
 func _draw_pieces() -> void:
-	# Shape selector is now its own dock: 34px clear of the rotate controls.
-	_text(t("next").to_upper(),Vector2(35,905),15,Color("#aab9df"))
+	# A dedicated product-like selector, not a tiny utility row.
+	_text(t("next").to_upper(),Vector2(39,944),15,Color("#b8c8e8"))
+	var instruction: String = "DOTKNIJ LUB PRZECIĄGNIJ" if language=="pl" else "TAP OR DRAG"
+	_fit_center(instruction,577,944,12,218,Color("#7997c4"))
 	for i in range(pieces.size()):
 		var rect: Rect2 = _piece_card_rect(i)
-		var active: bool = selected_piece == i
-		var pulse: float = 0.72+0.19*sin(clock*3.2)
-		var accent: Color = Color("#73f7eb") if active else Color("#667aa9")
-		_box(Rect2(rect.position+Vector2(0,4),rect.size),Color("#060b1b",0.8),18)
-		_box(rect,Color("#122d42") if active else Color("#17213b"),17,
-			Color(accent.r,accent.g,accent.b,pulse if active else 0.44),
-			3 if active else 1)
-		_box(Rect2(rect.position+Vector2(7,8),Vector2(rect.size.x-14,23)),
-			Color("#b3fff4",0.075) if active else Color("#a4bdf0",0.032),9)
-		draw_circle(rect.position+Vector2(25,22),18,
-			Color("#37baa9") if active else Color("#303b5c"))
-		draw_arc(rect.position+Vector2(25,22),18,0,TAU,28,accent,1.5,true)
-		_center(str(i+1),rect.position.x+25,rect.position.y+29,19,
-			Color.WHITE if active else Color("#c8d0e7"))
+		var selected: bool = selected_piece==i
+		var accent: Color = Color("#67f1ef") if selected else Color("#647db0")
+		_box(Rect2(rect.position+Vector2(0,5),rect.size),Color("#030917",0.72),18)
+		if selected:
+			_box(rect.grow(3),Color("#2970a2",0.18),22)
+		_box(rect,Color("#122a43") if selected else Color("#17213e"),
+			18,Color(accent.r,accent.g,accent.b,0.91 if selected else 0.48),
+			3 if selected else 2)
+		_box(Rect2(rect.position+Vector2(7,7),Vector2(rect.size.x-14,21)),
+			Color("#9cf9fc",0.10) if selected else Color("#a1b9f7",0.04),12)
+		var emblem: Vector2 = rect.position+Vector2(23,21)
+		draw_circle(emblem,16.3,Color("#1e9fa7") if selected else Color("#303d64"))
+		draw_arc(emblem,16.5,0,TAU,32,accent,2.0,true)
+		_center(str(i+1),emblem.x,emblem.y+6.5,17,Color.WHITE)
 		var piece: Array = pieces[i]
 		var span: Vector2i = _piece_span(piece)
-		var step: float = minf(33.0,minf(66.0/float(maxi(1,span.y-1)),
-			146.0/float(maxi(1,span.x-1))))
-		var radius: float = minf(19.0,step*0.48)
+		# Keep a four-ball silhouette fully inside the touch target.
+		var step: float = minf(35.0,minf(71.0/float(maxi(1,span.y-1)),
+			151.0/float(maxi(1,span.x-1))))
+		var radius: float = minf(18.5,step*0.46)
 		var left: float = rect.get_center().x-float(span.x-1)*step*0.5
-		var top: float = rect.get_center().y+9.0-float(span.y-1)*step*0.5
+		var top: float = rect.get_center().y+8.0-float(span.y-1)*step*0.5
 		for bead in piece:
 			_ball(Vector2(left+float(bead[0])*step,top+float(bead[1])*step),
-				radius,int(bead[2]),0.40 if dragging_piece and active else 1.0)
-		if active and not dragging_piece:
-			draw_line(rect.position+Vector2(24,rect.size.y-7),
-				rect.position+Vector2(rect.size.x-24,rect.size.y-7),
-				Color("#79f8e6",0.50+0.28*sin(clock*3.0)),2.2,true)
+				radius,int(bead[2]),0.40 if dragging_piece and selected else 1.0)
+		if selected:
+			draw_line(rect.position+Vector2(26,rect.size.y-6),
+				rect.position+Vector2(rect.size.x-26,rect.size.y-6),
+				Color("#87fef0",0.65+0.23*sin(clock*3.2)),2.8,true)
 func _draw_button_arrow(at: Vector2, clockwise: bool, tint: Color) -> void:
 	# Clear direction glyph with arrowhead anchored to the actual arc.
 	var start: float = -PI*0.65 if clockwise else PI*0.15
@@ -1693,36 +1696,40 @@ func _draw_button_arrow(at: Vector2, clockwise: bool, tint: Color) -> void:
 	draw_line(tip,tip+direction*12,tint,4.5,true)
 	draw_line(tip,tip+direction.rotated(PI*0.49)*12,tint,4.5,true)
 func _draw_buttons() -> void:
+	# Primary actions live beneath the selector with a true 32px touch gap.
 	var enabled: bool = phase=="drop"
 	for i in range(2):
 		var left: bool = i==0
 		var rect: Rect2 = LEFT_RECT if left else RIGHT_RECT
-		var accent: Color = Color("#ff82c6") if left else Color("#66f4f2")
-		var highlight: Color = Color("#ffd3eb") if left else Color("#d6fffd")
-		var base: Color = Color("#773a81") if left else Color("#1a7081")
+		var accent: Color = Color("#f875c1") if left else Color("#4fe1eb")
+		var bright: Color = Color("#ffe0f3") if left else Color("#dbffff")
+		var base: Color = Color("#653166") if left else Color("#13586e")
 		var score_hint: int = int(preview_left.get("score",0)) if left else int(preview_right.get("score",0))
 		var pressed: bool = enabled and tap_time>0.0 and rect.has_point(tap_point)
-		var shadow: Rect2 = Rect2(rect.position+Vector2(0,7),rect.size)
-		_box(shadow,Color("#030914",0.85),23)
-		_box(rect,base if enabled else Color("#30384c"),23,
-			accent if enabled else Color("#61718e"),3)
-		_box(Rect2(rect.position+Vector2(8,7),Vector2(rect.size.x-16,32)),
-			Color(1,1,1,0.095 if enabled else 0.028),15)
-		var disc: Vector2 = rect.position+Vector2(56,48)
-		draw_circle(disc,33,Color("#0a1730",0.33))
-		draw_arc(disc,31,0,TAU,34,Color(highlight.r,highlight.g,highlight.b,0.62),2,true)
-		_draw_button_arrow(disc,not left,Color.WHITE if enabled else Color("#8695a9"))
-		_fit_center(t("left") if left else t("right"),
-			rect.position.x+207,rect.position.y+39,26,198,
-			Color.WHITE if enabled else Color("#a2adc1"))
-		_fit_center("+%d ★" % score_hint if score_hint>0 else "↻ 90°",
-			rect.position.x+207,rect.position.y+73,19,185,
-			Color("#fff2b9") if score_hint>0 else Color("#cee9ee"))
+		_box(Rect2(rect.position+Vector2(0,7),rect.size),Color("#020719",0.82),23)
+		_box(rect,base if enabled else Color("#303a53"),23,
+			Color(accent.r,accent.g,accent.b,0.95) if enabled else Color("#60708e"),3)
+		_box(Rect2(rect.position+Vector2(7,7),Vector2(rect.size.x-14,28)),
+			Color("#fff7ff",0.10 if enabled else 0.035),14)
+		var disc: Vector2 = rect.position+Vector2(50 if left else rect.size.x-50,42)
+		draw_circle(disc,32,Color("#10152d",0.39))
+		draw_arc(disc,29,0,TAU,40,
+			Color(bright.r,bright.g,bright.b,0.64 if enabled else 0.25),2.8,true)
+		_draw_button_arrow(disc,not left,Color.WHITE if enabled else Color("#8395b3"))
+		var txt_x: float = rect.position.x+(195 if left else 121)
+		_fit_center("OBRÓĆ" if language=="pl" else "ROTATE",txt_x,
+			rect.position.y+31,20,166,Color("#fff6fa") if enabled else Color("#99a5be"))
+		_fit_center(t("left") if left else t("right"),txt_x,
+			rect.position.y+57,24,170,Color.WHITE if enabled else Color("#97a4bf"))
+		var note: String = "+%d  ★" % score_hint if score_hint>0 else "90°"
+		_fit_center(note,txt_x,rect.position.y+77,15,144,
+			Color("#fff3b8") if score_hint>0 else Color("#bfdaea"))
 		if pressed:
 			_box(Rect2(rect.position+Vector2(6,6),rect.size-Vector2(12,12)),
-				Color(1,1,1,0.09),19)
+				Color(1,1,1,0.11),18)
 		if score_hint>0 and enabled:
-			_spark(rect.position+Vector2(rect.size.x-18,15),5,highlight,0.7)
+			_spark(rect.position+Vector2(rect.size.x-22 if left else 21,13),
+				4.5,bright,0.66)
 func _draw_game_over() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#030618",0.91))
 	var center: Vector2 = Vector2(360,596)
@@ -1865,38 +1872,43 @@ func _draw_shop_notice() -> void:
 	_fit_center(shop_notice,360,774,23,303,Color(1,0.93,0.72,alpha))
 
 func _draw_boost_controls() -> void:
+	# Consumables have their own 20px-separated secondary toolbar.
 	if phase=="over":
 		return
 	var active: bool = phase=="drop"
 	for i in range(2):
 		var bomb: bool = i==0
 		var rect: Rect2 = BOOST_BOMB if bomb else BOOST_TIME
-		var stocked: int = shop.stock("bomb" if bomb else "time")
-		var accent: Color = Color("#ffc47e") if bomb else Color("#7dc9ff")
-		var usable: bool = active and stocked>0
-		var focus: bool = bomb and bomb_aim
-		_box(Rect2(rect.position+Vector2(0,5),rect.size),Color("#050b19",0.72),18)
-		_box(rect,
-			Color("#7a4a43") if focus else Color("#423246") if bomb else Color("#203d61"),
-			18,accent if usable or focus else Color("#526684"),2)
-		_box(Rect2(rect.position+Vector2(6,6),Vector2(rect.size.x-12,22)),
-			Color(1,1,1,0.08),11)
-		var icon_at: Vector2 = rect.position+Vector2(33,31)
+		var stock: int = shop.stock("bomb" if bomb else "time")
+		var accent: Color = Color("#f9c276") if bomb else Color("#79c8fa")
+		var usable: bool = active and stock>0
+		var selected: bool = bomb and bomb_aim
+		_box(Rect2(rect.position+Vector2(0,5),rect.size),Color("#060a1a",0.78),19)
+		_box(rect,Color("#624443") if selected else Color("#433246") if bomb else Color("#1f3a61"),
+			19,accent if usable or selected else Color("#5a6a87"),2)
+		_box(Rect2(rect.position+Vector2(7,7),Vector2(rect.size.x-14,22)),
+			Color(1,1,1,0.075),11)
+		var at: Vector2 = rect.position+Vector2(39,32)
+		draw_circle(at,25,Color(accent.r,accent.g,accent.b,0.095))
 		if bomb:
-			draw_circle(icon_at,20,Color("#e2a551") if usable else Color("#716358"))
-			draw_circle(icon_at-Vector2(4,5),8,Color("#fff0c4",0.54))
-			draw_line(icon_at+Vector2(9,-17),icon_at+Vector2(15,-26),
-				Color("#ffe19b"),3.0,true)
+			draw_circle(at,17,Color("#f2ad52") if usable else Color("#756b69"))
+			draw_circle(at-Vector2(5,6),6.5,Color("#fff5ca",0.63))
+			draw_line(at+Vector2(8,-13),at+Vector2(14,-21),Color("#ffe2a0"),3,true)
+			if selected:
+				draw_arc(at,25,0,TAU,42,Color("#ffe2a0"),2.5,true)
 		else:
-			draw_arc(icon_at,20,0,TAU,42,Color("#b2e5ff") if usable else Color("#71849b"),3.0,true)
-			draw_line(icon_at-Vector2(10,0),icon_at+Vector2(10,0),Color("#e8f6ff"),3.5,true)
-			draw_line(icon_at-Vector2(0,10),icon_at+Vector2(0,10),Color("#e8f6ff"),3.5,true)
+			draw_arc(at,20,0,TAU,36,Color("#99ddff") if usable else Color("#8296ac"),3.0,true)
+			draw_line(at,at+Vector2(0,-12),Color("#f5fcff"),3.2,true)
+			draw_line(at,at+Vector2(10,8),Color("#f5fcff"),3.2,true)
+			draw_line(at+Vector2(-8,-24),at+Vector2(8,-24),Color("#9cdeff"),2.4,true)
+		var text_center: float = rect.position.x+140
 		_fit_center(shop_t("bomb") if bomb else shop_t("time"),
-			rect.position.x+133,rect.position.y+40,22,140,
-			Color("#fff3e4") if bomb else Color("#dff7ff"))
-		draw_circle(rect.position+Vector2(rect.size.x-23,rect.size.y-18),18,Color("#0b1429",0.9))
-		_center(str(stocked),rect.position.x+rect.size.x-23,rect.position.y+rect.size.y-11,
-			19,Color("#fff3cf") if stocked>0 else Color("#8b9cb8"))
+			text_center,rect.position.y+41,21,145,
+			Color("#fff4e2") if bomb else Color("#e4f5ff"))
+		draw_circle(rect.position+Vector2(rect.size.x-20,rect.size.y-17),16,Color("#09162b"))
+		_center(str(stock),rect.position.x+rect.size.x-20,
+			rect.position.y+rect.size.y-10,17,
+			Color("#ffe5bc") if stock>0 else Color("#8294aa"))
 func _draw_bomb_target() -> void:
 	if bomb_hover.x >= 0:
 		for y in range(maxi(0,bomb_hover.y-1),mini(8,bomb_hover.y+2)):
