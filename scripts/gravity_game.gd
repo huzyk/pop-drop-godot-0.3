@@ -7,7 +7,7 @@ const Ads = preload("res://scripts/gravity_ads.gd")
 const Progression = preload("res://scripts/gravity_progression.gd")
 const Feedback = preload("res://scripts/gravity_feedback.gd")
 const Shop = preload("res://scripts/gravity_shop.gd")
-const BACKDROP: Texture2D = preload("res://assets/ui/arcade_backdrop.svg")
+const BACKDROP = preload("res://assets/ui/arcade_backdrop.svg")
 const FONT = preload("res://fonts/ClearSans-Regular.ttf")
 const BOLD = preload("res://fonts/ClearSans-Bold.ttf")
 # Artist-authored vector sprites imported as textures by Godot (no more circle stacks).
@@ -1112,7 +1112,7 @@ func _neon_panel(rect: Rect2, accent: Color, strong: bool=false) -> void:
 	# Multi-layer faux glass: shadow, translucent bezel, rim and specular sweep.
 	var curve: int = 22 if strong else 18
 	var edge: float = 0.75 if strong else 0.52
-	_box(rect.grow(2).translated(Vector2(0,6)),Color("#020617",0.76),curve+2)
+	_box(Rect2(rect.grow(2).position+Vector2(0,6),rect.grow(2).size),Color("#020617",0.76),curve+2)
 	_box(rect.grow(2),Color(accent.r,accent.g,accent.b,0.074),curve+2)
 	_box(rect,Color("#101a35",0.97),curve,
 		Color(accent.r,accent.g,accent.b,edge),2)
@@ -1192,7 +1192,7 @@ func _draw_background() -> void:
 		var alpha: float = 0.12+0.13*(0.5+0.5*sin(clock*0.9+float(i)*2.1))
 		_spark(Vector2(px,py),2.4+float(i%3),Color("#b6dfff"),alpha)
 	# Raised shape tray and secondary button deck, with separate light rims.
-	_box(DOCK_SHAPES.grow(3).translated(Vector2(0,7)),
+	_box(Rect2(DOCK_SHAPES.grow(3).position+Vector2(0,7),DOCK_SHAPES.grow(3).size),
 		Color("#030817",0.81),29)
 	_box(DOCK_SHAPES.grow(3),Color("#131e3e",0.97),27,
 		Color("#6c89d0",0.68),2)
@@ -1201,7 +1201,7 @@ func _draw_background() -> void:
 	draw_line(Vector2(54,DOCK_SHAPES.position.y+4),
 		Vector2(659,DOCK_SHAPES.position.y+4),
 		Color("#99c4ff",0.51),1.8,true)
-	_box(DOCK_ACTIONS.grow(3).translated(Vector2(0,7)),
+	_box(Rect2(DOCK_ACTIONS.grow(3).position+Vector2(0,7),DOCK_ACTIONS.grow(3).size),
 		Color("#030716",0.88),28)
 	_box(DOCK_ACTIONS.grow(3),Color("#101a35",0.96),28,
 		Color("#6d67b6",0.54),2)
@@ -1679,7 +1679,7 @@ func _draw_pieces() -> void:
 		var selected: bool = selected_piece==i
 		var tint: Color = Color("#63f3ef") if selected else Color("#7e8fc2")
 		var pulsing: float = 0.76+0.20*sin(clock*3.6)
-		_box(rect.translated(Vector2(0,6)),Color("#030819",0.90),21)
+		_box(Rect2(rect.position+Vector2(0,6),rect.size),Color("#030819",0.90),21)
 		if selected:
 			_box(rect.grow(4),Color("#38d7f1",0.105),23)
 		_box(rect,Color("#0d334f") if selected else Color("#17223e"),19,
