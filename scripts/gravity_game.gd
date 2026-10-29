@@ -1746,8 +1746,8 @@ func _draw_game_over() -> void:
 
 func _draw_settings() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#030618",0.94))
-	_neon_panel(Rect2(72,342,576,735),Color("#88e4ec"),true)
-	_fit_center("PRYWATNOŚĆ" if language == "pl" else "PRIVACY",308,414,40,420,Color.WHITE)
+	_neon_panel(Rect2(72,342,576,735),Color("#8bbde0"),true)
+	_fit_center("USTAWIENIA" if language == "pl" else "SETTINGS",304,414,38,390,Color.WHITE)
 	_box(SETTINGS_CLOSE,Color("#494e78"),18,Color("#a2b0d9"),2)
 	_fit_center("ZAMKNIJ" if language == "pl" else "CLOSE",535,420,17,106,Color.WHITE)
 	_fit_center("ANALITYKA GRY" if language == "pl" else "GAME ANALYTICS",360,513,22,445,Color("#d0e8fa"))
@@ -1801,7 +1801,7 @@ func _draw_mission_toast() -> void:
 
 func _draw_profile() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#030618",0.95))
-	_neon_panel(PROFILE_CARD,Color("#b9a0ff"),true)
+	_neon_panel(PROFILE_CARD,Color("#9bb9ed"),true)
 	_box(Rect2(66,236,588,880),Color("#141b38"),28,Color("#657ab2"),2)
 	_fit_center(profile_t("profile"),295,309,39,440,Color.WHITE)
 	_box(PROFILE_CLOSE,Color("#414b77"),18,Color("#8d9ed1"),2)
@@ -1896,7 +1896,7 @@ func _draw_bomb_target() -> void:
 	_fit_center(shop_t("aim"),360,862,19,407,Color("#fff2d9"))
 func _draw_shop() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#050819",0.96))
-	_neon_panel(Rect2(54,225,612,863),Color("#ffde9a"),true)
+	_neon_panel(Rect2(54,225,612,863),Color("#f1cb91"),true)
 	_box(Rect2(67,238,586,837),Color("#191d38"),27,Color("#7c679d"),2)
 	_fit_center("✦ "+shop_t("shop"),292,313,43,429,Color("#fff1d9"))
 	_box(SHOP_CLOSE,Color("#474a70"),18,Color("#9eadd0"),2)
