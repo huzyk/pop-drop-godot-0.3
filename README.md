@@ -1,3 +1,9 @@
+# POP DROP Gravity 0.10 alpha — premium mobile UI refresh
+
+Główny ekran jest przebudowany: większa plansza 8×8 (608px), osobny 44px pasek stanu, wyraźna strefa trzech kart kształtów, 32px odstępu przed głównymi przyciskami obrotu i osobny rząd bomb/stopera. Wygodna strefa przycisków na ekranie 720×1280; sceniczne tło arcade, ciemne szkło i czytelniejsze elementy. Geometrię przycisków testuje `tests/test_gravity_ui_layout.gd`.
+
+---
+
 # POP DROP Gravity 0.9 — polished arcade interface
 
 **UI redesign:** premium HUD at the top, 8×8 game board (576×576), separate enlarged three-card shape selector, spacious rotation controls, and dedicated power-up dock. Touch regions and graphics use the same geometry. Full details: [docs/ARCADE_UI.md](docs/ARCADE_UI.md).

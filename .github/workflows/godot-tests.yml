@@ -35,6 +35,8 @@ jobs:
         run: godot --headless --path . --script res://tests/test_gravity_progression.gd
       - name: Test pressure waves and unbreakable rock physics
         run: timeout 40s godot --headless --path . --script res://tests/test_gravity_pressure.gd
+      - name: Verify mobile UI hit targets and layout spacing
+        run: timeout 40s godot --headless --path . --script res://tests/test_gravity_ui_layout.gd
       - name: Test coin economy and bomb
         run: timeout 40s godot --headless --path . --script res://tests/test_gravity_shop.gd
       - name: Test mobile arcade layout and touch zones
