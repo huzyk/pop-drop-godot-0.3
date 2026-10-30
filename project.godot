@@ -3,7 +3,7 @@ config_version=5
 [application]
 config/name="POP DROP: Gravity - Illustrated"
 config/description="A lively gravity puzzle with collectible marble characters."
-config/version="0.13.1-illustrated"
+config/version="0.21.0-beta-prep"
 run/main_scene="res://scenes/gravity.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
