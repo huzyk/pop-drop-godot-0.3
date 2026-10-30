@@ -1,0 +1,22 @@
+name: Export complete Godot project
+on:
+  push:
+    paths:
+      - '.github/workflows/export-project.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pop-drop-complete-source
+          path: |
+            .
+            !.git
+            !.godot
+          include-hidden-files: true
+          retention-days: 2
