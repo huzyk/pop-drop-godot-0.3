@@ -441,8 +441,12 @@ func _use_bomb(target: Vector2i) -> void:
 			_burst(Vector2i(x,y),6)
 	for y in range(maxi(0,target.y-1),mini(8,target.y+2)):
 		for x in range(maxi(0,target.x-1),mini(8,target.x+2)):
-			if Rules.is_rock(int(before_blast[y][x])):
-				_rock_impact(Vector2i(x,y),not Rules.is_rock(int(board[y][x])))
+			var before: int = int(before_blast[y][x])
+			if Rules.is_rock(before):
+				var broken: bool = not Rules.is_rock(int(board[y][x]))
+				_rock_impact(Vector2i(x,y),broken,Rules.is_gold_rock(before))
+				if broken and Rules.is_gold_rock(before):
+					_gold_rock_reward(Vector2i(x,y))
 	_shock(BOARD.position+(Vector2(target)+Vector2(0.5,0.5))*CELL,3.7,Color("#ffc089"))
 	if feedback != null:
 		feedback.cue("bomb")
@@ -1064,7 +1068,8 @@ func _trigger_pressure_wave() -> void:
 		if bool(rock.get("spawned",false)):
 			board = rock.board
 			rock_added = true
-			_shock(BOARD.position+(Vector2(rock.cell)+Vector2(0.5,0.5))*CELL,1.2,Color("#ffe0a7"))
+			_shock(BOARD.position+(Vector2(rock.cell)+Vector2(0.5,0.5))*CELL,1.2,
+				Color("#FFCC55") if bool(rock.golden) else Color("#ffe0a7"))
 			if feedback != null:
 				feedback.cue("rock_hit",0.86)
 	if Rules.wave_is_surge(wave_number):
@@ -1257,11 +1262,15 @@ func _resolve_cascades(fluid: bool=false, player_action: bool=true) -> void:
 		_shock(centroid,minf(4.5,1.15+float(chain_depth)*0.7+float(hits.size())*0.12),main_color)
 		if standout:
 			_begin_pop_impact(centroid,main_color,minf(4.0,1.0+float(hits.size())*0.18+float(chain_depth)*0.35))
+		var before_rock_hits: Array = board
 		var rocks: Dictionary = Rules.damage_rocks(board,hits)
 		board = Rules.erase_matches(rocks.board,hits)
 		for cracked_cell in rocks.cracked:
 			var broke: bool = cracked_cell in rocks.destroyed
-			_rock_impact(cracked_cell,broke)
+			var golden: bool = Rules.is_gold_rock(int(before_rock_hits[cracked_cell.y][cracked_cell.x]))
+			_rock_impact(cracked_cell,broke,golden)
+			if broke and golden:
+				_gold_rock_reward(cracked_cell)
 		if not rocks.cracked.is_empty() and feedback != null:
 			feedback.cue("rock_break" if not rocks.destroyed.is_empty() else "rock_hit",
 				1.02 if not rocks.destroyed.is_empty() else 0.94)
@@ -1293,7 +1302,23 @@ func _resolve_cascades(fluid: bool=false, player_action: bool=true) -> void:
 			var aftershock: Dictionary = Rules.spill_after_rotation(board,spin_clockwise)
 			await _animate_to(aftershock.board,aftershock.motions,0.24,"roll")
 
-func _rock_impact(cell: Vector2i, destroyed: bool) -> void:
+func _gold_rock_reward(cell: Vector2i) -> void:
+	var amount: int = rng.randi_range(5,10)
+	var unique: String = "gold_rock:"+action_id+":"+str(cell.x)+":"+str(cell.y)
+	var granted: int = shop.credit_bonus(unique,amount) if shop != null else 0
+	if granted <= 0:
+		return
+	var at: Vector2 = BOARD.position+(Vector2(cell)+Vector2(0.5,0.5))*CELL
+	floaters.append({"p":at,"text":"+%d ◉" % granted,"combo":0,
+		"life":1.35,"max":1.35,"gold":true})
+	shop_notice = ("ZŁOTA SKAŁA +%d ◉" if language=="pl" else "GOLD ROCK +%d ◉") % granted
+	shop_notice_time = 1.6
+	if feedback != null:
+		feedback.cue("coin")
+	telemetry.track("gold_rock_broken",{"run_id":run_id,"coins":granted})
+	queue_redraw()
+
+func _rock_impact(cell: Vector2i, destroyed: bool, golden: bool = false) -> void:
 	var at: Vector2 = BOARD.position+(Vector2(cell)+Vector2(0.5,0.5))*CELL
 	var count: int = 23 if destroyed else 9
 	for i in range(count):
@@ -1302,14 +1327,17 @@ func _rock_impact(cell: Vector2i, destroyed: bool) -> void:
 		var angle: float = TAU*float(i)/float(count)+rng.randf_range(-0.19,0.19)
 		var speed: float = rng.randf_range(105.0,265.0) if destroyed else rng.randf_range(40.0,130.0)
 		var life: float = rng.randf_range(0.40,0.80) if destroyed else rng.randf_range(0.17,0.34)
-		var stone_tint: Color = Color("#A87959") if i%3==0 else Color("#E4CDA5")
+		var stone_tint: Color = (Color("#FFBE3E") if i%3==0 else Color("#FFF0A1")) if golden else (
+			Color("#A87959") if i%3==0 else Color("#E4CDA5"))
 		fx.append({"p":at+Vector2.from_angle(angle)*rng.randf_range(5.0,18.0),
 			"v":Vector2.from_angle(angle)*speed,"life":life,"max":life,
 			"color":stone_tint,"r":rng.randf_range(3.0,8.0) if destroyed else rng.randf_range(1.8,3.8),
 			"streak":false,"shard":true,"angle":angle})
-	_shock(at,2.4 if destroyed else 0.8,Color("#FFF1D1"))
+	_shock(at,3.0 if golden and destroyed else (2.4 if destroyed else 0.8),
+		Color("#FFE17B") if golden else Color("#FFF1D1"))
 	if destroyed:
-		_begin_pop_impact(at,Color("#F8DCA3"),2.3)
+		_begin_pop_impact(at,Color("#FFD04A") if golden else Color("#F8DCA3"),
+			3.6 if golden else 2.3)
 
 func _begin_pop_impact(at: Vector2, tint: Color, power: float) -> void:
 	# A brief illustrated light/sparkle sweep reinforces rare, skilled clears.
