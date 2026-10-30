@@ -8,16 +8,24 @@ func _initialize() -> void:
 	assert(game != null)
 	game.free()
 	# Three tiers replace the old rapidly accelerating, rising death-line waves.
-	assert(Rules.wave_interval(0) == 18.0)
-	assert(Rules.wave_interval(3) == 18.0)
-	assert(Rules.wave_interval(4) == 16.0)
-	assert(Rules.wave_interval(8) == 16.0)
-	assert(Rules.wave_interval(9) == 14.0)
-	assert(Rules.wave_interval(60) == 14.0)
-	assert(Rules.wave_marble_count(1) == 3)
-	assert(Rules.wave_marble_count(4) == 3)
-	assert(Rules.wave_marble_count(5) == 4)
-	assert(Rules.wave_marble_count(10) == 5)
+	assert(Rules.wave_interval(0) == 16.0)
+	assert(Rules.wave_interval(3) == 16.0)
+	assert(Rules.wave_interval(4) == 14.0)
+	assert(Rules.wave_interval(8) == 14.0)
+	assert(Rules.wave_interval(9) == 12.0)
+	assert(Rules.wave_interval(60) == 12.0)
+	assert(Rules.wave_marble_count(1) == 4)
+	assert(Rules.wave_marble_count(4) == 4)
+	assert(Rules.wave_marble_count(5) == 5)
+	assert(Rules.wave_marble_count(10) == 6)
+	assert(not Rules.wave_is_surge(4))
+	assert(Rules.wave_is_surge(5))
+	assert(Rules.wave_is_surge(10))
+	assert(not Rules.wave_is_surge(11))
+	assert(Rules.wave_total_marbles(4) == 4)
+	assert(Rules.wave_total_marbles(5) == 7)
+	assert(Rules.wave_total_marbles(10) == 8)
+	assert(Rules.wave_total_marbles(15) == 8)
 
 	var rng = RandomNumberGenerator.new()
 	rng.seed = 12345
@@ -25,18 +33,29 @@ func _initialize() -> void:
 	board[0][0] = 0
 	board[5][3] = Rules.ROCK_MAX
 	board[7][4] = 1
-	var wave: Dictionary = Rules.drop_wave(board,rng,3)
-	assert(wave.added == 3)
-	assert(wave.motions.size() == 3)
+	var wave: Dictionary = Rules.drop_wave(board,rng,4)
+	assert(wave.added == 4)
+	assert(wave.motions.size() == 4)
 	assert(wave.board[0][0] == 0) # Top-row marble survives; no death line.
 	assert(wave.board[5][3] == Rules.ROCK_MAX) # Anchored rock remains.
 	assert(wave.board[7][4] == 1)
-	assert(Rules.filled(wave.board) == Rules.filled(board)+3)
+	assert(Rules.filled(wave.board) == Rules.filled(board)+4)
 	assert(board[0][0] == 0) # Original board is not mutated.
 	var columns: Dictionary = {}
 	for motion in wave.motions:
 		columns[int(motion["to"].x)] = true
-	assert(columns.size() == 3) # No wave stacks multiple balls in one column.
+	assert(columns.size() == 4) # No wave stacks multiple balls in one column.
+
+	# More varied shapes are offered, but the fallback must keep them playable.
+	rng.seed = 934
+	var wide: int = 0
+	var small: int = 0
+	for i in range(300):
+		if Rules.choose_piece_size(rng,Rules.empty_board()) >= 3:
+			wide += 1
+		else:
+			small += 1
+	assert(wide > small)
 
 	# If only two columns have room, the wave adds only two balls.
 	board = Rules.empty_board()
@@ -101,11 +120,11 @@ func _initialize() -> void:
 		"board":board,
 		"pieces":[[[0,0,0]],[[0,0,1]],[[0,0,2]]],
 		"score":0,"moves":0,"lives":1,"revives":0,
-		"phase":"drop","wave_number":2,"wave_time_left":18.0,
+		"phase":"drop","wave_number":2,"wave_time_left":16.0,
 		"loss_reason":""
 	}
 	assert(Session.valid(state))
 	state["wave_time_left"] = 99.0
 	assert(not Session.valid(state))
-	print("PASS: top-drop pressure, fair no-moves loss, unlimited rocks, guaranteed continue")
+	print("PASS: 16/14/12 pressure, surge bursts, varied pieces, no-moves loss and unlimited rocks")
 	quit()
