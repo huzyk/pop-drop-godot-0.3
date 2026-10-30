@@ -1,37 +1,36 @@
-# POP DROP Gravity 0.15 — świadoma gra zamiast ukrytych kar
+# POP DROP Gravity 0.16 — więcej decyzji, mniej darmowych monet
 
 ## Koniec rundy
 
-**Jedyną naturalną przyczyną przegranej jest brak możliwych ruchów.** Sprawdzamy wszystkie trzy oferowane kształty i możliwości odzyskania miejsca przez obroty (z grawitacją i POP-ami). Żaden zajęty rząd, także najwyższy, **nie odbiera życia**. Nie ma już trzech serduszek ani osobnych kar za fale.
+**Jedyną naturalną przyczyną przegranej pozostaje brak możliwych ruchów**, także po możliwych obrotach. Nie przywracamy linii śmierci ani kar za zapełniony górny rząd. Po przegranej można raz wykupić lub obejrzeć reklamę za ratunek, który otwiera miejsce.
 
-Przy przegranej pojawia się komunikat **BRAK DOSTĘPNYCH RUCHÓW**. Po zakończeniu można rozpocząć nową rundę albo **jeden raz w rundzie** wykupić / obejrzeć reklamę za ratunek. Ratunek czyści dwie najwyższe zapełnione kulkami linie, a jeśli nie otwiera możliwości ruchu (np. przy całkowicie skalistej górze), odblokowuje górne pola i gwarantuje jedną małą kulkę do położenia.
+## Presja: fale i nawałnice
 
-## Fale kulkami od góry
+Fale zrzucają pojedyncze kulki do różnych dostępnych kolumn. Co **piąta fala** to zapowiadana w dolnym pasku **NAWAŁNICA**: otrzymuje dwie dodatkowe kulki (maksymalnie 8). Jeśli kolumn jest za mało, fala dodaje tylko tyle kulek, ile mieści się na planszy.
 
-Stary model napierających wierszy został usunięty. W każdym cyklu nowa fala **zrzuca pojedyncze kulki do różnych wolnych kolumn**. Zajęte kolumny są pomijane, nie wypychają innych kulek i nie powodują osobnej utraty życia. Kiedy na planszy nie ma już żadnego legalnego ruchu nawet po obrocie, uruchamia się zwykły koniec rundy.
+| Numer fali | Odstęp | Typowe kulki | Nawałnica |
+|---|---:|---:|---:|
+| 1–4 | 16 s | 4 | — |
+| 5–9 | 14 s | 5 | 7 w fali 5 |
+| 10+ | 12 s | 6 | 8 co piątą falę |
 
-| Etap | Numer fali | Odstęp | Kulki na falę |
-|---|---|---:|---:|
-| Rozgrzewka | 1–4 | 18 s | 3 |
-| Środek | 5–9 | 16 s | 4 |
-| Zaawansowana gra | 10+ | 14 s | 5 |
+**Skały pojawiają się od drugiej fali, po jednej co drugą falę**, bez sztywnego limitu. Są usuwane przez trzy osobne sąsiednie POP-y lub trafienia bombą.
 
-Czas nie biegnie podczas animacji lub otwartego menu. Po wznowieniu starego zapisu pozostały czas jest ograniczony do nowych parametrów.
+Generator wyraźnie częściej proponuje kształty z trzema i czterema kulkami, zamiast stale ratować gracza pojedynczymi. Zmniejszono jego preferencję do proponowania gotowych kombinacji POP; nadal bierze pod uwagę grywalność i awaryjnie potrafi zaproponować mniejszy kształt.
 
-## Skały
+## Ekonomia gry
 
-Nie ma sztucznego limitu skał. **Co trzecia fala** próbuje dodać **jedną skałę** na wolnym polu środkowo-dolnej części planszy. Jeśli nie znajdzie tam miejsca, fala nie dodaje skały. Skały obracają się wraz z planszą, nie spadają pod wpływem grawitacji. Każda wytrzymuje trzy osobne sąsiadujące POP-y lub trafienia bombą. Ratunek jest szczególnym wyjątkiem: w całkowicie zablokowanej sytuacji może otworzyć także dwa pola zajęte przez skały.
-
-## Interfejs
-
-Zamiast trzech serc i sygnału „linia śmierci” gra pokazuje liczbę wolnych pól. Ekran porażki mówi wprost, dlaczego runda się skończyła.
+- **Wynik i XP nie są limitowane**. Nadal warto robić duże combosy i walczyć o rekord.
+- Za POP wypada około **1 moneta na 85 punktów**, minimum 2 i maksimum 24 za pojedyncze rozliczenie POP.
+- **Łącznie do 160 monet za POP podczas jednej rundy.** Licznik jest zapisywany i nie resetuje się po ponownym uruchomieniu aplikacji. Jednorazowy komunikat informuje o osiągnięciu limitu.
+- Premie za dzienne zadania, serie dni i odznaki są oddzielne od limitu POP. Dalszy rozwój wymaga wielu sesji; jedna długa gra nie powinna automatycznie finansować całego sklepu.
+- Istniejące monety, skórki, boostery i XP pozostają bez zmian. Stary portfel v3 przechodzi na v4.
 
 ## Testy
 
 ```sh
 godot --headless --path . --script res://tests/test_gravity_pressure.gd
-godot --headless --path . --script res://tests/test_gravity_rules.gd
-godot --headless --path . --script res://tests/test_illustrated_art.gd
+godot --headless --path . --script res://tests/test_gravity_shop.gd
 ```
 
-To balans startowy do testów na telefonie, nie wynik pomiarów retencji.
+Parametry są punktem wyjścia do testów długości sesji oraz retencji, nie gwarancją optymalnego balansu.
