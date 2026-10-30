@@ -9,7 +9,6 @@ const GLASS_PINK = preload("res://assets/illustrated_v7/orb_pink.webp")
 const GLASS_GREEN = preload("res://assets/illustrated_v7/orb_green.webp")
 const GLASS_BLUE = preload("res://assets/illustrated_v7/orb_blue.webp")
 const STONE = preload("res://assets/illustrated_v7/stone.webp")
-const Themes = preload("res://scripts/gravity_themes.gd")
 const TOKENS = [GLASS_PINK,GLASS_GREEN,GLASS_BLUE]
 const DARK := Color("#17374D")
 const CREAM := Color("#FFF8EA")
