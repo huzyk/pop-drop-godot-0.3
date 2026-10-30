@@ -7,6 +7,12 @@ func _initialize() -> void:
 	assert(Illustrated.SCENE_ART != null)
 	assert(Illustrated.CLEAN_OVERLAY != null)
 	assert(Illustrated.CLEAN_OVERLAY.get_size() == Game.BASE)
+	# The painted old life HUD must be masked fully, with no off-frame pill.
+	var hud_overlay: Image = Illustrated.CLEAN_OVERLAY.get_image()
+	assert(hud_overlay.get_pixel(607,220).a > 0.95)
+	assert(hud_overlay.get_pixel(575,243).a > 0.95)
+	assert(hud_overlay.get_pixel(610,265).a > 0.95)
+	assert(hud_overlay.get_pixel(698,242).a < 0.05)
 	assert(Illustrated.SCENE_ART.get_size()==Vector2(941,1672))
 	assert(Illustrated.SELECTED_CARD.get_size()==Vector2(386,278))
 	for sprite in [Illustrated.GLASS_PINK,Illustrated.GLASS_GREEN,
