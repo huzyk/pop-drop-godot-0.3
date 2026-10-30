@@ -1,6 +1,7 @@
 extends SceneTree
 const Session = preload("res://scripts/gravity_session.gd")
 const Game = preload("res://scripts/gravity_game.gd")
+const Rules = preload("res://scripts/gravity_rules.gd")
 
 func _initialize() -> void:
 	# Importing Game also parses all its core dependencies.
@@ -19,7 +20,7 @@ func _initialize() -> void:
 	instance._register_flow_pop()
 	instance._register_flow_pop()
 	assert(instance.flow_streak == 4)
-	assert(instance.Rules.flow_multiplier_percent(instance.flow_streak) == 200)
+	assert(Rules.flow_multiplier_percent(instance.flow_streak) == 200)
 	instance.flow_time_left = 0.0
 	instance._register_flow_pop()
 	assert(instance.flow_streak == 1) # Expired streak starts over.
