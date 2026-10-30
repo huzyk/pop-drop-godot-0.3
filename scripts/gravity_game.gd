@@ -57,6 +57,7 @@ const DOCK_SHAPES := Rect2(60,931,597,141)
 const DOCK_ACTIONS := Rect2(30,1084,653,134)
 const COLORS := [Color("#ff7096"),Color("#55dcad"),Color("#62b5ff")]
 const FLOW_WINDOW := 8.0 # Player decision time, paused during animations or menus.
+const FREE_PLAY_BETA := true # Free rounds for retention testing; energy remains saved for later experiments.
 const SAVE_FILE := "user://pop_drop_gravity.json"
 const LOCALES := ["pl","en","es","pt","de","fr","ru"]
 const TR := {
@@ -280,6 +281,9 @@ func _cycle_language() -> void:
 		feedback.cue("tap")
 	queue_redraw()
 
+func analytics_erase_label() -> String:
+	return "USUŃ DANE ANALITYKI" if language == "pl" else "CLEAR ANALYTICS DATA"
+
 func profile_t(key: String) -> String:
 	return str(PROFILE_TR.get(language,PROFILE_TR["en"]).get(key,key))
 
@@ -346,7 +350,7 @@ func _update_music_for_skin() -> void:
 		music.set_theme(Themes.for_skin(shop.equipped_skin))
 
 func _shop_card(index: int) -> Rect2:
-	return Rect2(91,498+index*231,538,213)
+	return Rect2(88+(index%2)*278,493+int(index/2)*223,265,215)
 
 func _shop_catalog() -> Array:
 	return ["bomb","reroll"] if shop_tab==0 else [
@@ -356,12 +360,12 @@ func _shop_catalog() -> Array:
 		"dragon","unicorn","phoenix","griffin","star_capybara"]
 
 func _shop_pages() -> int:
-	return int(ceil(float(_shop_catalog().size())/2.0))
+	return int(ceil(float(_shop_catalog().size())/4.0))
 
 func _shop_items() -> Array:
 	var items: Array = _shop_catalog()
-	var first: int = shop_page*2
-	return items.slice(first,mini(first+2,items.size()))
+	var first: int = shop_page*4
+	return items.slice(first,mini(first+4,items.size()))
 
 func _shop_activate(id: String) -> void:
 	if id == "default":
@@ -520,7 +524,7 @@ func _save() -> void:
 		f.store_string(JSON.stringify({"best":best,"language":language,"rounds_played":rounds_played}))
 
 func new_game() -> void:
-	if not shop.spend_energy():
+	if not FREE_PLAY_BETA and not shop.spend_energy():
 		if board.is_empty():
 			board = Rules.empty_board()
 			pieces = []
@@ -923,7 +927,7 @@ func _gui_input(event: InputEvent) -> void:
 			else:
 				ad_note = shop_t("poor")
 			queue_redraw()
-		elif ENERGY_AD_RECT.has_point(pt) and shop.energy < Shop.MAX_ENERGY:
+		elif ENERGY_AD_RECT.has_point(pt) and not FREE_PLAY_BETA and shop.energy < Shop.MAX_ENERGY:
 			_request_ad_reward("energy")
 		return
 	if LANG_RECT.has_point(pt):
