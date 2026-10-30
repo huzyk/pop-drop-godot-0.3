@@ -1,0 +1,28 @@
+name: Export Linux Godot for local illustrated smoke test
+on:
+  push:
+    paths:
+      - '.github/workflows/export-engine.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.7.2
+          use-dotnet: false
+          include-templates: false
+      - name: Export executable
+        run: |
+          mkdir -p engine
+          cp "$(command -v godot)" engine/godot || cp "$GODOT" engine/godot
+          chmod +x engine/godot
+          ls -lh engine/godot
+      - uses: actions/upload-artifact@v4
+        with:
+          name: godot-linux-4-7-2
+          path: engine/godot
+          retention-days: 2
