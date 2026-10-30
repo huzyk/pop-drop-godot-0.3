@@ -205,6 +205,11 @@ func _ready() -> void:
 	progression.achievement_unlocked.connect(_on_achievement_unlocked)
 	shop = Shop.new()
 	shop.load_data()
+	# Recover daily mission coins after a crash between profile and wallet saves.
+	for mission in Progression.MISSIONS:
+		var mid: String = str(mission["id"])
+		if bool(progression.claimed.get(mid,false)):
+			shop.credit_bonus("mission:"+progression.daily_day+":"+mid,_mission_coins(mid))
 	# Recover a badge payout if the app was interrupted between separate save files.
 	for achievement in Progression.ACHIEVEMENTS:
 		var badge_id: String = str(achievement["id"])
@@ -437,8 +442,17 @@ func _on_achievement_unlocked(id: String, reward_coins: int) -> void:
 		feedback.cue("level")
 	telemetry.track("achievement_unlocked",{"badge":id,"coins":gained})
 
+func _mission_coins(id: String) -> int:
+	match id:
+		"drops": return 25
+		"pops": return 35
+		"points": return 50
+	return 0
+
 func _on_mission_completed(mission_id: String, bonus_xp: int) -> void:
-	mission_notice = "%s +%d XP" % [profile_t("done"),bonus_xp]
+	var bonus_coins: int = shop.credit_bonus(
+		"mission:"+progression.daily_day+":"+mission_id,_mission_coins(mission_id))
+	mission_notice = "%s +%d XP  +%d ◉" % [profile_t("done"),bonus_xp,bonus_coins]
 	mission_notice_time = 2.6
 	if feedback != null:
 		feedback.cue("mission")
