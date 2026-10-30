@@ -545,8 +545,8 @@ func _draw_profile() -> void:
 			draw_circle(rect.position+Vector2(34,45),21,GOLD if got else Color("#B9C3D5"))
 			_center("★" if got else "✦",rect.position.x+34,rect.position.y+52,
 				23,INK,37)
-			var names: Dictionary = game.BADGE_NAMES_PL if game.language=="pl" else game.BADGE_NAMES_EN
-			_center(str(names.get(id,id)),rect.position.x+162,rect.position.y+36,17,INK,184)
+			var badge_name: String = id.replace("_"," ").capitalize()
+			_center(badge_name,rect.position.x+162,rect.position.y+36,17,INK,184)
 			_center("%d/%d • +%d" % [mini(game.progression.achievement_progress(id),
 				int(badge["target"])),int(badge["target"]),int(badge["coins"])],
 				rect.position.x+162,rect.position.y+67,17,Color("#687B98"),190)
