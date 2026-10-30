@@ -36,7 +36,16 @@ func _capture() -> void:
 	if not await _save_frame(game,"preview-shop.png"):
 		quit(1)
 		return
+	game.shop_page = game._shop_pages()-1
+	if not await _save_frame(game,"preview-shop-fantasy.png"):
+		quit(1)
+		return
 	game.shop_open = false
+	game.shop.equipped_skin = "dragon"
+	if not await _save_frame(game,"preview-fantasy.png"):
+		quit(1)
+		return
+	game.shop.equipped_skin = "default"
 	game.profile_open = true
 	if not await _save_frame(game,"preview-profile.png"):
 		quit(1)
