@@ -7,6 +7,8 @@ const Shop = preload("res://scripts/gravity_shop.gd")
 const SkinArt = preload("res://scripts/gravity_skin_art.gd")
 const Progression = preload("res://scripts/gravity_progression.gd")
 const WORLD = preload("res://assets/visual_v2/world.svg")
+const TURN_PINK = preload("res://assets/visual_v2/button_left.svg")
+const TURN_TEAL = preload("res://assets/visual_v2/button_right.svg")
 const ORBS = [
 	preload("res://assets/visual_v2/orb_peach.svg"),
 	preload("res://assets/visual_v2/orb_aqua.svg"),
@@ -133,6 +135,7 @@ func _draw() -> void:
 	_draw_feedback()
 	if game.phase=="over":
 		_draw_game_over()
+		_draw_top()
 	if game.settings_open:
 		_draw_settings()
 	if game.profile_open:
@@ -206,15 +209,17 @@ func _draw_board() -> void:
 	for y in range(8):
 		for x in range(8):
 			var tile: Vector2 = BOARD.position+Vector2(x,y)*CELL
-			var tile_rect: Rect2 = Rect2(tile+Vector2(2,2),Vector2(72,72))
-			var active: bool = x==hovering
-			_round(tile_rect,Color("#42517E") if (x+y)%2==0 else Color("#3C4C7A"),
-				15,Color("#96A5DA",0.25),1)
-			_round(Rect2(tile_rect.position+Vector2(7,6),Vector2(58,3)),
-				Color("#FFFFFF",0.07),2)
-			if active:
-				_round(tile_rect,Color("#79F0DB",0.23),15,Color("#8BFFE7",0.75),2)
 			var center: Vector2 = tile+Vector2(38,38)
+			# Rounded recessed sockets: no tessellated square grid or pixel edges.
+			draw_circle(center+Vector2(0,3),34.2,Color("#121B43",0.80))
+			draw_circle(center,32.5,Color("#3E507E") if (x+y)%2==0 else Color("#425481"))
+			draw_circle(center+Vector2(-3,-5),28.5,Color("#788BBB",0.12))
+			draw_arc(center,31.0,PI*0.14,PI*0.91,25,Color("#151E45",0.44),3.0,true)
+			draw_arc(center+Vector2(-1,-1),30.5,-PI*0.88,-PI*0.16,24,
+				Color("#C5D3FC",0.30),2.1,true)
+			if x==hovering:
+				draw_circle(center,32.0,Color("#82FFE6",0.20))
+				draw_arc(center,33.0,0.0,TAU,48,Color("#A5FFE8",0.66),3.0,true)
 			if hidden.has(y*8+x):
 				continue
 			var value: int = int(game.board[y][x])
@@ -338,10 +343,12 @@ func _draw_turns() -> void:
 	for i in range(2):
 		var left: bool = i==0
 		var rect: Rect2 = Rect2(29,1086,317,86) if left else Rect2(374,1086,317,86)
-		var hue: Color = PEACH if left else AQUA
-		var base: Color = Color("#AC326B") if left else Color("#198B95")
 		var pressed: bool = game.tap_time>0 and rect.has_point(game.tap_point)
-		_button(rect,hue if game.phase=="drop" else Color("#8190AE"),base,pressed)
+		var texture: Texture2D = TURN_PINK if left else TURN_TEAL
+		var at: Rect2 = Rect2(rect.position+Vector2(0,-5.0+(5.0 if pressed else 0.0)),
+			Vector2(rect.size.x,rect.size.y+14.0))
+		draw_texture_rect(texture,at,false,
+			Color.WHITE if game.phase=="drop" else Color(1.0,1.0,1.0,0.49))
 		var icon_at: Vector2 = rect.position+Vector2(52 if left else 265,43)
 		draw_circle(icon_at,33,Color("#FFFFFF",.17))
 		_icon("left" if left else "right",icon_at,57)
@@ -442,10 +449,10 @@ func _draw_game_over() -> void:
 	_card(rect,Color("#F7F6FF"),36,12)
 	for i in range(3):
 		_orb(Vector2(268+i*91,486+10*sin(game.clock*2+i)),28,i)
-	_center(game.t("over"),360,570,49,INK,520)
-	_center(game.t("score"),360,607,20,Color("#667697"),420)
-	_center(str(game.score),360,687,82,PEACH,495)
-	_center("%s  %d" % [game.t("best"),game.best],360,723,23,Color("#617394"),465)
+	_center(game.t("over"),360,548,49,INK,520)
+	_center(game.t("score"),360,582,20,Color("#667697"),420)
+	_center(str(game.score),360,664,82,PEACH,495)
+	_center("%s  %d" % [game.t("best"),game.best],360,705,23,Color("#617394"),465)
 	var restart: Rect2 = Rect2(104,722,512,84)
 	_button(restart,AQUA if game.shop.energy>0 else Color("#B4BFCD"),Color("#188A87"))
 	_center(game.t("again") if game.shop.energy>0 else game.shop_t("no_energy"),
