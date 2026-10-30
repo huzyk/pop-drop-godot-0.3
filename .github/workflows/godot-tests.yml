@@ -92,7 +92,7 @@ jobs:
           if grep -E 'SCRIPT ERROR:|Parse Error:|Failed to load script|Compile Error:|Invalid call\.' /tmp/godot-preview.log; then
             exit 1
           fi
-          for picture in preview-phone.png preview-shop.png preview-profile.png preview-settings.png preview-over.png; do
+          for picture in preview-phone.png preview-shop.png preview-profile.png preview-settings.png preview-over.png preview-shop-fantasy.png preview-fantasy.png; do
             test -s "artifacts/$picture"
             file "artifacts/$picture"
           done
