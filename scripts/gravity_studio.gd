@@ -371,14 +371,14 @@ func _draw_turns() -> void:
 		var icon_at: Vector2 = r.position+Vector2(49,41)
 		draw_circle(icon_at,32,Color("#FFFFFF",.21))
 		_icon("left" if left else "right",icon_at,51)
-		var label: String = ("OBRÓĆ" if game.language=="pl" else "ROTATE")
-		_center(label,r.position.x+201,r.position.y+30,18,Color("#382947",.75),216)
-		_center(game.t("left") if left else game.t("right"),r.position.x+201,r.position.y+61,27,
-			Color("#1D2244") if not left else Color("#441F43"),213)
+		var label: String = ("OBRÓĆ " if game.language=="pl" else "ROTATE ") + (
+			game.t("left") if left else game.t("right"))
+		_center(label,r.position.x+201,r.position.y+53,28,
+			Color("#1D2244") if not left else Color("#441F43"),219)
 		var preview: Dictionary = game.preview_left if left else game.preview_right
 		var hint: int = int(preview.get("score",0))
-		_center("+%d" % hint if hint>0 else "90°",r.position.x+201,r.position.y+80,15,
-			Color("#49334E",.75),210)
+		_center("+%d" % hint if hint>0 else "90°",r.position.x+201,r.position.y+75,17,
+			Color("#49334E",.78),210)
 
 func _draw_boosters() -> void:
 	var names: Array = ["bomb","magic","reroll"]
