@@ -13,7 +13,7 @@ Odstępy **maleją**, nie rosną. Pierwsza fala po 12 sekundach, następnie po 1
 | 5 | 8 s | 7 | +2 skały |
 | 6+ | 8 s | 8 | +2 skały |
 
-Skały pojawiają się tylko na wolnych polach, a maksymalny limit wynosi **8**. Są podatne na trzy osobne POP-y w sąsiedztwie lub bombę; obracają się wraz z planszą i nie spadają pod wpływem grawitacji. W ten sposób zmiana orientacji planszy pozostaje decyzją taktyczną.
+Skały pojawiają się tylko na wolnych polach, a maksymalny limit wynosi **8**. Każda skała wymaga trzech osobnych trafień (przylegający POP lub wybuch bomby zmniejsza wytrzymałość o 1); obracają się wraz z planszą i nie spadają pod wpływem grawitacji. W ten sposób zmiana orientacji planszy pozostaje decyzją taktyczną.
 
 Nowe rzędy napierają od dołu. Pełny górny rząd przed falą kosztuje życie, a ratunek usuwa kulki, ale nie skały. Gra zatrzymuje licznik podczas animacji i otwartych menu. Zapisy starszych rund zachowują się, ale odliczanie po wznowieniu jest ograniczane do nowego tempa.
 
