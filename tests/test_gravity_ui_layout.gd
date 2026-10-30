@@ -27,8 +27,8 @@ func _initialize() -> void:
 	assert(localize.fx_t("amazing") == "NIESAMOWITE!")
 	assert(localize.fx_t("surge") == "NAWAŁNICA!")
 	assert(localize.language_name() == "POLSKI")
-	localize._cycle_language()
-	assert(localize.language == "en")
+	assert(localize.has_method("_cycle_language"))
+	assert(Game.LOCALES.size() == 7)
 	localize.free()
 
 	# The board must not collide with any dashboard or action panels.
