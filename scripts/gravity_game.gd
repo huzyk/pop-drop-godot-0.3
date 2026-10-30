@@ -51,6 +51,7 @@ const DOCK_STATUS := Rect2(58,880,596,48)
 const DOCK_SHAPES := Rect2(60,931,597,141)
 const DOCK_ACTIONS := Rect2(30,1084,653,134)
 const COLORS := [Color("#ff7096"),Color("#55dcad"),Color("#62b5ff")]
+const FLOW_WINDOW := 8.0 # Player decision time, paused during animations or menus.
 const SAVE_FILE := "user://pop_drop_gravity.json"
 const LOCALES := ["pl","en","es","pt","de","fr","ru"]
 const TR := {
@@ -109,6 +110,8 @@ var moves: int = 0
 var lives: int = 3
 var revives: int = 0
 var chain_depth: int = 0
+var flow_streak: int = 0 # Distinct successful player actions, not cascade stages
+var flow_time_left: float = 0.0
 var hover_column: int = -1
 var selected_piece: int = 0
 var dragging_piece: bool = false
@@ -374,9 +377,9 @@ func _use_bomb(target: Vector2i) -> void:
 	telemetry.track("powerup_used",{"run_id":run_id,"item":"bomb",
 		"removed":int(blast["removed"]),"rocks_hit":int(blast["rocks_hit"])})
 	var fallen: Dictionary = Rules.settle(board)
-	await _animate_to(fallen.board,fallen.motions,0.23,"fall")
+	await _animate_to(fallen.board,fallen.motions,0.15,"fall")
 	chain_depth = 0
-	await _resolve_cascades()
+	await _resolve_cascades(false,false)
 	phase = "drop"
 	_refresh_targets()
 	_check_stuck()
@@ -474,6 +477,8 @@ func new_game() -> void:
 	revives = 0
 	loss_reason = ""
 	chain_depth = 0
+	flow_streak = 0
+	flow_time_left = 0.0
 	pieces = []
 	recent_shapes.clear()
 	motion.clear()
@@ -521,6 +526,8 @@ func _save_progress() -> void:
 		"action_serial": action_serial,
 		"wave_number":wave_number,
 		"wave_time_left":wave_time_left,
+		"flow_streak":flow_streak,
+		"flow_time_left":flow_time_left,
 		"loss_reason":loss_reason
 	})
 
@@ -541,6 +548,10 @@ func _restore_progress(data: Dictionary) -> void:
 	wave_number = maxi(0,int(data.get("wave_number",0)))
 	wave_time_left = minf(Rules.wave_interval(wave_number),clampf(float(data.get("wave_time_left",Rules.wave_interval(wave_number))),0.0,45.0))
 	wave_queued = false
+	flow_streak = clampi(int(data.get("flow_streak",0)),0,4)
+	flow_time_left = clampf(float(data.get("flow_time_left",0.0)),0.0,FLOW_WINDOW)
+	if flow_time_left <= 0.0:
+		flow_streak = 0
 	bomb_aim = false
 	shop_open = false
 	best = maxi(best,score)
@@ -589,6 +600,8 @@ func _revive() -> bool:
 	phase = "drop"
 	ad_note = ""
 	loss_reason = ""
+	flow_streak = 0
+	flow_time_left = 0.0
 	wave_time_left = Rules.wave_interval(wave_number)
 	_refresh_targets()
 	_praise("+1 ♥",Color("#ff9bb7"),1.2)
@@ -628,7 +641,12 @@ func _process(delta: float) -> void:
 	tap_time = maxf(0.0,tap_time-delta)
 	# No countdown during interactions, modal screens, or animated cascades.
 	if phase == "drop" and not settings_open and not profile_open and not shop_open and not wave_queued:
-		wave_time_left = maxf(0.0,wave_time_left-minf(delta,0.15))
+		var elapsed: float = minf(delta,0.15)
+		wave_time_left = maxf(0.0,wave_time_left-elapsed)
+		if flow_time_left > 0.0:
+			flow_time_left = maxf(0.0,flow_time_left-elapsed)
+			if flow_time_left <= 0.0:
+				flow_streak = 0
 		if wave_time_left <= 0.0:
 			wave_queued = true
 			call_deferred("_trigger_pressure_wave")
@@ -895,7 +913,7 @@ func _play_drop(column: int) -> void:
 	phase = "anim"
 	moves += 1
 	chain_depth = 0
-	await _animate_to(result.board,result.motions,0.23,"drop")
+	await _animate_to(result.board,result.motions,0.16,"drop")
 	# Matching 5+ touching balls POP immediately after any successful drop.
 	# Resolve every resulting cascade BEFORE checking overflow or advancing.
 	await _resolve_cascades()
@@ -926,12 +944,12 @@ func _rotate_board(clockwise: bool) -> void:
 	spin_clockwise = clockwise
 	var turned: Dictionary = Rules.rotate(board,clockwise)
 	_shock(BOARD.get_center(),1.15,Color("#78d9ff"))
-	await _animate_to(turned.board,turned.motions,0.27,"spin")
+	await _animate_to(turned.board,turned.motions,0.19,"spin")
 	var gravity: Dictionary = Rules.settle(board)
-	await _animate_to(gravity.board,gravity.motions,0.19,"fall")
+	await _animate_to(gravity.board,gravity.motions,0.12,"fall")
 	# Only rotation unlocks marble flow into lower neighbouring pockets.
 	var spill: Dictionary = Rules.spill_after_rotation(board,clockwise)
-	await _animate_to(spill.board,spill.motions,0.51,"roll")
+	await _animate_to(spill.board,spill.motions,0.28,"roll")
 	await _resolve_cascades(true)
 	phase = "drop"
 	_refresh_targets()
@@ -957,7 +975,7 @@ func _trigger_pressure_wave() -> void:
 		feedback.cue("drop")
 	if int(wave["added"]) > 0:
 		_shock(BOARD.get_center(),1.05,Color("#ffae83"))
-	await _animate_to(wave.board,wave.motions,0.31,"wave")
+	await _animate_to(wave.board,wave.motions,0.23,"wave")
 	# A single rock every second wave: sustained pressure, not a sudden wall.
 	var rock_added: bool = false
 	if wave_number % 2 == 0:
@@ -975,7 +993,7 @@ func _trigger_pressure_wave() -> void:
 		"next_interval":wave_time_left
 	})
 	chain_depth = 0
-	await _resolve_cascades()
+	await _resolve_cascades(false,false) # A random wave must not build player FLOW.
 	phase = "drop"
 	_refresh_targets()
 	_check_stuck()
@@ -1085,12 +1103,26 @@ func _animate_to(next_board: Array, motions: Array, seconds: float, kind: String
 		_shock(BOARD.get_center(),0.38 if kind == "fall" else 0.58,Color("#a2e9ff"))
 	queue_redraw()
 
-func _resolve_cascades(fluid: bool=false) -> void:
-	# Called after both a successful drop and a board rotation.
+func _register_flow_pop() -> void:
+	# One increase per skillful player action, not per automatic cascade stage.
+	flow_streak = mini(4,flow_streak+1) if flow_time_left > 0.0 else 1
+	flow_time_left = FLOW_WINDOW
+	telemetry.track("flow_pop",{
+		"run_id":run_id,"flow":flow_streak,
+		"multiplier":Rules.flow_multiplier_percent(flow_streak)
+	})
+
+func _resolve_cascades(fluid: bool=false, player_action: bool=true) -> void:
+	# Distinct successful player-created POPs sustain an eight-second FLOW.
+	# Multiple cascades from a single action still count as ONE FLOW step.
+	var flow_registered: bool = false
 	for depth in range(20):
 		var groups: Array = Rules.find_groups(board)
 		if groups.is_empty():
 			return
+		if player_action and not flow_registered:
+			_register_flow_pop()
+			flow_registered = true
 		chain_depth += 1
 		if feedback != null:
 			feedback.cue("cascade" if chain_depth >= 2 else "pop")
@@ -1100,19 +1132,23 @@ func _resolve_cascades(fluid: bool=false) -> void:
 			hits.append_array(group["cells"])
 			largest = maxi(largest,int(group["count"]))
 		flash = hits
-		pop_length = 0.18 if chain_depth <= 2 else 0.21
+		# Faster later stages create an accelerating cascade instead of a pause.
+		pop_length = maxf(0.085,0.15-float(chain_depth-1)*0.018)
 		pop_time = pop_length
-		if chain_depth >= 3 or largest >= 8:
-			_praise("AMAZING!",Color("#ffe58c"),1.30)
+		if player_action and flow_registered and flow_streak >= 3:
+			_praise("FLOW x%d!" % flow_streak,Color("#ffe58c"),0.85)
+		elif chain_depth >= 3 or largest >= 8:
+			_praise("AMAZING!",Color("#ffe58c"),0.85)
 		elif chain_depth >= 2 or largest >= 7 or groups.size() > 1:
-			_praise("GREAT!",Color("#92f2e2"),1.0)
+			_praise("GREAT!",Color("#92f2e2"),0.65)
 		else:
-			_praise("POP!",Color("#ffffff"),0.72)
+			_praise("POP!",Color("#ffffff"),0.42)
 		await get_tree().create_timer(pop_length).timeout
 		var main_color: Color = COLORS[int(groups[0]["color"])]
 		# Score each actual connected group, not the total across unrelated colours.
 		# An 8-ball group is worth much more than two separate groups of four.
-		var payout: int = Rules.score_groups(groups,chain_depth)
+		var base_payout: int = Rules.score_groups(groups,chain_depth)
+		var payout: int = (base_payout*Rules.flow_multiplier_percent(flow_streak))/100 if player_action else base_payout
 		var centroid: Vector2 = Vector2.ZERO
 		for group in groups:
 			var group_center: Vector2 = Vector2.ZERO
@@ -1154,10 +1190,10 @@ func _resolve_cascades(fluid: bool=false) -> void:
 		pop_time = 0.0
 		queue_redraw()
 		var gravity: Dictionary = Rules.settle(board)
-		await _animate_to(gravity.board,gravity.motions,0.20,"fall")
+		await _animate_to(gravity.board,gravity.motions,0.12,"fall")
 		if fluid:
 			var aftershock: Dictionary = Rules.spill_after_rotation(board,spin_clockwise)
-			await _animate_to(aftershock.board,aftershock.motions,0.38,"roll")
+			await _animate_to(aftershock.board,aftershock.motions,0.24,"roll")
 
 func _burst(cell: Vector2i, count: int) -> void:
 	var center: Vector2 = BOARD.position+(Vector2(cell)+Vector2(0.5,0.5))*CELL
