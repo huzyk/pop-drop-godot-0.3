@@ -19,6 +19,16 @@ func _initialize() -> void:
 	assert(not SkinArt.is_authored("unknown"))
 	assert(SkinArt.sprite_for("unknown",0)==null)
 	assert(Studio.WORLD.get_size()==Game.BASE)
+	# Main UI must remain composed of actual high-DPI organic materials.
+	assert(Studio.BOARD_SHELL.get_size()==Vector2(720,720))
+	assert(Studio.SOCKET.get_size()==Vector2(256,256))
+	assert(Studio.PIECE_ACTIVE.get_size()==Vector2(420,222))
+	assert(Studio.PIECE_IDLE.get_size()==Vector2(420,222))
+	assert(Studio.TURN_PINK.get_size()==Vector2(640,218))
+	assert(Studio.TURN_TEAL.get_size()==Vector2(640,218))
+	assert(Studio.BOOST_ART.size()==3)
+	for art in Studio.BOOST_ART:
+		assert(art.get_size()==Vector2(430,156))
 	assert(Studio.BOARD==Game.BOARD)
 	assert(Studio.CELL==Game.CELL)
 	var wallet = Shop.new()
@@ -28,5 +38,5 @@ func _initialize() -> void:
 	game.shop_tab=1
 	assert(game._shop_catalog()==SKINS)
 	game.free()
-	print("PASS: 24 imported 512px characters, 8 distinct skin packs, scene layout and shop catalogue")
+	print("PASS: 24 characters, 8 skins, 9 anti-aliased organic visual components, unchanged hitboxes")
 	quit()
