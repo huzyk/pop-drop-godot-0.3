@@ -1107,10 +1107,11 @@ func _register_flow_pop() -> void:
 	# One increase per skillful player action, not per automatic cascade stage.
 	flow_streak = mini(4,flow_streak+1) if flow_time_left > 0.0 else 1
 	flow_time_left = FLOW_WINDOW
-	telemetry.track("flow_pop",{
-		"run_id":run_id,"flow":flow_streak,
-		"multiplier":Rules.flow_multiplier_percent(flow_streak)
-	})
+	if telemetry != null:
+		telemetry.track("flow_pop",{
+			"run_id":run_id,"flow":flow_streak,
+			"multiplier":Rules.flow_multiplier_percent(flow_streak)
+		})
 
 func _resolve_cascades(fluid: bool=false, player_action: bool=true) -> void:
 	# Distinct successful player-created POPs sustain an eight-second FLOW.
