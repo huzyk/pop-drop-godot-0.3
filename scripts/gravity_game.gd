@@ -1401,7 +1401,7 @@ func _draw_tap_ripple() -> void:
 
 func _ball(center: Vector2, radius: float, color_index: int,
 		alpha: float=1.0, stretch: Vector2=Vector2.ONE) -> void:
-	# High-resolution candy-glass sprite with a lit rim and subtle physical halo.
+	# Authored vector art for registered skins; legacy rendering stays compatible.
 	var marble: Texture2D = MARBLE_TEXTURES[clampi(color_index,0,2)]
 	var tint: Color = COLORS[clampi(color_index,0,2)]
 	var marble_skin: String = preview_skin if not preview_skin.is_empty() else (
@@ -2255,10 +2255,12 @@ func _draw_shop() -> void:
 			preview_skin = ""
 		_fit_center("JELLY PALS" if id=="default" else shop_t(id),
 			rect.position.x+339,rect.position.y+58,26,346,Color.WHITE)
-		_fit_center(("BAZOWA SKÓRKA · DARMOWA" if language=="pl" else "BASE SKIN · FREE") if id=="default" else
-			(shop_t(id+"_desc") if not special else (
-			"NAGRODA ZA 7 DNI GRY" if language=="pl" else "PLAY 7 DAYS TO UNLOCK")),
-			rect.position.x+333,rect.position.y+99,16,381,Color("#cbd3e8"))
+		var description: String = shop_t(id+"_desc")
+		if id=="default":
+			description = "BAZOWA SKÓRKA · DARMOWA" if language=="pl" else "BASE SKIN · FREE"
+		elif special:
+			description = "NAGRODA ZA 7 DNI GRY" if language=="pl" else "PLAY 7 DAYS TO UNLOCK"
+		_fit_center(description,rect.position.x+333,rect.position.y+99,16,381,Color("#cbd3e8"))
 		var label: String = shop_t("active") if is_active else (
 			shop_t("equip") if is_owned else ("7 DNI" if language=="pl" else "DAY 7") if special
 			else shop_t("buy")+"  "+str(product["price"]))
