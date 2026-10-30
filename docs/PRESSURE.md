@@ -1,4 +1,4 @@
-# POP DROP Gravity 0.16 — więcej decyzji, mniej darmowych monet
+# POP DROP Gravity 0.17 — monety bez limitu, progresja przez ekonomię
 
 ## Koniec rundy
 
@@ -20,11 +20,11 @@ Generator wyraźnie częściej proponuje kształty z trzema i czterema kulkami, 
 
 ## Ekonomia gry
 
-- **Wynik i XP nie są limitowane**. Nadal warto robić duże combosy i walczyć o rekord.
-- Za POP wypada około **1 moneta na 85 punktów**, minimum 2 i maksimum 24 za pojedyncze rozliczenie POP.
-- **Łącznie do 160 monet za POP podczas jednej rundy.** Licznik jest zapisywany i nie resetuje się po ponownym uruchomieniu aplikacji. Jednorazowy komunikat informuje o osiągnięciu limitu.
-- Premie za dzienne zadania, serie dni i odznaki są oddzielne od limitu POP. Dalszy rozwój wymaga wielu sesji; jedna długa gra nie powinna automatycznie finansować całego sklepu.
-- Istniejące monety, skórki, boostery i XP pozostają bez zmian. Stary portfel v3 przechodzi na v4.
+- **Monety, wynik i XP nie mają limitu na rozgrywkę**. Każdy kolejny POP nagradza gracza, także po bardzo długiej serii.
+- Nagroda monetowa za POP rośnie łagodnie z punktami: około **0,3 × pierwiastek z punktów** (minimum 2). Przykładowo 900 pkt = 9 monet, 9000 pkt = 28 monet. Duży combo nadal opłaca się bardziej, ale monety nie rosną liniowo z wynikiem.
+- **Skórki są celami na dłużej**: Neon 900, Donut 1900, Gold 2600, Kapibara 3300, Crystal 3900, Cosmos 5200. Bomba (160) i Nowy Zestaw (140) pozostają przystępne podczas rozgrywki.
+- Premie za dzienne zadania, serie dni i odznaki naliczają się niezależnie i normalnie.
+- Dotychczasowe monety, skórki, boostery i XP pozostają bez zmian. Format portfela v4 pozostaje kompatybilny; dawne pola limitu są ignorowane przy odczycie.
 
 ## Testy
 
