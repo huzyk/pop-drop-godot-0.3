@@ -1125,7 +1125,8 @@ func _resolve_cascades(fluid: bool=false, player_action: bool=true) -> void:
 			flow_registered = true
 		chain_depth += 1
 		if feedback != null:
-			feedback.cue("cascade" if chain_depth >= 2 else "pop")
+			feedback.cue("cascade" if chain_depth >= 2 else "pop",
+				1.0+float(flow_streak-1)*0.09 if player_action else 1.0)
 		var hits: Array = []
 		var largest: int = 0
 		for group in groups:
@@ -1158,7 +1159,10 @@ func _resolve_cascades(fluid: bool=false, player_action: bool=true) -> void:
 				centroid += position
 				_burst(pt,8 if chain_depth <= 2 else 11)
 			group_center /= float(group["count"])
-			_float_score(group_center,Rules.group_points(int(group["count"]))*chain_depth,chain_depth)
+			var shown_points: int = Rules.group_points(int(group["count"]))*chain_depth
+			if player_action:
+				shown_points = (shown_points*Rules.flow_multiplier_percent(flow_streak))/100
+			_float_score(group_center,shown_points,chain_depth)
 		centroid /= float(hits.size())
 		_shock(centroid,minf(4.5,1.15+float(chain_depth)*0.7+float(hits.size())*0.12),main_color)
 		var rocks: Dictionary = Rules.damage_rocks(board,hits)
