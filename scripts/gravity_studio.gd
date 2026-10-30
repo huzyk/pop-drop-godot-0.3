@@ -1,15 +1,15 @@
 extends Control
-## POP DROP / Studio v2 — standalone, retina-ready presentation.
+## POP DROP / Studio v4 — unified midnight jelly arcade.
 ## Model, economy, touch bounds and persistence stay in gravity_game.gd.
 ## All live game art is painted here, never in the gameplay script.
 const Rules = preload("res://scripts/gravity_rules.gd")
 const Shop = preload("res://scripts/gravity_shop.gd")
 const SkinArt = preload("res://scripts/gravity_skin_art.gd")
 const Progression = preload("res://scripts/gravity_progression.gd")
-const WORLD = preload("res://assets/visual_v2/world.svg")
+const WORLD = preload("res://assets/visual_v4/world.svg")
 const TURN_PINK = preload("res://assets/visual_v3/turn_left.svg")
 const TURN_TEAL = preload("res://assets/visual_v3/turn_right.svg")
-const BOARD_SHELL = preload("res://assets/visual_v3/organic_board.svg")
+const BOARD_SHELL = preload("res://assets/visual_v4/board.svg")
 const SOCKET = preload("res://assets/visual_v3/socket.svg")
 const PIECE_ACTIVE = preload("res://assets/visual_v3/piece_selected.svg")
 const PIECE_IDLE = preload("res://assets/visual_v3/piece_idle.svg")
@@ -41,13 +41,13 @@ const ICONS = {
 const BASE := Vector2(720,1280)
 const BOARD := Rect2(56,247,608,608)
 const CELL := 76.0
-const PEACH := Color("#FF6B9A")
-const AQUA := Color("#3EDCC5")
-const VIOLET := Color("#AAA0FF")
+const PEACH := Color("#FF719B")
+const AQUA := Color("#4BE7CC")
+const VIOLET := Color("#B5A4FF")
 const GOLD := Color("#FFD585")
-const INK := Color("#17254C")
+const INK := Color("#201B3A")
 const WHITE := Color("#FFFFFF")
-const MIST := Color("#B3C7E5")
+const MIST := Color("#BBB4DA")
 const ORB_COLORS = [PEACH,AQUA,VIOLET]
 
 var game = null
@@ -66,28 +66,26 @@ func _moved(rect: Rect2, distance: Vector2) -> Rect2:
 	return Rect2(rect.position+distance,rect.size)
 
 func _round(rect: Rect2, color: Color, radius: int=18, stroke: Color=Color.TRANSPARENT, stroke_width: int=0) -> void:
-	# All chips, options, tabs and rewards use full capsule corners by default.
-	var smooth: int = mini(86,maxi(radius,int(rect.size.y*0.48)))
+	# Explicit radius: no automatic pill conversion of large cards or sheets.
+	var smooth: int = maxi(0,radius)
 	var key: String = "%s|%d|%s|%d" % [color.to_html(true),smooth,stroke.to_html(true),stroke_width]
 	if not styles.has(key):
 		var s: StyleBoxFlat = StyleBoxFlat.new()
 		s.bg_color = color
 		s.set_corner_radius_all(smooth)
 		s.anti_aliasing = true
-		s.anti_aliasing_size = 1.5
-		if stroke_width > 0:
+		s.anti_aliasing_size = 2.0
+		if stroke_width>0:
 			s.border_color = stroke
 			s.set_border_width_all(stroke_width)
 		styles[key] = s
 	draw_style_box(styles[key],rect)
 
 func _card(rect: Rect2, color: Color, radius: int=23, lift: int=7) -> void:
-	var rounded: int = mini(83,maxi(radius,int(rect.size.y*0.48)))
-	_round(_moved(rect.grow(2),Vector2(0,lift)),Color("#060E30",0.19),rounded+2)
-	_round(rect,color,rounded,Color("#FFFFFF",0.19),2)
-	if rect.size.y>30:
-		_round(Rect2(rect.position+Vector2(rounded*0.7,7),Vector2(maxf(1,rect.size.x-rounded*1.4),3)),
-			Color("#FFFFFF",0.21),2)
+	_round(_moved(rect,Vector2(0,lift)),Color("#0B0A20",0.27),radius+1)
+	_round(rect,color,radius,Color("#FFFFFF",0.11),1)
+	_round(Rect2(rect.position+Vector2(radius,5),Vector2(maxf(1,rect.size.x-2*radius),2)),
+		Color("#FFFFFF",0.07),1)
 
 func _bubble(center: Vector2, radius: float, fill: Color, edge: Color, shadow: bool=true) -> void:
 	if shadow:
@@ -165,52 +163,55 @@ func _draw() -> void:
 
 func _draw_world() -> void:
 	draw_texture_rect(WORLD,Rect2(Vector2.ZERO,BASE),false)
-	# Atmospheric accents are placed on the margins, never under a game token.
-	draw_circle(Vector2(694,674),104,Color("#9FA7FF",0.055))
-	draw_circle(Vector2(19,1007),98,Color("#FC8AC3",0.045))
 
 func _draw_top() -> void:
-	_label("POP",Vector2(27,72).x,72,51,WHITE)
-	_label("DROP",145,72,51,PEACH)
-	_label("G R A V I T Y",29,104,19,Color("#AFC4E9"))
-	var coin_rect: Rect2 = Rect2(296,37,129,55)
-	_card(coin_rect,Color("#283762"),26,4)
-	draw_circle(Vector2(320,64),19,GOLD)
-	_icon("coins",Vector2(320,64),36)
-	_center(str(game.shop.coins),382,73,25,WHITE,74)
-	var boxes: Array = [Rect2(434,37,54,55),Rect2(500,37,55,55),
-		Rect2(565,37,55,55),Rect2(630,37,58,55)]
+	# Header: branding and four utilities, nothing competing with the board.
+	_label("POP",29,69,50,WHITE)
+	_label("DROP",148,69,50,PEACH)
+	_label("G R A V I T Y",34,98,15,Color("#CAC1E6"))
+	var coin_rect: Rect2 = Rect2(292,35,125,51)
+	_round(coin_rect,Color("#332B55",.88),26,Color("#FFFFFF",.11),1)
+	draw_circle(Vector2(320,60),18,Color("#FBC975"))
+	_icon("coins",Vector2(320,60),34)
+	_center(str(game.shop.coins),380,69,24,WHITE,65)
+	var boxes: Array = [Rect2(430,35,54,54),Rect2(498,35,54,54),
+		Rect2(566,35,54,54),Rect2(634,35,54,54)]
 	var ids: Array = ["shop","user","settings","globe"]
 	for i in range(4):
-		_bubble(boxes[i].get_center(),27,Color("#293B6D"),Color("#BECEFF",0.32))
-		_icon(str(ids[i]),boxes[i].get_center(),32 if i!=3 else 29)
-	_center(game.language.to_upper(),659,89,14,GOLD,53)
-	_label("ENERGIA" if game.language=="pl" else "ENERGY",38,122,16,MIST)
-	_center("%d / %d" % [game.shop.energy,Shop.MAX_ENERGY],235,123,20,GOLD,83)
+		var middle: Vector2 = boxes[i].get_center()
+		draw_circle(middle+Vector2(0,3),26,Color("#09081E",.23))
+		draw_circle(middle,25,Color("#342C57",.94))
+		draw_arc(middle,24,-PI*.79,-PI*.22,20,Color("#FFFFFF",.17),2,true)
+		_icon(str(ids[i]),middle,34 if i!=3 else 29)
+	_center(game.language.to_upper(),662,93,13,GOLD,54)
+	_label("ENERGIA" if game.language=="pl" else "ENERGY",37,126,15,MIST)
+	for i in range(Shop.MAX_ENERGY):
+		var p: Vector2 = Vector2(137+i*27,120)
+		draw_circle(p,8.5,PEACH if i<game.shop.energy else Color("#514664"))
+	_center("%d/%d" % [game.shop.energy,Shop.MAX_ENERGY],305,127,16,Color("#F9DEE9"),73)
 
 func _draw_stats() -> void:
-	var score_rect: Rect2 = Rect2(22,133,231,86)
-	var wave_rect: Rect2 = Rect2(265,133,274,86)
-	var life_rect: Rect2 = Rect2(551,133,147,86)
-	_card(score_rect,Color("#283B72"),44,6)
-	_card(wave_rect,Color("#283B72"),44,6)
-	_card(life_rect,Color("#283B72"),44,6)
-	_label(game.t("score"),39,158,17,MIST)
-	_center(str(int(round(game.display_score))),125,205,44,WHITE,199)
-	_center(game.t("best")+": "+str(game.best),204,157,13,GOLD,88)
-	_label("FALA" if game.language=="pl" else "WAVE",284,160,18,MIST)
-	_center(str(game.wave_number+1),369,203,41,WHITE,150)
+	# One coherent scoreboard, with three zones and crisp numeric hierarchy.
+	var rect: Rect2 = Rect2(24,144,672,83)
+	_round(_moved(rect,Vector2(0,5)),Color("#0C0A25",.36),29)
+	_round(rect,Color("#292344",.89),28,Color("#8576AB",.25),1)
+	draw_line(Vector2(226,160),Vector2(226,213),Color("#B6A9D8",.20),2,true)
+	draw_line(Vector2(512,160),Vector2(512,213),Color("#B6A9D8",.20),2,true)
+	_label(game.t("score"),53,169,16,MIST)
+	_center(str(int(round(game.display_score))),123,214,48,WHITE,185)
+	_center(game.t("best")+": "+str(game.best),179,171,14,Color("#EAC4B6"),83)
+	_label("FALA" if game.language=="pl" else "WAVE",253,169,16,MIST)
+	_center(str(game.wave_number+1),293,211,42,WHITE,98)
 	var timer: int = maxi(0,int(ceil(game.wave_time_left)))
-	_center("%02d:%02d" % [int(timer/60),timer%60],476,187,29,
-		PEACH if timer<=5 else WHITE,102)
+	_center("%02d:%02d" % [int(timer/60),timer%60],437,210,37,
+		PEACH if timer<=5 else Color("#FFF9FC"),132)
 	var full: float = maxf(1.0,Rules.wave_interval(game.wave_number))
-	_round(Rect2(415,199,103,9),Color("#516185"),5)
-	_round(Rect2(415,199,maxf(5.0,103.0*(1.0-clampf(game.wave_time_left/full,0.0,1.0))),9),
-		PEACH if timer<=5 else AQUA,5)
-	_center(game.t("life"),624,159,16,MIST,119)
+	_round(Rect2(366,217,132,4),Color("#686184",.6),2)
+	_round(Rect2(366,217,maxf(4.0,132.0*(1.0-clampf(game.wave_time_left/full,0.0,1.0))),4),
+		PEACH if timer<=5 else AQUA,2)
+	_center(game.t("life"),604,169,16,MIST,147)
 	for i in range(3):
-		var pos: Vector2 = Vector2(577+i*45,189)
-		_icon("heart",pos,38,1.0 if i<game.lives else 0.19)
+		_icon("heart",Vector2(554+i*48,198),40,1.0 if i<game.lives else .22)
 
 func _draw_board() -> void:
 	# A jewel box rather than a spreadsheet: soft inlaid wells and 3D tokens.
@@ -227,8 +228,9 @@ func _draw_board() -> void:
 		for x in range(8):
 			var tile: Vector2 = BOARD.position+Vector2(x,y)*CELL
 			var center: Vector2 = tile+Vector2(38,38)
-			# Retina SVG inlaid wells; no aliased circle stacks.
-			draw_texture_rect(SOCKET,Rect2(center-Vector2(36,36),Vector2(72,72)),false)
+			# Low-contrast placement markers, NOT 64 dark holes.
+			draw_circle(center,34.0,Color("#CBC0F3",.055))
+			draw_circle(center,29.5,Color("#A9A4E1",.026))
 			if x==hovering:
 				draw_circle(center,32.0,Color("#82FFE6",0.20))
 				draw_arc(center,33.0,0.0,TAU,48,Color("#A5FFE8",0.66),3.0,true)
@@ -314,83 +316,86 @@ func _draw_fx() -> void:
 		_center(str(floater.text),at.x,at.y,35,Color("#FFF4CE",fade),166)
 
 func _draw_status() -> void:
-	_card(Rect2(27,872,666,48),Color("#2A3A71"),24,5)
-	_center("%s %d" % [game.t("move"),game.moves+1],106,904,19,WHITE,169)
+	var r: Rect2 = Rect2(30,872,660,47)
+	_round(r,Color("#292440",.65),23,Color("#AEA0CA",.15),1)
+	_label("%s %d" % [game.t("move"),game.moves+1],56,902,19,WHITE)
 	var count: int = mini(int(game.pending_group.get("count",0)),Rules.POP_THRESHOLD)
 	for i in range(Rules.POP_THRESHOLD):
-		draw_circle(Vector2(261+i*34,896),9.5,ORB_COLORS[clampi(int(game.pending_group.get("color",0)),0,2)] if i<count else Color("#647498"))
-	_center("%d / %d" % [count,Rules.POP_THRESHOLD],468,904,20,WHITE,83)
+		var point: Vector2 = Vector2(252+i*33,894)
+		draw_circle(point,10,ORB_COLORS[clampi(int(game.pending_group.get("color",0)),0,2)] if i<count else Color("#69617F",.64))
+	_center("%d/%d" % [count,Rules.POP_THRESHOLD],455,902,20,Color("#D9CEED"),77)
 	var used: int = Rules.tallest_column(game.board)
-	_round(Rect2(525,894,103,9),Color("#52628B"),5)
-	_round(Rect2(525,894,maxf(2,103.0*used/8.0),9),PEACH if used>=6 else AQUA,5)
-	_center("%d/8" % used,652,904,18,MIST,68)
+	_round(Rect2(536,891,108,8),Color("#635B7B"),4)
+	_round(Rect2(536,891,maxf(3,108.0*used/8.0),8),PEACH if used>=6 else AQUA,4)
+	_center("%d/8" % used,657,902,16,MIST,54)
 
 func _draw_shapes() -> void:
-	# Three separate sculpted toy pebbles — no rectangular white docking panel.
-	_label("WYBIERZ KSZTAŁT" if game.language=="pl" else "CHOOSE YOUR PIECE",
-		38,947,19,Color("#F8F7FF"))
-	_center("PRZECIĄGNIJ LUB DOTKNIJ" if game.language=="pl" else "DRAG OR TAP",
-		550,947,16,Color("#C4D3F4"),263)
+	_label("WYBIERZ KSZTAŁT" if game.language=="pl" else "CHOOSE A PIECE",
+		38,947,18,Color("#EBE4FA"))
+	_label("PRZECIĄGNIJ NA PLANSZĘ" if game.language=="pl" else "DRAG TO THE BOARD",
+		437,947,16,Color("#9D95BF"),false)
 	for i in range(game.pieces.size()):
-		var rect: Rect2 = game._piece_card_rect(i)
+		var r: Rect2 = game._piece_card_rect(i)
 		var selected: bool = i==game.selected_piece
-		var texture: Texture2D = PIECE_ACTIVE if selected else PIECE_IDLE
-		draw_texture_rect(texture,Rect2(rect.position+Vector2(-4,-5),
-			rect.size+Vector2(8,16)),false)
-		var tag: Vector2 = rect.position+Vector2(28,29)
-		_bubble(tag,17,PEACH if selected else Color("#7B91BD"),Color("#FFFFFF",0.64),false)
-		_center(str(i+1),tag.x,tag.y+6,18,WHITE,30)
+		_round(_moved(r,Vector2(0,5)),Color("#0E0A22",.32),26)
+		if selected:
+			_round(r.grow(3),Color("#FF87B9",.25),30)
+		_round(r,Color("#473354",.95) if selected else Color("#302843",.92),
+			26,Color("#FF9DC2",.79) if selected else Color("#9E8FB5",.26),2 if selected else 1)
+		_round(Rect2(r.position+Vector2(26,7),Vector2(r.size.x-52,3)),
+			Color("#FFFFFF",.20) if selected else Color("#FFFFFF",.06),2)
+		var indicator: Vector2 = r.position+Vector2(28,26)
+		draw_circle(indicator,14,PEACH if selected else Color("#635676"))
+		_center(str(i+1),indicator.x,indicator.y+6,16,WHITE,26)
 		var piece: Array = game.pieces[i]
 		var span: Vector2i = game._piece_span(piece)
-		var step: float = minf(39,minf(73.0/maxf(1,span.y-1),148.0/maxf(1,span.x-1)))
-		var radius: float = minf(20,step*.47)
-		var origin: Vector2 = rect.get_center()+Vector2(-float(span.x-1)*step*.5,
-			5-float(span.y-1)*step*.5)
+		var step: float = minf(41,minf(75.0/maxf(1,span.y-1),150.0/maxf(1,span.x-1)))
+		var radius: float = minf(22,step*.48)
+		var origin: Vector2 = r.get_center()+Vector2(-float(span.x-1)*step*.5,
+			6-float(span.y-1)*step*.5)
 		for bead in piece:
 			_orb(origin+Vector2(float(bead[0]),float(bead[1]))*step,radius,
 				int(bead[2]),0.45 if game.dragging_piece and selected else 1.0)
 		if selected:
-			_bubble(rect.position+Vector2(rect.size.x-24,27),6,AQUA,WHITE,false)
+			draw_circle(r.position+Vector2(r.size.x-17,22),5.5,AQUA)
 
 func _draw_turns() -> void:
 	for i in range(2):
 		var left: bool = i==0
-		var rect: Rect2 = Rect2(29,1086,317,86) if left else Rect2(374,1086,317,86)
-		var pressed: bool = game.tap_time>0 and rect.has_point(game.tap_point)
-		var texture: Texture2D = TURN_PINK if left else TURN_TEAL
-		var at: Rect2 = Rect2(rect.position+Vector2(0,-3.0+(5.0 if pressed else 0.0)),
-			Vector2(rect.size.x,rect.size.y+13.0))
-		draw_texture_rect(texture,at,false,
-			Color.WHITE if game.phase=="drop" else Color(1.0,1.0,1.0,0.49))
-		var icon_at: Vector2 = rect.position+Vector2(52 if left else 265,43)
-		draw_circle(icon_at,31,Color("#FFFFFF",.10))
-		_icon("left" if left else "right",icon_at,57)
-		var center_x: float = rect.position.x+(199 if left else 116)
-		_center("OBRÓĆ" if game.language=="pl" else "ROTATE",
-			center_x,rect.position.y+34,21,WHITE,180)
-		_center(game.t("left") if left else game.t("right"),
-			center_x,rect.position.y+63,28,INK,180)
+		var r: Rect2 = Rect2(29,1086,317,86) if left else Rect2(374,1086,317,86)
+		var pressed: bool = game.tap_time>0 and r.has_point(game.tap_point)
+		var color: Color = Color("#F26F9B") if left else Color("#58D8CB")
+		_round(_moved(r,Vector2(0,8)),Color("#0C0B20",.37),31)
+		_round(_moved(r,Vector2(0,4 if pressed else 0)),color,30,Color("#FFFFFF",.45),2)
+		_round(Rect2(r.position+Vector2(30,8),Vector2(r.size.x-60,3)),Color("#FFFFFF",.26),2)
+		var icon_at: Vector2 = r.position+Vector2(49,41)
+		draw_circle(icon_at,32,Color("#FFFFFF",.21))
+		_icon("left" if left else "right",icon_at,51)
+		var label: String = ("OBRÓĆ" if game.language=="pl" else "ROTATE")
+		_center(label,r.position.x+201,r.position.y+30,18,Color("#382947",.75),216)
+		_center(game.t("left") if left else game.t("right"),r.position.x+201,r.position.y+61,27,
+			Color("#1D2244") if not left else Color("#441F43"),213)
 		var preview: Dictionary = game.preview_left if left else game.preview_right
 		var hint: int = int(preview.get("score",0))
-		_center("+%d" % hint if hint>0 else "90°",center_x,rect.position.y+80,17,
-			Color("#FFF5DB") if hint>0 else Color("#E8FFFF"),157)
+		_center("+%d" % hint if hint>0 else "90°",r.position.x+201,r.position.y+80,15,
+			Color("#49334E",.75),210)
 
 func _draw_boosters() -> void:
 	var names: Array = ["bomb","magic","reroll"]
 	var x_positions: Array = [27,254,481]
+	var fills: Array = [Color("#FFDAAF"),Color("#D0BEFD"),Color("#A1EDE4")]
 	for i in range(3):
 		var id: String = str(names[i])
-		var rect: Rect2 = Rect2(x_positions[i],1192,211,66)
+		var r: Rect2 = Rect2(x_positions[i],1192,211,66)
 		var active: bool = (id=="bomb" and game.bomb_aim) or (id=="magic" and game.magic_aim)
-		draw_texture_rect(BOOST_ART[i],Rect2(rect.position+Vector2(-4,-3),
-			rect.size+Vector2(8,11)),false)
-		if active:
-			draw_arc(rect.position+Vector2(35,33),28.0,0.0,TAU,44,AQUA,3.6,true)
-		_bubble(rect.position+Vector2(35,33),26,WHITE,Color("#FFFFFF",0.8),false)
-		_icon(id,rect.position+Vector2(35,33),46,1.0 if game.shop.stock(id)>0 else .58)
-		_center(game.shop_t(id),rect.position.x+129,rect.position.y+40,19,INK,142)
-		draw_circle(rect.position+Vector2(rect.size.x-18,rect.size.y-13),15,INK)
-		_center(str(game.shop.stock(id)),rect.end.x-18,rect.end.y-8,17,WHITE,28)
+		_round(_moved(r,Vector2(0,4)),Color("#0E0A24",.36),25)
+		_round(r,Color("#332B4D",.96),24,
+			Color("#7BF1D7",.92) if active else Color("#AD9DC4",.27),3 if active else 1)
+		draw_circle(r.position+Vector2(35,33),25,fills[i])
+		_icon(id,r.position+Vector2(35,33),42,1.0 if game.shop.stock(id)>0 else .52)
+		_center(game.shop_t(id),r.position.x+130,r.position.y+39,18,WHITE,139)
+		draw_circle(r.position+Vector2(r.size.x-18,r.size.y-13),14,PEACH)
+		_center(str(game.shop.stock(id)),r.end.x-18,r.end.y-8,16,Color("#32223F"),28)
 
 func _draw_drag() -> void:
 	if not game.dragging_piece or game.phase!="drop" or game.pieces.is_empty():
@@ -452,8 +457,8 @@ func _overlay() -> void:
 
 func _window(rect: Rect2, title: String, title_y: float, close: Rect2) -> void:
 	_overlay()
-	_round(_moved(rect,Vector2(0,12)),Color("#070F29",.57),81)
-	_round(rect,Color("#F4F5FF"),78)
+	_round(_moved(rect,Vector2(0,12)),Color("#070F29",.57),46)
+	_round(rect,Color("#F4F3FE"),44)
 	_round(Rect2(rect.position+Vector2(17,15),Vector2(rect.size.x-34,5)),Color("#FFFFFF",.86),3)
 	_center(title,300,title_y,42,INK,364)
 	_round(close,Color("#DBE2F4"),17)
