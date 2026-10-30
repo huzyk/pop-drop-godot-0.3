@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1280" viewBox="0 0 720 1280"><defs>
+<linearGradient id="canvas" x1=".08" y1="0" x2=".9" y2="1"><stop stop-color="#FFF5E8"/><stop offset=".54" stop-color="#FFE8D6"/><stop offset="1" stop-color="#FCE0D3"/></linearGradient>
+<radialGradient id="apricot"><stop stop-color="#FFA982" stop-opacity=".45"/><stop offset="1" stop-color="#FFA982" stop-opacity="0"/></radialGradient>
+<radialGradient id="mint"><stop stop-color="#6ADDBE" stop-opacity=".33"/><stop offset="1" stop-color="#6ADDBE" stop-opacity="0"/></radialGradient>
+<radialGradient id="pink"><stop stop-color="#FE8EAE" stop-opacity=".29"/><stop offset="1" stop-color="#FE8EAE" stop-opacity="0"/></radialGradient></defs>
+<rect width="720" height="1280" fill="url(#canvas)"/>
+<ellipse cx="-148" cy="30" rx="410" ry="485" fill="url(#apricot)"/>
+<ellipse cx="755" cy="460" rx="380" ry="470" fill="url(#mint)"/>
+<ellipse cx="-108" cy="1060" rx="375" ry="480" fill="url(#pink)"/>
+<ellipse cx="777" cy="1310" rx="390" ry="320" fill="url(#apricot)"/>
+<path d="M-80 283 C115 200 220 266 267 301 C320 336 383 317 423 297" fill="none" stroke="#F3A990" stroke-opacity=".24" stroke-width="36" stroke-linecap="round"/>
+<path d="M648 884 C772 809 835 895 870 1002" fill="none" stroke="#4EC8B4" stroke-opacity=".15" stroke-width="52" stroke-linecap="round"/>
+<path d="M-45 1175 C92 1125 144 1184 205 1210" fill="none" stroke="#F58DAC" stroke-opacity=".17" stroke-width="33" stroke-linecap="round"/>
+<g fill="#E2A89C" opacity=".32"><circle cx="43" cy="236" r="3"/><circle cx="683" cy="233" r="4"/><circle cx="41" cy="905" r="4"/><circle cx="672" cy="905" r="3"/><circle cx="670" cy="1085" r="3"/><circle cx="51" cy="1167" r="3"/></g>
+<g stroke="#FFFFFF" stroke-opacity=".65" stroke-width="4" stroke-linecap="round"><path d="M580 106 L580 134 M566 120 L594 120"/><path d="M98 830 L98 855 M86 843 L110 843"/><path d="M630 1224 L630 1246 M619 1235 L641 1235"/></g></svg>

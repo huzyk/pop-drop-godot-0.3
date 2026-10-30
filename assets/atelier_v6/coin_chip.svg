@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="132" viewBox="0 0 300 132"><defs>
+<linearGradient id="chip" x1=".08" y1="0" x2=".85" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".55" stop-color="#FFF5E4"/><stop offset="1" stop-color="#FFE5CA"/></linearGradient></defs>
+<ellipse cx="151" cy="117" rx="133" ry="12" fill="#BA7B67" opacity=".15"/>
+<path d="M65 10 C119 1 217 2 255 14 C280 20 290 42 291 63 C292 98 270 116 237 120 C182 125 113 122 60 118 C31 113 17 94 17 64 C18 40 33 14 65 10Z" fill="url(#chip)" stroke="#F6C7A5" stroke-opacity=".7" stroke-width="3"/>
+<path d="M49 48 C66 26 92 20 134 19 L243 21" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" fill="none" opacity=".9"/></svg>

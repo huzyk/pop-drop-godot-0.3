@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><defs>
+<radialGradient id="dot"><stop stop-color="#C6FFF2" stop-opacity=".29"/><stop offset=".5" stop-color="#E0FFF6" stop-opacity=".07"/><stop offset="1" stop-color="#E0FFF6" stop-opacity="0"/></radialGradient></defs>
+<circle cx="128" cy="128" r="112" fill="url(#dot)"/>
+<circle cx="128" cy="128" r="7" fill="#C7EFDF" opacity=".31"/>
+<circle cx="125" cy="125" r="2.6" fill="#FFFFFF" opacity=".36"/></svg>
