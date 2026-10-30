@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><defs>
+<linearGradient id="stone" x1=".1" y1="0" x2=".9" y2="1"><stop stop-color="#EFE3FF"/><stop offset=".31" stop-color="#B9ACDC"/><stop offset=".7" stop-color="#786892"/><stop offset="1" stop-color="#4E4569"/></linearGradient></defs>
+<ellipse cx="257" cy="441" rx="172" ry="31" fill="#0F0A29" opacity=".32"/>
+<path d="M247 46 C334 29 418 83 445 160 C466 223 455 326 402 390 C349 453 182 454 111 402 C54 365 47 265 64 185 C79 111 162 55 247 46Z" fill="url(#stone)" stroke="#F0E0FF" stroke-opacity=".67" stroke-width="7"/>
+<path d="M110 177 C144 95 222 66 290 73 C338 77 360 97 384 132 C309 106 230 130 155 196 C128 222 97 213 110 177Z" fill="#FFFFFF" opacity=".26"/>
+<path d="M181 113 L267 179 L240 251 L312 326" fill="none" stroke="#5C4A7A" stroke-width="14" stroke-linejoin="round" opacity=".69"/>
+<path d="M181 110 L261 175 L235 244 L306 320" fill="none" stroke="#E6DAFC" stroke-width="5" stroke-linejoin="round" opacity=".71"/>
+<path d="M111 325 C173 407 271 421 356 382" fill="none" stroke="#FFFAFF" stroke-opacity=".27" stroke-width="13" stroke-linecap="round"/></svg>
