@@ -33,19 +33,21 @@ func _initialize() -> void:
 		assert(not rect.intersects(Game.LEFT_RECT))
 		assert(not rect.intersects(Game.RIGHT_RECT))
 		assert(not rect.intersects(Game.BOOST_BOMB))
-		assert(not rect.intersects(Game.BOOST_TIME))
+		assert(not rect.intersects(Game.BOOST_REROLL))
 		for previous in cards:
 			assert(not rect.intersects(previous))
 		cards.append(rect)
 
 	# Rotate and consumable inputs cannot overlap, including both columns.
 	assert(not Game.LEFT_RECT.intersects(Game.RIGHT_RECT))
-	assert(not Game.BOOST_BOMB.intersects(Game.BOOST_TIME))
+	assert(not Game.BOOST_BOMB.intersects(Game.BOOST_REROLL))
+	assert(not Game.BOOST_BOMB.intersects(Game.BOOST_MAGIC))
+	assert(not Game.BOOST_MAGIC.intersects(Game.BOOST_REROLL))
 	for turn in [Game.LEFT_RECT,Game.RIGHT_RECT]:
-		for boost in [Game.BOOST_BOMB,Game.BOOST_TIME]:
+		for boost in [Game.BOOST_BOMB,Game.BOOST_MAGIC,Game.BOOST_REROLL]:
 			assert(not turn.intersects(boost))
 			assert(turn.end.y + 15.0 <= boost.position.y)
-	for rect in cards + [Game.LEFT_RECT,Game.RIGHT_RECT,Game.BOOST_BOMB,Game.BOOST_TIME]:
+	for rect in cards + [Game.LEFT_RECT,Game.RIGHT_RECT,Game.BOOST_BOMB,Game.BOOST_MAGIC,Game.BOOST_REROLL]:
 		assert(rect.position.x >= 0.0)
 		assert(rect.position.y >= 0.0)
 		assert(rect.end.x <= Game.BASE.x)
