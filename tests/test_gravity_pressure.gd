@@ -62,7 +62,7 @@ func _initialize() -> void:
 	for y in range(8):
 		board[y][0] = Rules.ROCK_MAX
 	var single: Array = [[0,0,2]]
-	assert(not Rules.any_drop(board,single) == false)
+	assert(Rules.any_drop(board,single))
 	# Completely packed rocks are truly unwinnable, even after all rotations.
 	board = Rules.empty_board()
 	for y in range(8):
