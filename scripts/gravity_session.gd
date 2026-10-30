@@ -79,6 +79,8 @@ static func valid(s: Dictionary) -> bool:
 	if str(s.get("phase", "")) not in ["drop", "over"]:
 		return false
 	# Fields absent in legacy 0.6 checkpoints use safe starting defaults.
+	if "loss_reason" in s and not (s["loss_reason"] is String):
+		return false
 	if "wave_number" in s:
 		if typeof(s["wave_number"]) not in [TYPE_INT,TYPE_FLOAT]:
 			return false
