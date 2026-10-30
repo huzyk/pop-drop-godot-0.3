@@ -3,7 +3,7 @@ extends RefCounted
 ## All rewards are idempotent locally; real ad rewards require the SDK callback.
 const PATH := "user://gravity_shop_v1.json"
 const TEMP := "user://gravity_shop_v1.tmp"
-const VERSION := 4
+const VERSION := 5
 const MAX_COINS := 100000000
 const MAX_BOOST_STOCK := 20
 const MAX_EVENT_HISTORY := 256
@@ -19,7 +19,18 @@ const ITEMS := [
 	{"id":"donut","kind":"skin","price":1900},
 	{"id":"capybara","kind":"skin","price":3300},
 	{"id":"crystal","kind":"skin","price":3900},
-	{"id":"cosmos","kind":"skin","price":5200}
+	{"id":"toucan","kind":"skin","price":2900},
+	{"id":"parrot","kind":"skin","price":3100},
+	{"id":"frog","kind":"skin","price":1800},
+	{"id":"monkey","kind":"skin","price":2700},
+	{"id":"jaguar","kind":"skin","price":4200},
+	{"id":"sloth","kind":"skin","price":3000},
+	{"id":"lion","kind":"skin","price":3900},
+	{"id":"zebra","kind":"skin","price":3400},
+	{"id":"elephant","kind":"skin","price":4100},
+	{"id":"giraffe","kind":"skin","price":3500},
+	{"id":"fox","kind":"skin","price":2300},
+	{"id":"owl","kind":"skin","price":2600}
 ]
 const SPECIAL_SKIN := "star_capybara"
 
@@ -29,7 +40,10 @@ var total_earned: int = 0
 var total_spent: int = 0
 var inventory: Dictionary = {"bomb":0,"reroll":0}
 var owned_skins: Dictionary = {"neon":false,"gold":false,"donut":false,
-	"capybara":false,"crystal":false,"cosmos":false,"star_capybara":false}
+	"capybara":false,"crystal":false,"star_capybara":false,
+	"toucan":false,"parrot":false,"frog":false,"monkey":false,
+	"jaguar":false,"sloth":false,"lion":false,"zebra":false,
+	"elephant":false,"giraffe":false,"fox":false,"owl":false}
 var equipped_skin: String = "default"
 var seen_pop_ids: Array = []
 var seen_bonus_ids: Array = []
@@ -204,7 +218,7 @@ func load_data() -> void:
 	if not FileAccess.file_exists(PATH):
 		return
 	var value: Variant = JSON.parse_string(FileAccess.get_file_as_string(PATH))
-	if not (value is Dictionary) or int(value.get("version",0)) not in [1,2,3,VERSION]:
+	if not (value is Dictionary) or int(value.get("version",0)) not in [1,2,3,4,VERSION]:
 		return
 	coins = clampi(int(value.get("coins",0)),0,MAX_COINS)
 	total_earned = clampi(int(value.get("total_earned",0)),0,MAX_COINS)
@@ -221,9 +235,13 @@ func load_data() -> void:
 		if int(value.get("version",0)) == 1:
 			inventory["reroll"] = mini(MAX_BOOST_STOCK,stock("reroll")+maxi(0,int(stored_inventory.get("time",0))))
 	var stored_skins: Variant = value.get("owned_skins",{})
+	var refund_cosmos: int = 0
 	if stored_skins is Dictionary:
 		for skin_id in owned_skins.keys():
 			owned_skins[skin_id] = bool(stored_skins.get(skin_id,false))
+		# Cosmos is retired. Refund old buyers once; preserve every other skin.
+		if int(value.get("version",0)) < 5 and bool(stored_skins.get("cosmos",false)):
+			refund_cosmos = 5200
 	var chosen: String = str(value.get("equipped_skin","default"))
 	equipped_skin = chosen if chosen == "default" or owns_skin(chosen) else "default"
 	for key in ["seen_pop_ids","seen_bonus_ids"]:
@@ -239,8 +257,8 @@ func load_data() -> void:
 	daily_last_claim = str(value.get("daily_last_claim",""))
 	daily_streak = clampi(int(value.get("daily_streak",0)),0,7)
 	if int(value.get("version",0)) < VERSION:
-		_credit(refund_magic)
-		_save() # Persist v3 so the refund cannot repeat.
+		_credit(refund_magic+refund_cosmos)
+		_save() # One-time migrations never repeat on the next startup.
 	refresh_energy()
 
 func _save() -> bool:
