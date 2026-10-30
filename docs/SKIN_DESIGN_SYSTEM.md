@@ -20,7 +20,12 @@ POP DROP ma wyglądać jak dopracowana gra casual na telefon, nie jak neonowy pa
 `assets/skins/<skin_id>/mint.svg`
 `assets/skins/<skin_id>/blue.svg`
 
-Źródło: wektor 256×256 viewBox, bez filtrów SVG i zewnętrznych fontów/linków. Przy produkcji PNG korzystaj z minimum 512×512 px jako renderu high-DPI, z alfą. Każdy kolor i każdy wyraz twarzy należy zatwierdzić osobno. Przy dodawaniu skórki: skonfigurować trzy importowane tekstury w kodzie, ID w katalogu sklepu, podgląd, test zapisu/wyboru i fallback na Jelly Pals.
+Źródło: wektor 256×256 viewBox, bez filtrów SVG i zewnętrznych fontów/linków. Przy produkcji PNG korzystaj z minimum 512×512 px jako renderu high-DPI, z alfą. Każdy kolor i każdy wyraz twarzy należy zatwierdzić osobno. Przy dodawaniu nowej skórki:
+1. Utworzyć trzy pliki w `assets/skins/<id>/` według tego formatu.
+2. W `scripts/gravity_skin_art.gd` dopisać const z trzema `preload()` w kolejności coral/mint/blue, następnie ID w `sprite_for()` i `is_authored()`. To jedyne miejsce, w którym rejestrujemy **grafikę** nowych skórek.
+3. W `scripts/gravity_shop.gd` dopisać ofertę, cenę i ID własności; w `scripts/gravity_game.gd` dopisać ID do `_shop_catalog()` i teksty podglądu.
+4. Dodać test importu i wyposażenia do `tests/test_gravity_skin_art.gd`, a następnie sprawdzić Godot CI i urządzenie.
+5. Dla nieznanego ID zachować dotychczasowy fallback sklepu / logiki zapisu. Wprowadzanie nowych skórek **nie może** resetować zakupionych skórek ani monet.
 
 ## Warstwy grafiki na planszy
 1. Spokojne tło z jedną dominantą i ograniczonym kontrastem.
