@@ -51,6 +51,9 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED:
 		queue_redraw()
 
+func _moved(rect: Rect2, distance: Vector2) -> Rect2:
+	return Rect2(rect.position+distance,rect.size)
+
 func _round(rect: Rect2, color: Color, radius: int=18, stroke: Color=Color.TRANSPARENT, stroke_width: int=0) -> void:
 	var key: String = "%s|%d|%s|%d" % [color.to_html(true),radius,stroke.to_html(true),stroke_width]
 	if not styles.has(key):
@@ -66,7 +69,7 @@ func _round(rect: Rect2, color: Color, radius: int=18, stroke: Color=Color.TRANS
 	draw_style_box(styles[key],rect)
 
 func _card(rect: Rect2, color: Color, radius: int=23, lift: int=7) -> void:
-	_round(rect.grow(3).translated(Vector2(0,lift)),Color("#060E30",0.22),radius+2)
+	_round(_moved(rect.grow(3),Vector2(0,lift)),Color("#060E30",0.22),radius+2)
 	_round(rect,color,radius,Color("#FFFFFF",0.13),2)
 	_round(Rect2(rect.position+Vector2(17,8),Vector2(maxf(1,rect.size.x-34),3)),
 		Color("#FFFFFF",0.16),2)
@@ -98,8 +101,8 @@ func _orb(center: Vector2, radius: float, index: int, alpha: float=1.0, squish: 
 
 func _button(rect: Rect2, fill: Color, base: Color, pressed: bool=false) -> void:
 	var push: float = 6.0 if pressed else 0.0
-	_round(rect.translated(Vector2(0,11)),base,28)
-	_round(rect.translated(Vector2(0,push)),fill,28,Color("#FFFFFF",0.17),2)
+	_round(_moved(rect,Vector2(0,11)),base,28)
+	_round(_moved(rect,Vector2(0,push)),fill,28,Color("#FFFFFF",0.17),2)
 	_round(Rect2(rect.position+Vector2(19,10+push),Vector2(rect.size.x-38,12)),
 		Color("#FFFFFF",0.14),7)
 
@@ -190,7 +193,7 @@ func _draw_stats() -> void:
 func _draw_board() -> void:
 	# A jewel box rather than a spreadsheet: soft inlaid wells and 3D tokens.
 	var surround: Rect2 = BOARD.grow(15)
-	_round(surround.translated(Vector2(0,15)),Color("#080F29",0.48),39)
+	_round(_moved(surround,Vector2(0,15)),Color("#080F29",0.48),39)
 	_round(surround,Color("#ECF0FF"),39)
 	_round(BOARD.grow(5),Color("#222C57"),27)
 	var hidden: Dictionary = {}
@@ -315,7 +318,7 @@ func _draw_shapes() -> void:
 		var rect: Rect2 = game._piece_card_rect(i)
 		var selected: bool = i==game.selected_piece
 		var fill: Color = Color("#FCE9F1") if selected else Color("#E0E7F7")
-		_round(rect.translated(Vector2(0,5)),Color("#7887AE",.17),22)
+		_round(_moved(rect,Vector2(0,5)),Color("#7887AE",.17),22)
 		_round(rect,fill,22,PEACH if selected else Color("#C7D2EA"),3 if selected else 1)
 		draw_circle(rect.position+Vector2(23,22),15,PEACH if selected else Color("#9CAAC9"))
 		_center(str(i+1),rect.position.x+23,rect.position.y+28,17,WHITE,28)
@@ -360,7 +363,7 @@ func _draw_boosters() -> void:
 		var id: String = str(names[i])
 		var rect: Rect2 = Rect2(x_positions[i],1192,211,66)
 		var active: bool = (id=="bomb" and game.bomb_aim) or (id=="magic" and game.magic_aim)
-		_round(rect.translated(Vector2(0,5)),Color("#050B2D",.23),20)
+		_round(_moved(rect,Vector2(0,5)),Color("#050B2D",.23),20)
 		_round(rect,fills[i],20,AQUA if active else WHITE,3 if active else 1)
 		draw_circle(rect.position+Vector2(35,33),25,WHITE)
 		_icon(id,rect.position+Vector2(35,33),46,1.0 if game.shop.stock(id)>0 else .58)
@@ -426,7 +429,7 @@ func _overlay() -> void:
 
 func _window(rect: Rect2, title: String, title_y: float, close: Rect2) -> void:
 	_overlay()
-	_round(rect.translated(Vector2(0,12)),Color("#070F29",.57),36)
+	_round(_moved(rect,Vector2(0,12)),Color("#070F29",.57),36)
 	_round(rect,Color("#F4F5FF"),34)
 	_round(Rect2(rect.position+Vector2(17,15),Vector2(rect.size.x-34,5)),Color("#FFFFFF",.86),3)
 	_center(title,300,title_y,42,INK,364)
