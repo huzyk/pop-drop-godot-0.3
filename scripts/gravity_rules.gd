@@ -7,9 +7,29 @@ const POP_THRESHOLD := 5
 # Rock durability encoded as cells: 5=3 hits, 4=2 hits, 3=1 hit.
 const ROCK_MIN := 3
 const ROCK_MAX := 5
+const GOLD_ROCK_MIN := 6
+const GOLD_ROCK_MAX := 8
+const GOLD_ROCK_CHANCE := 6 # Every new rock has a 1-in-6 chance to glow gold.
+
+static func is_gold_rock(cell: int) -> bool:
+	return cell >= GOLD_ROCK_MIN and cell <= GOLD_ROCK_MAX
 
 static func is_rock(cell: int) -> bool:
-	return cell >= ROCK_MIN and cell <= ROCK_MAX
+	return (cell >= ROCK_MIN and cell <= ROCK_MAX) or is_gold_rock(cell)
+
+static func rock_health(cell: int) -> int:
+	if is_gold_rock(cell):
+		return cell-GOLD_ROCK_MIN+1
+	if is_rock(cell):
+		return cell-ROCK_MIN+1
+	return 0
+
+static func rock_damage_value(cell: int) -> int:
+	if not is_rock(cell):
+		return cell
+	if rock_health(cell) == 1:
+		return EMPTY
+	return cell-1
 
 static func is_marble(cell: int) -> bool:
 	return cell >= 0 and cell < COLOR_COUNT
@@ -54,8 +74,9 @@ static func spawn_rock(board: Array, rng: RandomNumberGenerator) -> Dictionary:
 	if spots.is_empty():
 		return {"board":result,"spawned":false}
 	var where: Vector2i = spots[rng.randi_range(0,spots.size()-1)]
-	result[where.y][where.x] = ROCK_MAX
-	return {"board":result,"spawned":true,"cell":where}
+	var golden: bool = rng.randi_range(1,GOLD_ROCK_CHANCE) == 1
+	result[where.y][where.x] = GOLD_ROCK_MAX if golden else ROCK_MAX
+	return {"board":result,"spawned":true,"cell":where,"golden":golden}
 
 static func drop_wave(board: Array, rng: RandomNumberGenerator, marble_count: int) -> Dictionary:
 	# Extra beads fall into DIFFERENT free columns, exactly like player pieces.
@@ -98,9 +119,9 @@ static func damage_rocks(board: Array, popped: Array) -> Dictionary:
 	var destroyed: Array = []
 	for point in affected.values():
 		var health: int = int(result[point.y][point.x])
-		result[point.y][point.x] = EMPTY if health == ROCK_MIN else health-1
+		result[point.y][point.x] = rock_damage_value(health)
 		cracked.append(point)
-		if health == ROCK_MIN:
+		if rock_health(health) == 1:
 			destroyed.append(point)
 	return {"board":result,"cracked":cracked,"destroyed":destroyed}
 
@@ -123,7 +144,7 @@ static func explode(board: Array, center: Vector2i) -> Dictionary:
 				removed += 1
 				cleared_cells.append(Vector2i(x,y))
 			elif is_rock(value):
-				result[y][x] = EMPTY if value == ROCK_MIN else value-1
+				result[y][x] = rock_damage_value(value)
 				stones += 1
 	if removed == 0 and stones == 0:
 		return {"valid":false,"board":copy_board(board),"removed":0,"rocks_hit":0}
