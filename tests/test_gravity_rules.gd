@@ -242,15 +242,17 @@ func _initialize() -> void:
 	assert(four_seen.size() == 6,"All six four-ball silhouettes should occur")
 	checks += 6
 
-	# Test that the size distribution is not distorted toward four-ball pieces.
+	# Three- and four-ball offers are now the backbone of the challenge.
+	# Singles are deliberately rare until a full-board fallback needs them.
 	var size_counts: Array = [0,0,0,0]
 	for sample in range(900):
 		var sampled_size: int = Rules.choose_piece_size(random,Rules.empty_board())
 		size_counts[sampled_size-1] += 1
-	assert(size_counts[1] > size_counts[3])
-	assert(size_counts[2] > size_counts[3])
-	assert(size_counts[3] > 170 and size_counts[3] < 365)
-	checks += 3
+	assert(size_counts[0] < 55)
+	assert(size_counts[2] > size_counts[1])
+	assert(size_counts[3] > size_counts[1])
+	assert(size_counts[3] > 290 and size_counts[3] < 440)
+	checks += 4
 
 	# Generate hundreds of actual turns, not just isolated shapes.
 	var simulation: Array = Rules.empty_board()
