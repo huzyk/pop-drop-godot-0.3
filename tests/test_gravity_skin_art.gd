@@ -4,7 +4,11 @@ const SkinArt = preload("res://scripts/gravity_skin_art.gd")
 const Studio = preload("res://scripts/gravity_studio.gd")
 const Game = preload("res://scripts/gravity_game.gd")
 const Shop = preload("res://scripts/gravity_shop.gd")
-const SKINS = ["default","neon","gold","donut","capybara","crystal","cosmos","star_capybara"]
+const Themes = preload("res://scripts/gravity_themes.gd")
+const Music = preload("res://scripts/gravity_music.gd")
+const SKINS = ["default","neon","gold","donut","capybara","crystal",
+	"toucan","parrot","frog","monkey","jaguar","sloth","lion","zebra",
+	"elephant","giraffe","fox","owl","dragon","unicorn","phoenix","griffin","star_capybara"]
 
 func _initialize() -> void:
 	for id in SKINS:
@@ -16,6 +20,18 @@ func _initialize() -> void:
 			# Each skin owns three genuinely different authored files.
 			assert(sprite.resource_path.begins_with("res://assets/"))
 		assert(SkinArt.sprite_for(id,0) != SkinArt.sprite_for(id,1))
+	assert(not SkinArt.is_authored("cosmos"))
+	assert(Shop.item("cosmos").is_empty())
+	for id in ["dragon","unicorn","phoenix","griffin"]:
+		assert(Themes.for_skin(id) == "fantasy")
+		assert(Themes.board_for_skin(id).get_size() == Vector2(536,536))
+		assert(Themes.frame_for_skin(id).get_size() == Game.BASE)
+	for id in ["toucan","parrot","lion","frog","fox"]:
+		assert(Themes.board_for_skin(id) != null)
+		assert(Themes.frame_for_skin(id) != null)
+	for name in Music.LOOPS.keys():
+		assert(name in ["classic","jungle","safari","forest","wetlands","aviary","fantasy"])
+		assert(Music.LOOPS[name]["melody"].size() == 16)
 	assert(not SkinArt.is_authored("unknown"))
 	assert(SkinArt.sprite_for("unknown",0)==null)
 	assert(Studio.WORLD.get_size()==Game.BASE)
@@ -50,5 +66,5 @@ func _initialize() -> void:
 	game.shop_tab=1
 	assert(game._shop_catalog()==SKINS)
 	game.free()
-	print("PASS: 24 characters, 8 skins, Atelier v5 textures and nine-slice materials, unchanged hitboxes")
+	print("PASS: 23 shop skins, 7 original music worlds, creature art, themed boards and cosmetic hitboxes")
 	quit()
