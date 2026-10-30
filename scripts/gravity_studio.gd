@@ -4,6 +4,7 @@ extends Control
 ## All live game art is painted here, never in the gameplay script.
 const Rules = preload("res://scripts/gravity_rules.gd")
 const Shop = preload("res://scripts/gravity_shop.gd")
+const SkinArt = preload("res://scripts/gravity_skin_art.gd")
 const Progression = preload("res://scripts/gravity_progression.gd")
 const WORLD = preload("res://assets/visual_v2/world.svg")
 const ORBS = [
@@ -88,14 +89,9 @@ func _icon(id: String, center: Vector2, width: float, alpha: float=1.0) -> void:
 
 func _orb(center: Vector2, radius: float, index: int, alpha: float=1.0, squish: Vector2=Vector2.ONE) -> void:
 	var skin_id: String = game.preview_skin if not game.preview_skin.is_empty() else game.shop.equipped_skin
-	var authored: Texture2D = null
-	# The default art is independent of and much higher resolution than the old skins.
-	if skin_id=="default":
-		authored = ORBS[clampi(index,0,2)]
-	else:
-		authored = game.SkinArt.sprite_for(skin_id,index)
+	var authored: Texture2D = SkinArt.sprite_for(skin_id,index)
 	if authored == null:
-		# Older owned skins still work while their premium art is being produced.
+		# Unknown IDs are handled safely; every catalog skin is explicitly authored.
 		authored = ORBS[clampi(index,0,2)]
 	var diameter: Vector2 = Vector2(radius*2.32*squish.x,radius*2.32*squish.y)
 	draw_texture_rect(authored,Rect2(center-diameter*0.5,diameter),false,Color(1,1,1,alpha))
