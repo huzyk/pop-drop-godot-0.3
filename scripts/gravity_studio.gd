@@ -227,9 +227,8 @@ func _draw_stats() -> void:
 	_round(Rect2(366,217,132,4),Color("#F1D8CC"),2)
 	_round(Rect2(366,217,maxf(4.0,132.0*(1.0-clampf(game.wave_time_left/full,0.0,1.0))),4),
 		PEACH if timer<=5 else AQUA,2)
-	_center(game.t("life"),604,169,16,Color("#9C777B"),147)
-	for i in range(3):
-		_icon("heart",Vector2(554+i*48,198),40,1.0 if i<game.lives else .22)
+	_center("WOLNE" if game.language=="pl" else "FREE",604,169,16,Color("#9C777B"),147)
+	_center(str(Rules.SIZE*Rules.SIZE-Rules.filled(game.board)),608,211,42,INK,135)
 
 func _draw_board() -> void:
 	# A jewel box rather than a spreadsheet: soft inlaid wells and 3D tokens.
@@ -295,10 +294,6 @@ func _draw_board() -> void:
 		else:
 			_round(Rect2(BOARD.position+Vector2(hovering*CELL,0),Vector2(CELL,BOARD.size.y)),
 				Color("#FF668F",.18),15)
-	var height_used: int = Rules.tallest_column(game.board)
-	if height_used>=6:
-		draw_line(BOARD.position+Vector2(9,4),BOARD.position+Vector2(599,4),
-			Color("#FF718E",.78),4.0,true)
 
 func _draw_rock(center: Vector2, value: int) -> void:
 	var hp: int = clampi(value-Rules.ROCK_MIN+1,1,3)
@@ -338,10 +333,9 @@ func _draw_status() -> void:
 		var art: Texture2D = ENERGY_ON if i<count else ENERGY_OFF
 		draw_texture_rect(art,Rect2(point-Vector2(11,11),Vector2(22,22)),false)
 	_center("%d/%d" % [count,Rules.POP_THRESHOLD],455,902,20,INK,77)
-	var used: int = Rules.tallest_column(game.board)
-	_round(Rect2(536,891,108,8),Color("#E9CFC5"),4)
-	_round(Rect2(536,891,maxf(3,108.0*used/8.0),8),PEACH if used>=6 else AQUA,4)
-	_center("%d/8" % used,657,902,16,Color("#9E7773"),54)
+	var remaining: int = Rules.SIZE*Rules.SIZE-Rules.filled(game.board)
+	_center(("WOLNE %d" if game.language=="pl" else "FREE %d") % remaining,
+		586,902,17,Color("#677B8A"),135)
 
 func _draw_shapes() -> void:
 	_label("WYBIERZ KSZTAŁT" if game.language=="pl" else "CHOOSE A PIECE",
@@ -467,8 +461,11 @@ func _draw_game_over() -> void:
 	for i in range(3):
 		_orb(Vector2(268+i*91,486+10*sin(game.clock*2+i)),28,i)
 	_center(game.t("over"),360,548,49,INK,520)
-	_center(game.t("score"),360,582,20,Color("#667697"),420)
-	_center(str(game.score),360,664,82,PEACH,495)
+	var why: String = ("BRAK DOSTĘPNYCH RUCHÓW" if game.language=="pl"
+		else "NO MOVES LEFT") if game.loss_reason=="no_moves" else (
+		"RUNDĘ ZAKOŃCZONO" if game.language=="pl" else "ROUND FINISHED")
+	_center(why,360,605,24,Color("#B3486A"),510)
+	_center(str(game.score),360,682,75,PEACH,495)
 	_center("%s  %d" % [game.t("best"),game.best],360,705,23,Color("#617394"),465)
 	var restart: Rect2 = Rect2(104,722,512,84)
 	_button(restart,AQUA if game.shop.energy>0 else Color("#B4BFCD"),Color("#188A87"))
