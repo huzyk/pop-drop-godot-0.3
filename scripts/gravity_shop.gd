@@ -7,6 +7,7 @@ const VERSION := 5
 const MAX_COINS := 100000000
 const MAX_BOOST_STOCK := 20
 const MAX_EVENT_HISTORY := 256
+const POP_COIN_FACTOR := 0.50 # Faster cosmetic progression; no per-event reward cap.
 const MAX_ENERGY := 5
 const ENERGY_SECONDS := 1200
 const RESCUE_PRICE := 220
@@ -68,7 +69,7 @@ static func earned_from_pop(points: int) -> int:
 		return 0
 	# Unlimited earnings: a square-root curve keeps huge combos valuable,
 	# but prevents their payouts from overwhelming long-term cosmetic goals.
-	return maxi(2,int(round(sqrt(float(points))*0.30)))
+	return maxi(3,int(round(sqrt(float(points))*POP_COIN_FACTOR)))
 
 func stock(id: String) -> int:
 	return int(inventory.get(id,0))
