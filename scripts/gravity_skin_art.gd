@@ -106,6 +106,26 @@ const PACKS = {
 		preload("res://assets/skins/animals/star_bear/coral.svg"),
 		preload("res://assets/skins/animals/star_bear/mint.svg"),
 		preload("res://assets/skins/animals/star_bear/blue.svg")
+	],
+	"dragon": [
+		preload("res://assets/skins/animals/dragon/coral.svg"),
+		preload("res://assets/skins/animals/dragon/mint.svg"),
+		preload("res://assets/skins/animals/dragon/blue.svg")
+	],
+	"unicorn": [
+		preload("res://assets/skins/animals/unicorn/coral.svg"),
+		preload("res://assets/skins/animals/unicorn/mint.svg"),
+		preload("res://assets/skins/animals/unicorn/blue.svg")
+	],
+	"phoenix": [
+		preload("res://assets/skins/animals/phoenix/coral.svg"),
+		preload("res://assets/skins/animals/phoenix/mint.svg"),
+		preload("res://assets/skins/animals/phoenix/blue.svg")
+	],
+	"griffin": [
+		preload("res://assets/skins/animals/griffin/coral.svg"),
+		preload("res://assets/skins/animals/griffin/mint.svg"),
+		preload("res://assets/skins/animals/griffin/blue.svg")
 	]
 }
 
