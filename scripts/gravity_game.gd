@@ -8,6 +8,8 @@ const Progression = preload("res://scripts/gravity_progression.gd")
 const Feedback = preload("res://scripts/gravity_feedback.gd")
 const Shop = preload("res://scripts/gravity_shop.gd")
 const SkinArt = preload("res://scripts/gravity_skin_art.gd")
+const Themes = preload("res://scripts/gravity_themes.gd")
+const Music = preload("res://scripts/gravity_music.gd")
 const Studio = preload("res://scripts/gravity_illustrated.gd")
 const BACKDROP = preload("res://assets/ui/arcade_backdrop.svg")
 const ICON_COIN = preload("res://assets/ui/icons/coin.svg")
@@ -47,7 +49,9 @@ const SHOP_OPEN := Rect2(414,88,71,66)
 const PROFILE_OPEN := Rect2(505,88,71,66)
 const SETTINGS_OPEN := Rect2(595,88,71,66)
 const LANG_RECT := Rect2(582,156,124,39)
-const SETTINGS_LANGUAGE := Rect2(120,822,480,57)
+const SETTINGS_LANGUAGE := Rect2(120,792,480,51)
+const SETTINGS_MUSIC := Rect2(120,850,290,60)
+const SETTINGS_MUSIC_VOLUME := Rect2(420,850,180,60)
 const DOCK_STATUS := Rect2(58,880,596,48)
 const DOCK_SHAPES := Rect2(60,931,597,141)
 const DOCK_ACTIONS := Rect2(30,1084,653,134)
@@ -83,8 +87,8 @@ const SETTINGS_CLOSE := Rect2(476,384,118,54)
 const SETTINGS_TOGGLE := Rect2(120,550,480,80)
 const SETTINGS_ERASE := Rect2(120,654,480,74)
 const SETTINGS_AD_PRIVACY := Rect2(120,748,480,68)
-const SETTINGS_SOUND := Rect2(114,886,492,67)
-const SETTINGS_HAPTICS := Rect2(114,975,492,67)
+const SETTINGS_SOUND := Rect2(120,918,480,56)
+const SETTINGS_HAPTICS := Rect2(120,980,480,56)
 const PROFILE_CLOSE := Rect2(512,265,120,54)
 const PROFILE_CARD := Rect2(54,224,612,906)
 const SHOP_CLOSE := Rect2(514,266,120,54)
@@ -169,6 +173,7 @@ var preview_right: Dictionary = {}
 var telemetry = null
 var ads = null
 var feedback = null
+var music = null
 var progression = null
 var shop = null
 var shop_open: bool = false
@@ -229,6 +234,9 @@ func _ready() -> void:
 	progression.achievement_unlocked.connect(_on_achievement_unlocked)
 	shop = Shop.new()
 	shop.load_data()
+	music = Music.new()
+	add_child(music)
+	_update_music_for_skin()
 	# Recover daily mission coins after a crash between profile and wallet saves.
 	for mission in Progression.MISSIONS:
 		var mid: String = str(mission["id"])
@@ -278,8 +286,11 @@ func profile_t(key: String) -> String:
 const SHOP_PL := {
 	"shop":"SKLEP","boosts":"MOCE","skins":"SKÓRKI","close":"ZAMKNIJ",
 	"coins":"MONETY","bomb":"BOMBA","reroll":"NOWY ZESTAW",
-	"neon":"NEON","gold":"ZŁOTO","donut":"DONUTY","capybara":"KAPIBARY",
-	"crystal":"KRYSZTAŁY","cosmos":"KOSMOS","star_capybara":"GWIEZDNA KAPIBARA",
+	"neon":"NEON","gold":"ZŁOTO","donut":"DONUTY","capybara":"MISIE",
+	"crystal":"KRYSZTAŁY","star_capybara":"GWIEZDNE MISIE",
+	"toucan":"TUKANY","parrot":"PAPUGI","frog":"ŻABKI","monkey":"MAŁPKI",
+	"jaguar":"JAGUARY","sloth":"LENIWCE","lion":"LWY","zebra":"ZEBRY",
+	"elephant":"SŁONIE","giraffe":"ŻYRAFY","fox":"LISKI","owl":"SOWY",
 	"buy":"KUP","owned":"KUPIONE","active":"AKTYWNE","equip":"WYBIERZ","stock":"POSIADASZ",
 	"poor":"ZA MAŁO MONET","bought":"ZAKUPIONE!","full":"LIMIT ZAPASU",
 	"aim":"DOTKNIJ POLA — BOMBA 3×3",
@@ -287,15 +298,23 @@ const SHOP_PL := {
 	"bomb_desc":"Usuwa kulki w polu 3×3",
 	"reroll_desc":"Losuje trzy nowe kształty",
 	"neon_desc":"Elektryczna poświata","gold_desc":"Złota oprawa",
-	"donut_desc":"Słodkie lukrowane kulki","capybara_desc":"Kapibary na planszy",
-	"crystal_desc":"Błyszczące kryształy","cosmos_desc":"Kosmiczne kulki",
+	"donut_desc":"Słodkie lukrowane kulki","capybara_desc":"Kolorowe niedźwiadki • las",
+	"crystal_desc":"Błyszczące kryształy",
+	"toucan_desc":"Tropikalna dżungla","parrot_desc":"Ptasi świat","frog_desc":"Zielone mokradła",
+	"monkey_desc":"Wesoła dżungla","jaguar_desc":"Dżungla drapieżników",
+	"sloth_desc":"Leśne leniwce","lion_desc":"Królowie safari","zebra_desc":"Paski safari",
+	"elephant_desc":"Wielcy przyjaciele","giraffe_desc":"Żyrafie safari",
+	"fox_desc":"Baśniowy las","owl_desc":"Nocne sowy",
 	"page":"STRONA","no_energy":"BRAK ENERGII","badges":"ODZNAKI"
 }
 const SHOP_EN := {
 	"shop":"SHOP","boosts":"POWERS","skins":"SKINS","close":"CLOSE",
 	"coins":"COINS","bomb":"BOMB","reroll":"NEW SET",
-	"neon":"NEON","gold":"GOLD","donut":"DONUTS","capybara":"CAPYBARAS",
-	"crystal":"CRYSTALS","cosmos":"COSMOS","star_capybara":"STAR CAPYBARA",
+	"neon":"NEON","gold":"GOLD","donut":"DONUTS","capybara":"BEARS",
+	"crystal":"CRYSTALS","star_capybara":"STAR BEARS",
+	"toucan":"TOUCANS","parrot":"PARROTS","frog":"FROGS","monkey":"MONKEYS",
+	"jaguar":"JAGUARS","sloth":"SLOTHS","lion":"LIONS","zebra":"ZEBRAS",
+	"elephant":"ELEPHANTS","giraffe":"GIRAFFES","fox":"FOXES","owl":"OWLS",
 	"buy":"BUY","owned":"OWNED","active":"ACTIVE","equip":"EQUIP","stock":"OWNED",
 	"poor":"NOT ENOUGH COINS","bought":"PURCHASED!","full":"INVENTORY FULL",
 	"aim":"TAP CELL — BOMB 3×3",
@@ -303,20 +322,31 @@ const SHOP_EN := {
 	"bomb_desc":"Clear a 3×3 region",
 	"reroll_desc":"Roll three fresh shapes",
 	"neon_desc":"Electric glowing edges","gold_desc":"Gold outline",
-	"donut_desc":"Sweet glazed marbles","capybara_desc":"Capybaras on the board",
-	"crystal_desc":"Shimmering crystals","cosmos_desc":"Cosmic marbles",
+	"donut_desc":"Sweet glazed marbles","capybara_desc":"Colorful bears • forest",
+	"crystal_desc":"Shimmering crystals",
+	"toucan_desc":"Tropical jungle","parrot_desc":"Aviary world","frog_desc":"Lush wetlands",
+	"monkey_desc":"Playful jungle","jaguar_desc":"Wild jungle",
+	"sloth_desc":"Sleepy jungle","lion_desc":"Royal safari","zebra_desc":"Safari stripes",
+	"elephant_desc":"Gentle giants","giraffe_desc":"Tall safari",
+	"fox_desc":"Storybook forest","owl_desc":"Night forest",
 	"page":"PAGE","no_energy":"NO ENERGY","badges":"BADGES"
 }
 
 func shop_t(key: String) -> String:
 	return str((SHOP_PL if language=="pl" else SHOP_EN).get(key,key))
 
+func _update_music_for_skin() -> void:
+	if music != null and shop != null:
+		music.set_theme(Themes.for_skin(shop.equipped_skin))
+
 func _shop_card(index: int) -> Rect2:
 	return Rect2(91,498+index*231,538,213)
 
 func _shop_catalog() -> Array:
 	return ["bomb","reroll"] if shop_tab==0 else [
-		"default","neon","gold","donut","capybara","crystal","cosmos","star_capybara"]
+		"default","neon","gold","donut","capybara","crystal",
+		"toucan","parrot","frog","monkey","jaguar","sloth",
+		"lion","zebra","elephant","giraffe","fox","owl","star_capybara"]
 
 func _shop_pages() -> int:
 	return int(ceil(float(_shop_catalog().size())/2.0))
@@ -329,6 +359,7 @@ func _shop_items() -> Array:
 func _shop_activate(id: String) -> void:
 	if id == "default":
 		shop.equip_skin("default")
+		_update_music_for_skin()
 		shop_notice = shop_t("active")
 		shop_notice_time = 2.0
 		telemetry.track("shop_skin_equip",{"skin":"default"})
@@ -338,6 +369,7 @@ func _shop_activate(id: String) -> void:
 	if id == Shop.SPECIAL_SKIN:
 		if shop.owns_skin(id):
 			shop.equip_skin(id)
+			_update_music_for_skin()
 			shop_notice = shop_t("active")
 		else:
 			shop_notice = "7 DNI GRY" if language=="pl" else "PLAY 7 DAYS"
@@ -359,6 +391,7 @@ func _shop_activate(id: String) -> void:
 		telemetry.track("shop_purchase",{"item":id,"price_coins":int(offer["price"])})
 	else:
 		shop_notice = shop_t("poor") if shop.coins < int(offer["price"]) else shop_t("full")
+	_update_music_for_skin()
 	shop_notice_time = 2.0
 	queue_redraw()
 
@@ -825,6 +858,10 @@ func _gui_input(event: InputEvent) -> void:
 		elif SETTINGS_HAPTICS.has_point(pt):
 			feedback.set_haptics_enabled(not feedback.haptics_enabled)
 			feedback.cue("tap")
+		elif SETTINGS_MUSIC.has_point(pt):
+			music.set_music_enabled(not music.music_enabled)
+		elif SETTINGS_MUSIC_VOLUME.has_point(pt):
+			music.cycle_volume()
 		elif SETTINGS_AD_PRIVACY.has_point(pt):
 			ads.show_privacy_options()
 		elif SETTINGS_LANGUAGE.has_point(pt):
