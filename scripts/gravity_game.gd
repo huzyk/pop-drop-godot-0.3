@@ -123,6 +123,8 @@ var phase: String = "drop" # drop, anim, over
 var score: int = 0
 var best: int = 0
 var moves: int = 0
+var first_pop_move: int = -1
+var round_active_seconds: float = 0.0
 var lives: int = 3
 var revives: int = 0
 var chain_depth: int = 0
@@ -903,6 +905,8 @@ func new_game() -> void:
 		board[5][x] = [-1,-1,2,0,1,2,0,1][x]
 	score = 0
 	moves = 0
+	first_pop_move = -1
+	round_active_seconds = 0.0
 	lives = 1 # Legacy checkpoint field, not a multi-life mechanic.
 	revives = 0
 	loss_reason = ""
@@ -951,7 +955,9 @@ func _save_progress() -> void:
 		return
 	Session.write_progress({
 		"board": Rules.copy_board(board), "pieces": pieces.duplicate(true),
-		"phase": phase, "score": score, "moves": moves, "lives": lives,
+		"phase": phase, "score": score, "moves": moves,
+		"first_pop_move": first_pop_move, "round_active_seconds": round_active_seconds,
+		"lives": lives,
 		"revives": revives, "run_id": run_id,
 		"best_at_start": best_at_round_start,
 		"over_reported": game_over_reported,
@@ -969,6 +975,8 @@ func _restore_progress(data: Dictionary) -> void:
 	phase = str(data["phase"])
 	score = int(data["score"])
 	moves = int(data["moves"])
+	first_pop_move = maxi(-1,int(data.get("first_pop_move",-1)))
+	round_active_seconds = maxf(0.0,float(data.get("round_active_seconds",0.0)))
 	lives = 0 if phase == "over" else 1
 	revives = int(data["revives"])
 	loss_reason = str(data.get("loss_reason","no_moves" if phase == "over" else ""))
@@ -1018,7 +1026,12 @@ func _on_game_over() -> void:
 	telemetry.track("game_over", {
 		"run_id":run_id, "score":score, "moves":moves,
 		"revives":revives, "distance_to_previous_best":maxi(0,best_at_round_start-score),
-		"round_number":rounds_played, "cause":loss_reason
+		"round_number":rounds_played, "cause":loss_reason,
+		"active_seconds":int(round(round_active_seconds)),
+		"first_pop_move":first_pop_move,
+		"waves":wave_number,"rocks_left":Rules.rock_count(board),
+		"free_cells":Rules.SIZE*Rules.SIZE-Rules.filled(board),
+		"wallet_balance":shop.coins
 	})
 
 func _revive() -> bool:
@@ -1067,6 +1080,8 @@ func _on_ad_reward(_transaction: int) -> void:
 
 func _process(delta: float) -> void:
 	clock += delta
+	if phase=="drop" and not shop_open and not profile_open and not settings_open and not tutorial_open:
+		round_active_seconds += delta
 	if shop != null and int(clock) % 2 == 0:
 		shop.refresh_energy()
 	mission_notice_time = maxf(0.0,mission_notice_time-delta)
@@ -1638,6 +1653,10 @@ func _resolve_cascades(fluid: bool=false, player_action: bool=true) -> void:
 				"run_id":run_id,"hit_count":rocks.cracked.size(),
 				"destroyed":rocks.destroyed.size(),"wave":wave_number
 			})
+		if player_action and first_pop_move < 0 and payout > 0:
+			first_pop_move = moves
+			telemetry.track("first_pop",{"run_id":run_id,"move":moves,
+				"active_seconds":int(round(round_active_seconds))})
 		score += payout
 		var earned_coins: int = shop.credit_pop(action_id+":coins:"+str(chain_depth),payout)
 		if earned_coins > 0:
