@@ -1,3 +1,11 @@
+# POP DROP Gravity 0.13 alpha — sklep, energia i odznaki
+
+Zmiany w `main`: usunięto +10 sekund. Nowe moce: **Bomba (160)**, **Magiczny Kolor (220)**, **Nowy Zestaw (140)**. **Graj dalej** za 220 monet albo reklamę — maksymalnie raz na rundę. Energia **5/5** odnawia się co 20 minut (+1), można ją również zdobyć za reklamę. Dodano 12 odznak, nagrody za codzienną aktywność oraz skórki: Donuty, Kapibary, Kryształy, Kosmos i Gwiezdna Kapibara.
+
+Szczegóły i ograniczenia reklam: [docs/SHOP.md](docs/SHOP.md). Zapis danych z 0.12 jest migrowany bez utraty poprzedniego portfela i posiadanych skórek.
+
+---
+
 # POP DROP Gravity 0.12 alpha — ostra ikonografia
 
 Dziesięć nowych autorskich ikon **SVG 256×256** zamiast pikselowanych łuków i linii rysowanych bezpośrednio w GDScript: moneta, sklep, profil, ustawienia, język, serce/życia, obrót lewo/prawo, bomba i stoper. Wymienione w HUD, dolnych przyciskach oraz sklepie. Wszystkie ikony korzystają z tego samego środka optycznego, rozmiarów 24–59 jednostek i liniowego filtrowania tekstur; ich import sprawdza `tests/test_gravity_icons.gd`. Nie zmienia to mechaniki gry ani hitboxów.
