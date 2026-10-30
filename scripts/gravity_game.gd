@@ -282,7 +282,7 @@ func _cycle_language() -> void:
 	queue_redraw()
 
 func analytics_erase_label() -> String:
-	return "USUŃ DANE ANALITYKI" if language == "pl" else "CLEAR ANALYTICS DATA"
+	return ui_t("clear_analytics")
 
 const BADGES_PL := {
 	"first_drop":"PIERWSZY RUCH","drops_25":"25 ZRZUTÓW",
@@ -375,8 +375,257 @@ const SHOP_EN := {
 	"page":"PAGE","no_energy":"NO ENERGY","badges":"BADGES"
 }
 
+const SHOP_CORE_LOCALES := {
+ "es": {
+  "shop": "TIENDA",
+  "boosts": "PODERES",
+  "skins": "ASPECTOS",
+  "coins": "MONEDAS",
+  "buy": "COMPRAR",
+  "owned": "ADQUIRIDO",
+  "active": "ACTIVO",
+  "equip": "ELEGIR",
+  "stock": "TIENES",
+  "poor": "FALTAN MONEDAS",
+  "bought": "¡COMPRADO!",
+  "full": "INVENTARIO LLENO",
+  "page": "PÁGINA",
+  "badges": "INSIGNIAS",
+  "tip": "Las monedas no afectan la puntuación",
+  "no_energy": "SIN ENERGÍA"
+ },
+ "pt": {
+  "shop": "LOJA",
+  "boosts": "PODERES",
+  "skins": "VISUAIS",
+  "coins": "MOEDAS",
+  "buy": "COMPRAR",
+  "owned": "ADQUIRIDO",
+  "active": "ATIVO",
+  "equip": "EQUIPAR",
+  "stock": "POSSUI",
+  "poor": "MOEDAS INSUFICIENTES",
+  "bought": "COMPRADO!",
+  "full": "INVENTÁRIO CHEIO",
+  "page": "PÁGINA",
+  "badges": "MEDALHAS",
+  "tip": "Moedas não alteram a pontuação",
+  "no_energy": "SEM ENERGIA"
+ },
+ "de": {
+  "shop": "SHOP",
+  "boosts": "POWER-UPS",
+  "skins": "SKINS",
+  "coins": "MÜNZEN",
+  "buy": "KAUFEN",
+  "owned": "GEKAUFT",
+  "active": "AKTIV",
+  "equip": "WÄHLEN",
+  "stock": "BESTAND",
+  "poor": "ZU WENIG MÜNZEN",
+  "bought": "GEKAUFT!",
+  "full": "INVENTAR VOLL",
+  "page": "SEITE",
+  "badges": "ABZEICHEN",
+  "tip": "Münzen ändern deine Punkte nicht",
+  "no_energy": "KEINE ENERGIE"
+ },
+ "fr": {
+  "shop": "BOUTIQUE",
+  "boosts": "POUVOIRS",
+  "skins": "STYLES",
+  "coins": "PIÈCES",
+  "buy": "ACHETER",
+  "owned": "ACHETÉ",
+  "active": "ACTIF",
+  "equip": "ÉQUIPER",
+  "stock": "POSSÉDÉ",
+  "poor": "PIÈCES INSUFFISANTES",
+  "bought": "ACHETÉ !",
+  "full": "INVENTAIRE PLEIN",
+  "page": "PAGE",
+  "badges": "BADGES",
+  "tip": "Les pièces n'affectent pas le score",
+  "no_energy": "PLUS D'ÉNERGIE"
+ },
+ "ru": {
+  "shop": "МАГАЗИН",
+  "boosts": "БОНУСЫ",
+  "skins": "ОБЛИКИ",
+  "coins": "МОНЕТЫ",
+  "buy": "КУПИТЬ",
+  "owned": "КУПЛЕНО",
+  "active": "ВЫБРАНО",
+  "equip": "ВЫБРАТЬ",
+  "stock": "ЕСТЬ",
+  "poor": "МАЛО МОНЕТ",
+  "bought": "КУПЛЕНО!",
+  "full": "ИНВЕНТАРЬ ПОЛОН",
+  "page": "СТРАНИЦА",
+  "badges": "НАГРАДЫ",
+  "tip": "Монеты не влияют на очки",
+  "no_energy": "НЕТ ЭНЕРГИИ"
+ }
+}
+const UI_I18N := {
+ "pl": {
+  "settings": "USTAWIENIA",
+  "analytics_heading": "ANALITYKA GRY",
+  "analytics_on": "ANALITYKA: WŁ.",
+  "analytics_off": "ANALITYKA: WYŁ.",
+  "sound_on": "DŹWIĘKI: WŁ.",
+  "sound_off": "DŹWIĘKI: WYŁ.",
+  "haptics_on": "WIBRACJE: WŁ.",
+  "haptics_off": "WIBRACJE: WYŁ.",
+  "clear_analytics": "USUŃ DANE ANALITYKI",
+  "ad_privacy": "PRYWATNOŚĆ REKLAM",
+  "language": "JĘZYK",
+  "music_on": "MUZYKA: WŁ.",
+  "music_off": "MUZYKA: WYŁ.",
+  "no_moves": "BRAK DOSTĘPNYCH RUCHÓW",
+  "round_finished": "RUNDĘ ZAKOŃCZONO",
+  "watch_ad": "REKLAMA",
+  "continue": "DALEJ",
+  "beta": "BETA • GRA BEZ LIMITU",
+  "one_continue": "JEDEN RATUNEK NA RUNDĘ"
+ },
+ "en": {
+  "settings": "SETTINGS",
+  "analytics_heading": "GAME ANALYTICS",
+  "analytics_on": "ANALYTICS: ON",
+  "analytics_off": "ANALYTICS: OFF",
+  "sound_on": "SOUND: ON",
+  "sound_off": "SOUND: OFF",
+  "haptics_on": "HAPTICS: ON",
+  "haptics_off": "HAPTICS: OFF",
+  "clear_analytics": "CLEAR ANALYTICS DATA",
+  "ad_privacy": "AD PRIVACY",
+  "language": "LANGUAGE",
+  "music_on": "MUSIC: ON",
+  "music_off": "MUSIC: OFF",
+  "no_moves": "NO MOVES LEFT",
+  "round_finished": "ROUND FINISHED",
+  "watch_ad": "WATCH AD",
+  "continue": "CONTINUE",
+  "beta": "BETA • UNLIMITED PLAY",
+  "one_continue": "ONE CONTINUE PER ROUND"
+ },
+ "es": {
+  "settings": "AJUSTES",
+  "analytics_heading": "ANÁLISIS DEL JUEGO",
+  "analytics_on": "ANÁLISIS: SÍ",
+  "analytics_off": "ANÁLISIS: NO",
+  "sound_on": "SONIDO: SÍ",
+  "sound_off": "SONIDO: NO",
+  "haptics_on": "VIBRACIÓN: SÍ",
+  "haptics_off": "VIBRACIÓN: NO",
+  "clear_analytics": "BORRAR ANALÍTICA",
+  "ad_privacy": "PRIVACIDAD ANUNCIOS",
+  "language": "IDIOMA",
+  "music_on": "MÚSICA: SÍ",
+  "music_off": "MÚSICA: NO",
+  "no_moves": "NO HAY MÁS JUGADAS",
+  "round_finished": "PARTIDA TERMINADA",
+  "watch_ad": "VER ANUNCIO",
+  "continue": "SEGUIR",
+  "beta": "BETA • SIN LÍMITES",
+  "one_continue": "UNA CONTINUACIÓN POR PARTIDA"
+ },
+ "pt": {
+  "settings": "DEFINIÇÕES",
+  "analytics_heading": "ANÁLISE DO JOGO",
+  "analytics_on": "ANÁLISE: SIM",
+  "analytics_off": "ANÁLISE: NÃO",
+  "sound_on": "SOM: SIM",
+  "sound_off": "SOM: NÃO",
+  "haptics_on": "VIBRAÇÃO: SIM",
+  "haptics_off": "VIBRAÇÃO: NÃO",
+  "clear_analytics": "APAGAR ANÁLISE",
+  "ad_privacy": "PRIVACIDADE ANÚNCIOS",
+  "language": "IDIOMA",
+  "music_on": "MÚSICA: SIM",
+  "music_off": "MÚSICA: NÃO",
+  "no_moves": "SEM JOGADAS",
+  "round_finished": "JOGO TERMINADO",
+  "watch_ad": "VER ANÚNCIO",
+  "continue": "CONTINUAR",
+  "beta": "BETA • SEM LIMITES",
+  "one_continue": "UMA CONTINUAÇÃO POR JOGO"
+ },
+ "de": {
+  "settings": "EINSTELLUNGEN",
+  "analytics_heading": "SPIELANALYSE",
+  "analytics_on": "ANALYSE: AN",
+  "analytics_off": "ANALYSE: AUS",
+  "sound_on": "TON: AN",
+  "sound_off": "TON: AUS",
+  "haptics_on": "VIBRATION: AN",
+  "haptics_off": "VIBRATION: AUS",
+  "clear_analytics": "ANALYSEDATEN LÖSCHEN",
+  "ad_privacy": "WERBEDATENSCHUTZ",
+  "language": "SPRACHE",
+  "music_on": "MUSIK: AN",
+  "music_off": "MUSIK: AUS",
+  "no_moves": "KEINE ZÜGE MEHR",
+  "round_finished": "RUNDE BEENDET",
+  "watch_ad": "WERBUNG",
+  "continue": "WEITER",
+  "beta": "BETA • UNBEGRENZT",
+  "one_continue": "EIN WEITERSPIELEN PRO RUNDE"
+ },
+ "fr": {
+  "settings": "PARAMÈTRES",
+  "analytics_heading": "ANALYSE DU JEU",
+  "analytics_on": "ANALYSE : OUI",
+  "analytics_off": "ANALYSE : NON",
+  "sound_on": "SON : OUI",
+  "sound_off": "SON : NON",
+  "haptics_on": "VIBRATION : OUI",
+  "haptics_off": "VIBRATION : NON",
+  "clear_analytics": "EFFACER LES ANALYSES",
+  "ad_privacy": "CONFIDENTIALITÉ PUB",
+  "language": "LANGUE",
+  "music_on": "MUSIQUE : OUI",
+  "music_off": "MUSIQUE : NON",
+  "no_moves": "PLUS DE COUPS",
+  "round_finished": "PARTIE TERMINÉE",
+  "watch_ad": "VOIR PUB",
+  "continue": "CONTINUER",
+  "beta": "BÊTA • JEU ILLIMITÉ",
+  "one_continue": "UNE REPRISE PAR PARTIE"
+ },
+ "ru": {
+  "settings": "НАСТРОЙКИ",
+  "analytics_heading": "АНАЛИТИКА ИГРЫ",
+  "analytics_on": "АНАЛИТИКА: ВКЛ",
+  "analytics_off": "АНАЛИТИКА: ВЫКЛ",
+  "sound_on": "ЗВУК: ВКЛ",
+  "sound_off": "ЗВУК: ВЫКЛ",
+  "haptics_on": "ВИБРАЦИЯ: ВКЛ",
+  "haptics_off": "ВИБРАЦИЯ: ВЫКЛ",
+  "clear_analytics": "ОЧИСТИТЬ АНАЛИТИКУ",
+  "ad_privacy": "РЕКЛАМА И ДАННЫЕ",
+  "language": "ЯЗЫК",
+  "music_on": "МУЗЫКА: ВКЛ",
+  "music_off": "МУЗЫКА: ВЫКЛ",
+  "no_moves": "ХОДОВ НЕТ",
+  "round_finished": "РАУНД ОКОНЧЕН",
+  "watch_ad": "РЕКЛАМА",
+  "continue": "ДАЛЬШЕ",
+  "beta": "БЕТА • БЕЗ ЛИМИТА",
+  "one_continue": "ОДНО ПРОДОЛЖЕНИЕ ЗА РАУНД"
+ }
+}
+
+func ui_t(key: String) -> String:
+	return str(UI_I18N.get(language,UI_I18N["en"]).get(key,UI_I18N["en"].get(key,key)))
+
 func shop_t(key: String) -> String:
-	return str((SHOP_PL if language=="pl" else SHOP_EN).get(key,key))
+	if language=="pl":
+		return str(SHOP_PL.get(key,key))
+	if SHOP_CORE_LOCALES.has(language) and SHOP_CORE_LOCALES[language].has(key):
+		return str(SHOP_CORE_LOCALES[language][key])
+	return str(SHOP_EN.get(key,key))
 
 func _update_music_for_skin() -> void:
 	if music != null and shop != null:
