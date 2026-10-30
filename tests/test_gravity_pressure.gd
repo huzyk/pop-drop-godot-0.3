@@ -7,10 +7,11 @@ func _initialize() -> void:
 	var game = Game.new()
 	assert(game != null)
 	game.free()
-	assert(Rules.wave_interval(0) == 15.0)
-	assert(Rules.wave_interval(1) == 19.0)
-	assert(Rules.wave_interval(3) == 27.0)
-	assert(Rules.wave_interval(9) == 39.0)
+	assert(Rules.wave_interval(0) == 12.0)
+	assert(Rules.wave_interval(1) == 11.0)
+	assert(Rules.wave_interval(3) == 9.0)
+	assert(Rules.wave_interval(4) == 8.0)
+	assert(Rules.wave_interval(9) == 8.0)
 	assert(Rules.wave_marble_count(1) == 6)
 	assert(Rules.wave_marble_count(4) == 7)
 	assert(Rules.wave_marble_count(8) == 8)
@@ -128,20 +129,20 @@ func _initialize() -> void:
 	assert(Rules.rock_count(blocked_wave.board) == 3)
 	assert(Rules.rock_count(Rules.rescue(blocked_wave.board)) == 3)
 
-	# Spawn maximum: no more than three simultaneously.
+	# Spawn maximum: eight independent obstacles can build up.
 	board = Rules.empty_board()
-	for i in range(3):
+	for i in range(Rules.MAX_ROCKS):
 		var spawn: Dictionary = Rules.spawn_rock(board,random)
 		assert(spawn.spawned)
 		board = spawn.board
-	assert(Rules.rock_count(board) == 3)
+	assert(Rules.rock_count(board) == Rules.MAX_ROCKS)
 	assert(not Rules.spawn_rock(board,random).spawned)
 	# Old save versions remain valid, new rock grid values are accepted.
 	var state: Dictionary = {
 		"board":board,
 		"pieces":[[[0,0,0]],[[0,0,1]],[[0,0,2]]],
 		"score":0,"moves":0,"lives":3,"revives":0,
-		"phase":"drop","wave_number":2,"wave_time_left":23.0
+		"phase":"drop","wave_number":2,"wave_time_left":10.0
 	}
 	assert(Session.valid(state))
 	state["wave_time_left"] = 99.0
