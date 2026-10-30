@@ -3,23 +3,33 @@ extends Node
 ## Short PCM samples are generated only on startup, not during gameplay.
 const PREFS := "user://gravity_feedback_v1.json"
 const RATE := 22050
-const VOICE_COUNT := 5
+const VOICE_COUNT := 8
 const CUES := {
-	"tap": 0.060,
-	"drop": 0.120,
-	"rotate": 0.165,
-	"pop": 0.195,
-	"cascade": 0.255,
+	"tap": 0.065,
+	"drop": 0.170,
+	"rotate": 0.260,
+	"pop": 0.260,
+	"big_pop": 0.420,
+	"cascade": 0.480,
+	"rock_hit": 0.220,
+	"rock_break": 0.570,
+	"bomb": 0.510,
+	"surge": 0.480,
 	"mission": 0.565,
 	"level": 0.880,
-	"fail": 0.320
+	"fail": 0.360
 }
 const VIBRATIONS := {
 	"tap": [0,0.0],
-	"drop": [9,0.25],
-	"rotate": [14,0.32],
-	"pop": [24,0.50],
-	"cascade": [35,0.62],
+	"drop": [10,0.28],
+	"rotate": [12,0.32],
+	"pop": [19,0.51],
+	"big_pop": [32,0.70],
+	"cascade": [39,0.82],
+	"rock_hit": [29,0.63],
+	"rock_break": [65,0.85],
+	"bomb": [70,0.90],
+	"surge": [32,0.57],
 	"mission": [30,0.48],
 	"level": [50,0.72],
 	"fail": [48,0.50]
@@ -38,7 +48,7 @@ func _ready() -> void:
 		streams[key] = _render_cue(str(key))
 	for i in range(VOICE_COUNT):
 		var player: AudioStreamPlayer = AudioStreamPlayer.new()
-		player.volume_db = -5.0
+		player.volume_db = -8.0
 		add_child(player)
 		voices.append(player)
 
@@ -87,44 +97,70 @@ func _render_cue(name: String) -> AudioStreamWAV:
 		var u: float = t/duration
 		var attack: float = minf(1.0, t/0.007)
 		var envelope: float = attack * pow(1.0-u,2.3)
+		# Layer a soft tonal body, a transient, and a deterministic textured
+		# component: more tactile than one plain oscillator per event.
+		var noise: float = 2.0*fposmod(sin(float(i)*12.9898+78.233)*43758.5453,1.0)-1.0
+		var transient: float = pow(1.0-u,9.0)
 		var pitch: float = 400.0
 		var amplitude: float = 0.20
 		var sample: float = 0.0
 		match name:
 			"tap":
-				pitch = lerpf(850.0,1150.0,u)
-				amplitude = 0.09
-				sample = sin(TAU*pitch*t)
+				pitch = lerpf(830.0,1180.0,u)
+				amplitude = 0.07
+				sample = sin(TAU*pitch*t)+noise*transient*.14
 			"drop":
-				pitch = lerpf(178.0,75.0,u)
-				amplitude = 0.24
-				sample = 0.84*sin(TAU*pitch*t)+0.16*sin(TAU*pitch*2.0*t)
+				pitch = lerpf(205.0,67.0,u)
+				amplitude = 0.28
+				sample = .80*sin(TAU*pitch*t)+.17*sin(TAU*2.0*pitch*t)+noise*transient*.29
 			"rotate":
-				pitch = lerpf(230.0,610.0,u)
-				amplitude = 0.17
-				sample = sin(TAU*pitch*t)+0.16*sin(TAU*2.0*pitch*t)
+				pitch = lerpf(245.0,685.0,u)
+				amplitude = 0.15
+				sample = .56*sin(TAU*pitch*t)+.18*sin(TAU*1.51*pitch*t)+noise*.24*sin(PI*u)
 			"pop":
-				pitch = lerpf(420.0,1040.0,u)
-				amplitude = 0.30
-				sample = 0.7*sin(TAU*pitch*t)+0.3*sin(TAU*1.49*pitch*t)
+				pitch = lerpf(350.0,1180.0,u)
+				amplitude = 0.28
+				sample = .58*sin(TAU*pitch*t)+.20*sin(TAU*1.69*pitch*t)+.22*sin(TAU*(134.0-66.0*u)*t)+noise*transient*.21
+			"big_pop":
+				pitch = lerpf(255.0,1375.0,u)
+				amplitude = 0.35
+				sample = .43*sin(TAU*pitch*t)+.18*sin(TAU*1.51*pitch*t)+.28*sin(TAU*(122.0-67.0*u)*t)+noise*transient*.33
 			"cascade":
-				pitch = lerpf(580.0,1260.0,u)
-				amplitude = 0.24
-				sample = 0.66*sin(TAU*pitch*t)+0.28*sin(TAU*(pitch*1.5)*t)
+				var step_tone: float = float(mini(3,int(u*4.0)))
+				pitch = 520.0+step_tone*190.0+140.0*u
+				amplitude = 0.29
+				sample = .60*sin(TAU*pitch*t)+.19*sin(TAU*1.49*pitch*t)+.15*sin(TAU*112.0*t)+noise*transient*.23
+			"rock_hit":
+				pitch = lerpf(180.0,78.0,u)
+				amplitude = 0.32
+				sample = .61*sin(TAU*pitch*t)+.14*sin(TAU*2.77*pitch*t)+noise*(.60*transient+.12)
+			"rock_break":
+				pitch = lerpf(165.0,52.0,u)
+				amplitude = 0.34
+				var grit: float = noise*(.65*pow(1.0-u,1.3)+.22*absf(sin(u*13.0*PI)))
+				sample = .56*sin(TAU*pitch*t)+.19*sin(TAU*2.1*pitch*t)+grit
+			"bomb":
+				pitch = lerpf(102.0,36.0,u)
+				amplitude = 0.38
+				sample = .73*sin(TAU*pitch*t)+noise*(.62*pow(1.0-u,1.7)+.14)+.10*sin(TAU*2.2*pitch*t)
+			"surge":
+				pitch = lerpf(310.0,730.0,u)
+				amplitude = 0.23
+				sample = .49*sin(TAU*pitch*t)+.30*sin(TAU*(pitch*1.53)*t)+noise*.22*sin(PI*u)
 			"mission":
 				var notes: Array = [523.25,659.25,783.99]
 				pitch = float(notes[mini(2,int(u*3.0))])
-				amplitude = 0.20
-				sample = sin(TAU*pitch*t)+0.14*sin(TAU*pitch*2.0*t)
+				amplitude = 0.19
+				sample = sin(TAU*pitch*t)+.14*sin(TAU*pitch*2.0*t)
 			"level":
 				var notes: Array = [523.25,659.25,783.99,1046.50]
 				pitch = float(notes[mini(3,int(u*4.0))])
-				amplitude = 0.23
-				sample = sin(TAU*pitch*t)+0.22*sin(TAU*pitch*1.5*t)
+				amplitude = 0.22
+				sample = sin(TAU*pitch*t)+.20*sin(TAU*pitch*1.5*t)
 			"fail":
-				pitch = lerpf(350.0,125.0,u)
+				pitch = lerpf(315.0,105.0,u)
 				amplitude = 0.20
-				sample = sin(TAU*pitch*t)+0.15*sin(TAU*pitch*0.5*t)
+				sample = sin(TAU*pitch*t)+.15*sin(TAU*pitch*.5*t)+noise*transient*.08
 		# Very short event sounds, not continuous music. Avoid clipped PCM.
 		var value: float = clampf(sample*amplitude*envelope,-0.96,0.96)
 		data.encode_s16(i*2,int(round(value*32767.0)))
