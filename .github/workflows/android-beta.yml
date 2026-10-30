@@ -5,7 +5,14 @@ on:
     paths:
       - .github/workflows/android-beta.yml
       - export_presets.cfg
-      - tests/configure_android.gd
+      - project.godot
+      - 'scenes/**'
+      - 'scripts/**'
+      - 'assets/**'
+
+concurrency:
+  group: android-beta-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
