@@ -11,6 +11,7 @@ func _initialize() -> void:
 	wallet.persist_enabled = false
 	assert(wallet.coins == 0)
 	assert(wallet.stock("bomb") == 0)
+	assert(wallet.stock("magic") == 0)
 	assert(not wallet.can_purchase("bomb"))
 	assert(Shop.earned_from_pop(0) == 0)
 	assert(Shop.earned_from_pop(320) == 32)
@@ -47,7 +48,7 @@ func _initialize() -> void:
 	assert(not wallet.purchase("unknown"))
 	assert(not wallet.use_boost("unknown"))
 	assert(Shop.item("time").is_empty()) # +10 seconds removed
-	assert(Shop.item("magic").get("price") == 220)
+	assert(Shop.item("magic").is_empty()) # retired; no longer purchasable
 	assert(Shop.item("reroll").get("price") == 140)
 	assert(Shop.RESCUE_PRICE == 220)
 	assert(wallet.credit_bonus("badge:first",80) == 80)
