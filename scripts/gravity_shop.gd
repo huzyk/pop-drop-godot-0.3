@@ -7,8 +7,6 @@ const VERSION := 4
 const MAX_COINS := 100000000
 const MAX_BOOST_STOCK := 20
 const MAX_EVENT_HISTORY := 256
-# POP coins are a limited round reward; score/XP remain unlimited.
-const POP_RUN_CAP := 160
 const MAX_ENERGY := 5
 const ENERGY_SECONDS := 1200
 const RESCUE_PRICE := 220
@@ -16,12 +14,12 @@ const DAILY_PRIZES := [20,30,50,70,90,120,150]
 const ITEMS := [
 	{"id":"bomb","kind":"boost","price":160},
 	{"id":"reroll","kind":"boost","price":140},
-	{"id":"neon","kind":"skin","price":500},
-	{"id":"gold","kind":"skin","price":1200},
-	{"id":"donut","kind":"skin","price":900},
-	{"id":"capybara","kind":"skin","price":1500},
-	{"id":"crystal","kind":"skin","price":1800},
-	{"id":"cosmos","kind":"skin","price":2200}
+	{"id":"neon","kind":"skin","price":900},
+	{"id":"gold","kind":"skin","price":2600},
+	{"id":"donut","kind":"skin","price":1900},
+	{"id":"capybara","kind":"skin","price":3300},
+	{"id":"crystal","kind":"skin","price":3900},
+	{"id":"cosmos","kind":"skin","price":5200}
 ]
 const SPECIAL_SKIN := "star_capybara"
 
@@ -29,8 +27,6 @@ var persist_enabled: bool = true
 var coins: int = 0
 var total_earned: int = 0
 var total_spent: int = 0
-var pop_run_id: String = ""
-var pop_run_earned: int = 0
 var inventory: Dictionary = {"bomb":0,"reroll":0}
 var owned_skins: Dictionary = {"neon":false,"gold":false,"donut":false,
 	"capybara":false,"crystal":false,"cosmos":false,"star_capybara":false}
@@ -51,8 +47,9 @@ static func item(id: String) -> Dictionary:
 static func earned_from_pop(points: int) -> int:
 	if points <= 0:
 		return 0
-	# A combo remains valuable for SCORE, but no longer mints hundreds of coins.
-	return clampi(points / 85,2,24)
+	# Unlimited earnings: a square-root curve keeps huge combos valuable,
+	# but prevents their payouts from overwhelming long-term cosmetic goals.
+	return maxi(2,int(round(sqrt(float(points))*0.30)))
 
 func stock(id: String) -> int:
 	return int(inventory.get(id,0))
@@ -74,16 +71,13 @@ func _credit(amount: int) -> int:
 	total_earned = mini(MAX_COINS,total_earned+gained)
 	return gained
 
-func credit_pop(event_id: String, points: int, run_id: String) -> int:
-	if event_id.is_empty() or run_id.is_empty() or event_id in seen_pop_ids or points <= 0:
+func credit_pop(event_id: String, points: int) -> int:
+	if event_id.is_empty() or event_id in seen_pop_ids or points <= 0:
 		return 0
-	if pop_run_id != run_id:
-		pop_run_id = run_id
-		pop_run_earned = 0
-	var reward: int = mini(earned_from_pop(points),maxi(0,POP_RUN_CAP-pop_run_earned))
-	var gained: int = _credit(reward)
-	pop_run_earned += gained
-	# Record even zero-value events, so repeated callbacks cannot mint currency.
+	var gained: int = _credit(earned_from_pop(points))
+	if gained <= 0:
+		return 0
+	# Every unique POP earns coins for as long as the game continues.
 	seen_pop_ids.append(event_id)
 	if seen_pop_ids.size() > MAX_EVENT_HISTORY:
 		seen_pop_ids.pop_front()
@@ -215,8 +209,6 @@ func load_data() -> void:
 	coins = clampi(int(value.get("coins",0)),0,MAX_COINS)
 	total_earned = clampi(int(value.get("total_earned",0)),0,MAX_COINS)
 	total_spent = clampi(int(value.get("total_spent",0)),0,MAX_COINS)
-	pop_run_id = str(value.get("pop_run_id",""))
-	pop_run_earned = clampi(int(value.get("pop_run_earned",0)),0,POP_RUN_CAP)
 	var stored_inventory: Variant = value.get("inventory",{})
 	var refund_magic: int = 0
 	if stored_inventory is Dictionary:
@@ -257,7 +249,6 @@ func _save() -> bool:
 	var contents: Dictionary = {
 		"version":VERSION,"coins":coins,
 		"total_earned":total_earned,"total_spent":total_spent,
-		"pop_run_id":pop_run_id,"pop_run_earned":pop_run_earned,
 		"inventory":inventory,"owned_skins":owned_skins,
 		"equipped_skin":equipped_skin,"seen_pop_ids":seen_pop_ids,
 		"seen_bonus_ids":seen_bonus_ids,"energy":energy,
