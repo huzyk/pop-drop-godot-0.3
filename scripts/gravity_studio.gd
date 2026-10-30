@@ -634,10 +634,11 @@ func _draw_profile() -> void:
 			var row: int = int(i/2)
 			var rect: Rect2 = Rect2(89+col*278,599+row*101,263,91)
 			_round(rect,Color("#FFF0CB") if got else Color("#E4EAF5"),19)
-			draw_circle(rect.position+Vector2(34,45),21,GOLD if got else Color("#B9C3D5"))
-			_center("★" if got else "✦",rect.position.x+34,rect.position.y+52,
-				23,INK,37)
-			var badge_name: String = id.replace("_"," ").capitalize()
+			var badge_center: Vector2 = rect.position+Vector2(37,45)
+			draw_texture_rect(UTILITY_ART,Rect2(badge_center-Vector2(31,31),Vector2(62,62)),
+				false,Color(1,1,1,1.0 if got else 0.50))
+			_icon(game.badge_icon(id),badge_center,35,1.0 if got else 0.38)
+			var badge_name: String = game.badge_t(id)
 			_center(badge_name,rect.position.x+162,rect.position.y+36,17,INK,184)
 			_center("%d/%d • +%d" % [mini(game.progression.achievement_progress(id),
 				int(badge["target"])),int(badge["target"]),int(badge["coins"])],
