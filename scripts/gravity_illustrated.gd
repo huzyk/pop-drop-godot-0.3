@@ -9,6 +9,7 @@ const GLASS_PINK = preload("res://assets/illustrated_v7/orb_pink.webp")
 const GLASS_GREEN = preload("res://assets/illustrated_v7/orb_green.webp")
 const GLASS_BLUE = preload("res://assets/illustrated_v7/orb_blue.webp")
 const STONE = preload("res://assets/illustrated_v7/stone.webp")
+const Themes = preload("res://scripts/gravity_themes.gd")
 const TOKENS = [GLASS_PINK,GLASS_GREEN,GLASS_BLUE]
 const DARK := Color("#17374D")
 const CREAM := Color("#FFF8EA")
@@ -19,6 +20,10 @@ func _draw_world() -> void:
 	draw_texture_rect(SCENE_ART,Rect2(Vector2.ZERO,BASE),false)
 	# Cover coordinates baked into the illustration and the obsolete 3-power dock.
 	draw_texture_rect(CLEAN_OVERLAY,Rect2(Vector2.ZERO,BASE),false)
+	if game.shop != null:
+		var world_frame: Texture2D = Themes.frame_for_skin(game.shop.equipped_skin)
+		if world_frame != null:
+			draw_texture_rect(world_frame,Rect2(Vector2.ZERO,BASE),false)
 
 func _draw_top() -> void:
 	# The title and shop/profile/settings buttons are already clean high-resolution artwork.
@@ -55,11 +60,19 @@ func _orb(center: Vector2, radius: float, index: int, alpha: float=1.0, squish: 
 func _draw_rock(center: Vector2, value: int) -> void:
 	draw_texture_rect(STONE,Rect2(center-Vector2(39,39),Vector2(78,78)),false)
 	var hp: int = clampi(value-Rules.ROCK_MIN+1,1,3)
+	if Rules.is_gold_rock(value):
+		var breath: float = 0.5+0.5*sin(game.clock*3.5+center.x*.023)
+		draw_circle(center,34.0,Color("#F7C75B",.12+breath*.11))
+		draw_arc(center,34.8,0,TAU,48,Color("#FFE797",.49+breath*.41),3.0,true)
+		draw_circle(center+Vector2(-20,-17),3.4+breath*2.5,Color("#FFF0AC",.75))
 	_draw_rock_damage(center,hp)
 
 func _draw_board() -> void:
-	# The full illustrated enamel frame and blank 8x8 ceramic grid are in SCENE_ART.
-	# Every actual ball/rock comes from the model, so rotation and gravity remain real.
+	# Habitat art overlays the illustrated empty enamel grid, aligned exactly.
+	# This is a full board theme, not merely a recolor of the marbles.
+	var habitat: Texture2D = Themes.board_for_skin(game.shop.equipped_skin) if game.shop != null else null
+	if habitat != null:
+		draw_texture_rect(habitat,BOARD,false)
 	var hidden: Dictionary = {}
 	if game.animating:
 		for movement in game.motion:
