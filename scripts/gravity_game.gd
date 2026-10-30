@@ -103,6 +103,7 @@ const PROFILE_DAILY_TAB := Rect2(92,526,248,51)
 const PROFILE_BADGE_TAB := Rect2(380,526,248,51)
 const PROFILE_PREV := Rect2(104,911,116,46)
 const PROFILE_NEXT := Rect2(500,911,116,46)
+const TUTORIAL_ACK := Rect2(140,943,440,80)
 const PROFILE_TR := {
 	"pl":{"profile":"POSTĘP","level":"POZIOM","short":"POZ.","daily":"DZISIEJSZE MISJE","streak":"SERIA DNI","cosmetics":"WYGLĄD KULEK","drops":"ZRZUĆ KSZTAŁTY","pops":"WYWOŁAJ POP","points":"ZDOBĄDŹ PUNKTY","classic":"KLASYCZNE","aurora":"AURORA","starlight":"GWIEZDNE","locked":"POZ.","selected":"WYBRANE","close":"ZAMKNIJ","done":"UKOŃCZONA","autoclaim":"XP przyznaje się automatycznie"},
 	"en":{"profile":"PROGRESS","level":"LEVEL","short":"LVL","daily":"TODAY'S MISSIONS","streak":"DAY STREAK","cosmetics":"MARBLE SKINS","drops":"DROP PIECES","pops":"TRIGGER POPS","points":"EARN POINTS","classic":"CLASSIC","aurora":"AURORA","starlight":"STARLIGHT","locked":"LVL","selected":"SELECTED","close":"CLOSE","done":"COMPLETE","autoclaim":"XP is awarded automatically"},
@@ -196,6 +197,7 @@ var mission_notice_time: float = 0.0
 var level_fx_time: float = 0.0
 var level_fx_number: int = 0
 var settings_open: bool = false
+var tutorial_open: bool = false
 var ad_note: String = ""
 var run_id: String = ""
 var rounds_played: int = 0
@@ -208,6 +210,7 @@ var wave_queued: bool = false
 var loss_reason: String = "" # Exact reason displayed after the game ends
 
 func _ready() -> void:
+	var fresh_user: bool = not FileAccess.file_exists(SAVE_FILE) and not FileAccess.file_exists(Session.PATH)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	rng.randomize()
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
@@ -257,6 +260,7 @@ func _ready() -> void:
 	studio.game = self
 	add_child(studio)
 	studio.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	tutorial_open = fresh_user and phase=="drop"
 	telemetry.track("session_start", {"restored_round": not previous.is_empty()})
 
 func t(key: String) -> String:
@@ -469,6 +473,14 @@ const SHOP_CORE_LOCALES := {
 }
 const UI_I18N := {
  "pl": {
+ "tutorial_intro": "ZACZNIJ GRAĆ W 15 SEKUND",
+ "tutorial_one": "POŁĄCZ PIĘĆ",
+ "tutorial_one_sub": "5 kulek jednego koloru = POP!",
+ "tutorial_two": "OBRÓĆ PLANSZĘ",
+ "tutorial_two_sub": "Lewo lub prawo: kulki spływają.",
+ "tutorial_three": "UWAŻAJ NA FALE",
+ "tutorial_three_sub": "Nowe kulki wpadają co kilkanaście sekund.",
+ "tutorial_go": "GRAM!",
   "settings": "USTAWIENIA",
   "analytics_heading": "ANALITYKA GRY",
   "analytics_on": "ANALITYKA: WŁ.",
@@ -490,6 +502,14 @@ const UI_I18N := {
   "one_continue": "JEDEN RATUNEK NA RUNDĘ"
  },
  "en": {
+ "tutorial_intro": "LEARN TO PLAY IN 15 SECONDS",
+ "tutorial_one": "MATCH FIVE",
+ "tutorial_one_sub": "5 touching matching marbles = POP!",
+ "tutorial_two": "TURN THE BOARD",
+ "tutorial_two_sub": "Turn left or right to make them flow.",
+ "tutorial_three": "WATCH THE WAVES",
+ "tutorial_three_sub": "More marbles arrive every few seconds.",
+ "tutorial_go": "LET'S PLAY!",
   "settings": "SETTINGS",
   "analytics_heading": "GAME ANALYTICS",
   "analytics_on": "ANALYTICS: ON",
@@ -511,6 +531,14 @@ const UI_I18N := {
   "one_continue": "ONE CONTINUE PER ROUND"
  },
  "es": {
+ "tutorial_intro": "APRENDE A JUGAR EN 15 SEGUNDOS",
+ "tutorial_one": "UNE CINCO",
+ "tutorial_one_sub": "5 bolas del mismo color = ¡POP!",
+ "tutorial_two": "GIRA EL TABLERO",
+ "tutorial_two_sub": "Izquierda o derecha: caen las bolas.",
+ "tutorial_three": "VIGILA LAS OLEADAS",
+ "tutorial_three_sub": "Llegan más bolas con el tiempo.",
+ "tutorial_go": "¡A JUGAR!",
   "settings": "AJUSTES",
   "analytics_heading": "ANÁLISIS DEL JUEGO",
   "analytics_on": "ANÁLISIS: SÍ",
@@ -532,6 +560,14 @@ const UI_I18N := {
   "one_continue": "UNA CONTINUACIÓN POR PARTIDA"
  },
  "pt": {
+ "tutorial_intro": "APRENDA EM 15 SEGUNDOS",
+ "tutorial_one": "JUNTE CINCO",
+ "tutorial_one_sub": "5 bolas da mesma cor = POP!",
+ "tutorial_two": "GIRE O TABULEIRO",
+ "tutorial_two_sub": "Gire para fazer as bolas cair.",
+ "tutorial_three": "ATENÇÃO ÀS ONDAS",
+ "tutorial_three_sub": "Mais bolas chegam com o tempo.",
+ "tutorial_go": "JOGAR!",
   "settings": "DEFINIÇÕES",
   "analytics_heading": "ANÁLISE DO JOGO",
   "analytics_on": "ANÁLISE: SIM",
@@ -553,6 +589,14 @@ const UI_I18N := {
   "one_continue": "UMA CONTINUAÇÃO POR JOGO"
  },
  "de": {
+ "tutorial_intro": "SPIELREGELN IN 15 SEKUNDEN",
+ "tutorial_one": "FÜNF VERBINDEN",
+ "tutorial_one_sub": "5 gleichfarbige Kugeln = POP!",
+ "tutorial_two": "BRETT DREHEN",
+ "tutorial_two_sub": "Links oder rechts: Kugeln fließen.",
+ "tutorial_three": "ACHTE AUF WELLEN",
+ "tutorial_three_sub": "Neue Kugeln kommen regelmäßig.",
+ "tutorial_go": "LOS GEHT'S!",
   "settings": "EINSTELLUNGEN",
   "analytics_heading": "SPIELANALYSE",
   "analytics_on": "ANALYSE: AN",
@@ -574,6 +618,14 @@ const UI_I18N := {
   "one_continue": "EIN WEITERSPIELEN PRO RUNDE"
  },
  "fr": {
+ "tutorial_intro": "APPRENDS EN 15 SECONDES",
+ "tutorial_one": "ALIGNE CINQ BILLES",
+ "tutorial_one_sub": "5 billes identiques = POP !",
+ "tutorial_two": "TOURNE LE PLATEAU",
+ "tutorial_two_sub": "Tourne pour faire couler les billes.",
+ "tutorial_three": "ATTENTION AUX VAGUES",
+ "tutorial_three_sub": "Des billes arrivent régulièrement.",
+ "tutorial_go": "JOUER !",
   "settings": "PARAMÈTRES",
   "analytics_heading": "ANALYSE DU JEU",
   "analytics_on": "ANALYSE : OUI",
@@ -595,6 +647,14 @@ const UI_I18N := {
   "one_continue": "UNE REPRISE PAR PARTIE"
  },
  "ru": {
+ "tutorial_intro": "ПРАВИЛА ЗА 15 СЕКУНД",
+ "tutorial_one": "СОЕДИНИ ПЯТЬ",
+ "tutorial_one_sub": "5 шариков одного цвета = POP!",
+ "tutorial_two": "ВРАЩАЙ ПОЛЕ",
+ "tutorial_two_sub": "Влево или вправо: шарики текут.",
+ "tutorial_three": "СЛЕДИ ЗА ВОЛНАМИ",
+ "tutorial_three_sub": "Новые шарики появляются регулярно.",
+ "tutorial_go": "ИГРАТЬ!",
   "settings": "НАСТРОЙКИ",
   "analytics_heading": "АНАЛИТИКА ИГРЫ",
   "analytics_on": "АНАЛИТИКА: ВКЛ",
@@ -1101,6 +1161,12 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	tap_point = pt
 	tap_time = 0.42
+	if tutorial_open:
+		if TUTORIAL_ACK.has_point(pt) or Rect2(559,290,79,75).has_point(pt):
+			tutorial_open = false
+			telemetry.track("tutorial_completed",{"run_id":run_id})
+			queue_redraw()
+		return
 	if shop_open:
 		if SHOP_CLOSE.has_point(pt):
 			shop_open = false
