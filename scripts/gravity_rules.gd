@@ -246,6 +246,15 @@ static func group_points(count: int) -> int:
 	var extra: int = count - 8
 	return 1400 + extra*600 + extra*extra*90
 
+static func flow_multiplier_percent(streak: int) -> int:
+	# Reward successive player-created POP actions. Automatic waves and bombs
+	# do not increase the streak; never reduce rewards for the first POP.
+	match clampi(streak,0,4):
+		2: return 125
+		3: return 150
+		4: return 200
+	return 100
+
 static func score_groups(groups: Array, cascade_level: int = 1) -> int:
 	var total: int = 0
 	for group in groups:
