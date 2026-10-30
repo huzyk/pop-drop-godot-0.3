@@ -20,7 +20,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
+      # GitHub-hosted ubuntu-latest already provides the Android SDK/SDK Manager.
+      # setup-android@v3 calls the obsolete 'sdkmanager tools' package and fails.
       - name: Install API 36 and Godot Android toolchain
         shell: bash
         run: |
