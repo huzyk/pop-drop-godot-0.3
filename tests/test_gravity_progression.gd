@@ -79,7 +79,7 @@ func _initialize() -> void:
 	var badge_total: int = badges.size()
 	profile.record_pop("chain-4",1,10,2000,4,"2026-10-31")
 	assert(badges.size() == badge_total)
-	assert(profile.achievement_progress("chain_4") == 4)
+	assert(profile.achievement_progress("combo_4") == 4)
 	assert(Progression.ACHIEVEMENTS.size() == 12)
 	print("PASS: Gravity XP, mission once-only rewards, date rollover, streak and skins")
 	quit()
