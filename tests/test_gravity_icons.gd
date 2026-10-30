@@ -11,11 +11,12 @@ func _initialize() -> void:
 		Game.ICON_ROTATE_LEFT,
 		Game.ICON_ROTATE_RIGHT,
 		Game.ICON_BOMB,
-		Game.ICON_TIME,
+		Game.ICON_MAGIC,
+		Game.ICON_REROLL,
 		Game.ICON_HEART,
 		Game.ICON_GLOBE,
 	]
-	assert(icons.size() == 10)
+	assert(icons.size() == 11)
 	for sprite in icons:
 		assert(sprite != null)
 		assert(sprite is Texture2D)
@@ -24,5 +25,5 @@ func _initialize() -> void:
 	var game = Game.new()
 	assert(game != null)
 	game.free()
-	print("PASS: ten anti-aliased 256px SVG icons load in Godot")
+	print("PASS: eleven anti-aliased 256px SVG icons load in Godot")
 	quit()
