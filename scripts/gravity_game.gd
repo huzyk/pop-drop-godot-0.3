@@ -2072,7 +2072,12 @@ func _draw_game_over() -> void:
 	var sec: int = shop.energy_seconds_remaining()
 	var min_left: int = int(ceil(float(sec)/60.0))
 	_fit_center("⚡ %d/5  •  +1 / %d MIN" % [shop.energy,min_left] if shop.energy < Shop.MAX_ENERGY
-		else "⚡ 5/5  •  MAX",360,944,16,255,Color("#d6e8ff"))
+		else "⚡ 5/5  •  MAX",360,931,16,255,Color("#d6e8ff"))
+	_fit_center(("REKLAMA: +1 ENERGII" if language=="pl" else "AD: +1 ENERGY")
+		if ad_ready and shop.energy<Shop.MAX_ENERGY
+		else ("REKLAMA NIEDOSTĘPNA" if language=="pl" else "AD NOT AVAILABLE")
+		if shop.energy<Shop.MAX_ENERGY else "MAX",
+		360,952,14,255,Color("#bde5ff"))
 	_fit_center(ad_note if not ad_note.is_empty() else (
 		"RATUNEK: RAZ NA RUNDĘ • REKLAMA = +1 ENERGII"
 		if language=="pl" else "ONE CONTINUE PER RUN • AD = +1 ENERGY"),
