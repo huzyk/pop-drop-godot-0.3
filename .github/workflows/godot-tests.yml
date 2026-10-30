@@ -23,38 +23,58 @@ jobs:
           version: 4.7.2
           use-dotnet: false
           include-templates: false
-      - name: Import assets and scripts
-        run: godot --headless --editor --path . --import --quit
-      - name: Check Godot 4.7 project config and generated-file rules
+      - name: Import and reject ALL script compilation errors
         shell: bash
         run: |
-          git diff -- project.godot
+          set -euo pipefail
+          godot --headless --editor --path . --import --quit 2>&1 | tee /tmp/godot-import.log
+          if grep -E 'SCRIPT ERROR:|Parse Error:|Failed to load script|Compile Error:' /tmp/godot-import.log; then
+            echo 'Godot emitted script compilation errors (even if process returned zero)' >&2
+            exit 1
+          fi
+      - name: Protect Godot project settings and generated artifacts
+        shell: bash
+        run: |
           git diff --exit-code -- project.godot
           git check-ignore -q assets/marbles/blue.svg.import
           git check-ignore -q assets/ui/arcade_backdrop.svg.import
           git check-ignore -q scripts/gravity_game.gd.uid
           test "$(git check-attr eol -- project.godot)" = "project.godot: eol: lf"
-      - name: Test core Gravity rules
-        run: godot --headless --path . --script res://tests/test_gravity_rules.gd
-      - name: Test checkpoints and parsing
-        run: godot --headless --path . --script res://tests/test_gravity_session.gd
-      - name: Test ad reward contract
-        run: godot --headless --path . --script res://tests/test_gravity_ads.gd
-      - name: Test daily missions and cosmetics
-        run: timeout 40s godot --headless --path . --script res://tests/test_gravity_progression.gd
-      - name: Test pressure waves and unbreakable rock physics
-        run: timeout 40s godot --headless --path . --script res://tests/test_gravity_pressure.gd
-      - name: Verify mobile UI hit targets and layout spacing
-        run: timeout 40s godot --headless --path . --script res://tests/test_gravity_ui_layout.gd
-      - name: Test coin economy and bomb
-        run: timeout 40s godot --headless --path . --script res://tests/test_gravity_shop.gd
-      - name: Verify crisp SVG icons
-        run: timeout 40s godot --headless --path . --script res://tests/test_gravity_icons.gd
-      - name: Verify Jelly Pals skin assets and catalogue
-        run: timeout 40s godot --headless --path . --script res://tests/test_gravity_skin_art.gd
-      - name: Test mobile arcade layout and touch zones
-        run: timeout 40s godot --headless --path . --script res://tests/test_gravity_layout.gd
-      - name: Test audio and haptics
-        run: timeout 40s godot --headless --path . --script res://tests/test_gravity_feedback.gd
-      - name: Smoke test actual main scene (including audio)
-        run: timeout 40s godot --headless --path . --quit-after 10
+      - name: Test gameplay, mobile hitboxes, economy, and all skins
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test in \
+            test_gravity_rules \
+            test_gravity_session \
+            test_gravity_ads \
+            test_gravity_progression \
+            test_gravity_pressure \
+            test_gravity_ui_layout \
+            test_gravity_shop \
+            test_gravity_icons \
+            test_gravity_skin_art \
+            test_gravity_layout \
+            test_gravity_feedback; do
+            echo "::group::$test"
+            log_file="/tmp/${test}.log"
+            timeout 40s godot --headless --path . --script "res://tests/${test}.gd" 2>&1 | tee "$log_file"
+            if grep -E 'SCRIPT ERROR:|Parse Error:|Failed to load script|Compile Error:|Invalid call\.' "$log_file"; then
+              echo "Hidden Godot script/runtime error in $test" >&2
+              exit 1
+            fi
+            if ! grep -Eq 'PASS:|Gravity rules OK:' "$log_file"; then
+              echo "Test $test never reached its PASS assertion" >&2
+              exit 1
+            fi
+            echo "::endgroup::"
+          done
+      - name: Smoke test actual Gravity scene (strict)
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout 45s godot --headless --path . --quit-after 25 2>&1 | tee /tmp/godot-smoke.log
+          if grep -E 'SCRIPT ERROR:|Parse Error:|Failed to load script|Compile Error:|Invalid call\.' /tmp/godot-smoke.log; then
+            echo 'Godot scene reported script errors!' >&2
+            exit 1
+          fi
