@@ -1,18 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="720" height="1280" viewBox="0 0 720 1280">
 <defs>
- <linearGradient id="base" x1="0" y1="0" x2=".1" y2="1">
-  <stop offset="0" stop-color="#111B30"/><stop offset=".56" stop-color="#1A2943"/><stop offset="1" stop-color="#121B30"/>
+ <linearGradient id="candySky" x1="0%" y1="0%" x2="10%" y2="100%">
+  <stop offset="0" stop-color="#FFEDE3"/><stop offset=".54" stop-color="#E8F1FD"/><stop offset="1" stop-color="#EBE5FA"/>
  </linearGradient>
- <radialGradient id="aura" cx="50%" cy="50%" r="50%">
-  <stop offset="0" stop-color="#5B85D2" stop-opacity=".22"/><stop offset="1" stop-color="#5B85D2" stop-opacity="0"/>
+ <radialGradient id="strawberry" cx="50%" cy="50%" r="50%">
+  <stop offset="0" stop-color="#FF93AB" stop-opacity=".28"/><stop offset="1" stop-color="#FF93AB" stop-opacity="0"/>
  </radialGradient>
- <radialGradient id="warm" cx="50%" cy="50%" r="50%">
-  <stop offset="0" stop-color="#EB8C9D" stop-opacity=".12"/><stop offset="1" stop-color="#EB8C9D" stop-opacity="0"/>
+ <radialGradient id="mintBubble" cx="50%" cy="50%" r="50%">
+  <stop offset="0" stop-color="#7FE9D8" stop-opacity=".37"/><stop offset="1" stop-color="#7FE9D8" stop-opacity="0"/>
+ </radialGradient>
+ <radialGradient id="lavender" cx="50%" cy="50%" r="50%">
+  <stop offset="0" stop-color="#A8A4F7" stop-opacity=".32"/><stop offset="1" stop-color="#A8A4F7" stop-opacity="0"/>
  </radialGradient>
 </defs>
-<rect width="720" height="1280" fill="url(#base)"/>
-<ellipse cx="600" cy="410" rx="430" ry="420" fill="url(#aura)"/>
-<ellipse cx="-60" cy="1000" rx="380" ry="350" fill="url(#warm)"/>
-<path d="M0 930 Q360 897 720 930" fill="none" stroke="#9EBBEE" opacity=".07" stroke-width="2"/>
-<path d="M0 1185 Q360 1153 720 1185" fill="none" stroke="#9EBBEE" opacity=".05" stroke-width="2"/>
+<rect width="720" height="1280" fill="url(#candySky)"/>
+<ellipse cx="-55" cy="490" rx="320" ry="360" fill="url(#strawberry)"/>
+<ellipse cx="724" cy="78" rx="340" ry="360" fill="url(#mintBubble)"/>
+<ellipse cx="750" cy="1090" rx="310" ry="390" fill="url(#lavender)"/>
+<ellipse cx="78" cy="1185" rx="180" ry="160" fill="url(#strawberry)" opacity=".6"/>
+<g fill="#FFFFFF" opacity=".72">
+ <circle cx="38" cy="233" r="9"/><circle cx="683" cy="238" r="11"/>
+ <circle cx="28" cy="582" r="13"/><circle cx="690" cy="846" r="6"/>
+ <circle cx="84" cy="1133" r="13"/><circle cx="656" cy="1171" r="9"/>
+</g>
+<g fill="none" stroke="#FFFFFF" stroke-opacity=".38" stroke-width="2">
+ <circle cx="38" cy="233" r="19"/><circle cx="684" cy="839" r="16"/>
+ <circle cx="94" cy="1148" r="26"/>
+</g>
 </svg>
