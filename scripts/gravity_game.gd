@@ -475,6 +475,9 @@ const SHOP_CORE_LOCALES := {
 }
 const UI_I18N := {
  "pl": {
+ "ad_disabled": "REKLAMY WYŁĄCZONE W BECIE",
+ "ad_unavailable": "REKLAMA NIEDOSTĘPNA",
+ "ad_loading": "ŁADOWANIE REKLAMY...",
  "tutorial_intro": "ZACZNIJ GRAĆ W 15 SEKUND",
  "tutorial_one": "POŁĄCZ PIĘĆ",
  "tutorial_one_sub": "5 kulek jednego koloru = POP!",
@@ -504,6 +507,9 @@ const UI_I18N := {
   "one_continue": "JEDEN RATUNEK NA RUNDĘ"
  },
  "en": {
+ "ad_disabled": "ADS DISABLED IN BETA",
+ "ad_unavailable": "AD NOT AVAILABLE",
+ "ad_loading": "LOADING AD...",
  "tutorial_intro": "LEARN TO PLAY IN 15 SECONDS",
  "tutorial_one": "MATCH FIVE",
  "tutorial_one_sub": "5 touching matching marbles = POP!",
@@ -533,6 +539,9 @@ const UI_I18N := {
   "one_continue": "ONE CONTINUE PER ROUND"
  },
  "es": {
+ "ad_disabled": "SIN ANUNCIOS EN BETA",
+ "ad_unavailable": "ANUNCIO NO DISPONIBLE",
+ "ad_loading": "CARGANDO ANUNCIO...",
  "tutorial_intro": "APRENDE A JUGAR EN 15 SEGUNDOS",
  "tutorial_one": "UNE CINCO",
  "tutorial_one_sub": "5 bolas del mismo color = ¡POP!",
@@ -562,6 +571,9 @@ const UI_I18N := {
   "one_continue": "UNA CONTINUACIÓN POR PARTIDA"
  },
  "pt": {
+ "ad_disabled": "ANÚNCIOS DESLIGADOS NA BETA",
+ "ad_unavailable": "ANÚNCIO INDISPONÍVEL",
+ "ad_loading": "A CARREGAR ANÚNCIO...",
  "tutorial_intro": "APRENDA EM 15 SEGUNDOS",
  "tutorial_one": "JUNTE CINCO",
  "tutorial_one_sub": "5 bolas da mesma cor = POP!",
@@ -591,6 +603,9 @@ const UI_I18N := {
   "one_continue": "UMA CONTINUAÇÃO POR JOGO"
  },
  "de": {
+ "ad_disabled": "WERBUNG IN BETA AUS",
+ "ad_unavailable": "WERBUNG NICHT VERFÜGBAR",
+ "ad_loading": "WERBUNG WIRD GELADEN...",
  "tutorial_intro": "SPIELREGELN IN 15 SEKUNDEN",
  "tutorial_one": "FÜNF VERBINDEN",
  "tutorial_one_sub": "5 gleichfarbige Kugeln = POP!",
@@ -620,6 +635,9 @@ const UI_I18N := {
   "one_continue": "EIN WEITERSPIELEN PRO RUNDE"
  },
  "fr": {
+ "ad_disabled": "PUBS DÉSACTIVÉES EN BÊTA",
+ "ad_unavailable": "PUB INDISPONIBLE",
+ "ad_loading": "CHARGEMENT DE LA PUB...",
  "tutorial_intro": "APPRENDS EN 15 SECONDES",
  "tutorial_one": "ALIGNE CINQ BILLES",
  "tutorial_one_sub": "5 billes identiques = POP !",
@@ -649,6 +667,9 @@ const UI_I18N := {
   "one_continue": "UNE REPRISE PAR PARTIE"
  },
  "ru": {
+ "ad_disabled": "РЕКЛАМА В БЕТЕ ОТКЛЮЧЕНА",
+ "ad_unavailable": "РЕКЛАМА НЕДОСТУПНА",
+ "ad_loading": "ЗАГРУЗКА РЕКЛАМЫ...",
  "tutorial_intro": "ПРАВИЛА ЗА 15 СЕКУНД",
  "tutorial_one": "СОЕДИНИ ПЯТЬ",
  "tutorial_one_sub": "5 шариков одного цвета = POP!",
@@ -1059,10 +1080,10 @@ func _revive() -> bool:
 func _request_ad_reward(kind: String) -> void:
 	if not ads.request_rewarded():
 		ad_reward_kind = ""
-		ad_note = "REKLAMA NIEDOSTĘPNA" if language=="pl" else "AD NOT AVAILABLE"
+		ad_note = ui_t("ad_unavailable")
 	else:
 		ad_reward_kind = kind
-		ad_note = "ŁADOWANIE REKLAMY..." if language=="pl" else "LOADING AD..."
+		ad_note = ui_t("ad_loading")
 	queue_redraw()
 
 func _on_ad_reward(_transaction: int) -> void:
