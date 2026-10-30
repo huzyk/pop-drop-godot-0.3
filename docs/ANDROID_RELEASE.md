@@ -5,7 +5,7 @@
 - `Android Debug Beta`: instalowalny APK dla ARM64 na testery; w GitHub Actions: workflow **Build Android beta APK**, artefakt `pop-drop-android-arm64-beta-debug`. Klucz debug generuje się w CI i nie jest przechowywany w repo.
 - `Android Play AAB`: wstępny preset Gradle/Android App Bundle dla Play; **to nie jest jeszcze podpisana kompilacja produkcyjna**. Trzeba zainstalować szablon Android Build Template w Godot, skonfigurować podpisywanie wydania i dodać natywny plugin reklam (jeśli reklamy mają działać).
 - Nazwa pakietu `com.example.popdropgravity` jest **tymczasowa**. Należy ustalić docelowy unikalny package ID przed publikacją. Zmiana po premierze uniemożliwia aktualizację istniejącej instalacji.
-- Android target SDK = **36** (Android 16); od 31.08.2026 jest wymagany dla nowych aplikacji w Google Play. Minimum SDK 24, architektura arm64-v8a. Sprawdzić aktualne warunki przed publikacją.
+- **Android Play AAB (Gradle)**: docelowy SDK = **36** (Android 16), wymagany dla nowych aplikacji Google Play od 31.08.2026; min SDK 24, architektura arm64-v8a. **Android Debug Beta bez Gradle** korzysta z domyślnych poziomów SDK wyznaczanych przez silnik Godot, bo tej opcji nie wolno ręcznie nadpisywać. Przed publikacją potwierdzić finalny target w wyeksportowanym AAB.
 - API klucze, hasła keystore i plik podpisujący nie trafiają do repo. `.gitignore` blokuje APK/AAB/keystore.
 
 ## 2. Monetizacja i prywatność
