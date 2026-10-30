@@ -178,17 +178,16 @@ func _initialize() -> void:
 	assert(Rules.find_matches(separate).size() == 10)
 	checks += 3
 
-	# Clear, fair loss boundary: reaching row zero means a life is at risk.
+	# A full column is NOT a death line; other columns remain playable.
 	var tower: Array = Rules.empty_board()
 	for y in range(8):
 		tower[y][4] = 2
-	assert(Rules.ceiling_reached(tower))
 	assert(Rules.tallest_column(tower) == 8)
+	assert(not Rules.drop(tower,[[0,0,0]],4).get("valid",false))
+	assert(Rules.drop(tower,[[0,0,0]],3).get("valid",false))
 	var rescued: Array = Rules.rescue(tower)
-	assert(not Rules.ceiling_reached(rescued))
 	assert(Rules.tallest_column(rescued) == 6)
-	assert(not Rules.ceiling_reached(prepared.board))
-	checks += 5
+	checks += 4
 
 	# All piece templates have the expected size and valid unique positions.
 	var shapes_checked: int = 0
