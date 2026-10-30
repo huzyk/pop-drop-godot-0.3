@@ -1,3 +1,9 @@
+# POP DROP Gravity 0.14 alpha — szybsza rozgrywka, czysty HUD
+
+Nowe fale: **12, 11, 10, 9, 8 sekund** (potem co 8 s), maksymalnie **8 skał**, pierwsza fala dodaje jedną, kolejne próbują po dwie. Ze sklepu i interfejsu usunięto **Magiczny Kolor**; zakupione wcześniej sztuki są jednorazowo refundowane po 220 monet. Ilustrowane pole gry nie wyświetla już koordynatów A–H/1–8, a rząd mocy został zaprojektowany dla dwóch przycisków. Szczegóły w [docs/PRESSURE.md](docs/PRESSURE.md).
+
+---
+
 # POP DROP Gravity 0.13 alpha — sklep, energia i odznaki
 
 Zmiany w `main`: usunięto +10 sekund. Nowe moce: **Bomba (160)**, **Magiczny Kolor (220)**, **Nowy Zestaw (140)**. **Graj dalej** za 220 monet albo reklamę — maksymalnie raz na rundę. Energia **5/5** odnawia się co 20 minut (+1), można ją również zdobyć za reklamę. Dodano 12 odznak, nagrody za codzienną aktywność oraz skórki: Donuty, Kapibary, Kryształy, Kosmos i Gwiezdna Kapibara.
