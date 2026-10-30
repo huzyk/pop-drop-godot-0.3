@@ -3,10 +3,12 @@ extends RefCounted
 ## All rewards are idempotent locally; real ad rewards require the SDK callback.
 const PATH := "user://gravity_shop_v1.json"
 const TEMP := "user://gravity_shop_v1.tmp"
-const VERSION := 3
+const VERSION := 4
 const MAX_COINS := 100000000
 const MAX_BOOST_STOCK := 20
 const MAX_EVENT_HISTORY := 256
+# POP coins are a limited round reward; score/XP remain unlimited.
+const POP_RUN_CAP := 160
 const MAX_ENERGY := 5
 const ENERGY_SECONDS := 1200
 const RESCUE_PRICE := 220
@@ -27,6 +29,8 @@ var persist_enabled: bool = true
 var coins: int = 0
 var total_earned: int = 0
 var total_spent: int = 0
+var pop_run_id: String = ""
+var pop_run_earned: int = 0
 var inventory: Dictionary = {"bomb":0,"reroll":0}
 var owned_skins: Dictionary = {"neon":false,"gold":false,"donut":false,
 	"capybara":false,"crystal":false,"cosmos":false,"star_capybara":false}
@@ -45,7 +49,10 @@ static func item(id: String) -> Dictionary:
 	return {}
 
 static func earned_from_pop(points: int) -> int:
-	return clampi(maxi(0,points) / 10,0,1000000)
+	if points <= 0:
+		return 0
+	# A combo remains valuable for SCORE, but no longer mints hundreds of coins.
+	return clampi(points / 85,2,24)
 
 func stock(id: String) -> int:
 	return int(inventory.get(id,0))
@@ -67,12 +74,16 @@ func _credit(amount: int) -> int:
 	total_earned = mini(MAX_COINS,total_earned+gained)
 	return gained
 
-func credit_pop(event_id: String, points: int) -> int:
-	if event_id.is_empty() or event_id in seen_pop_ids or points <= 0:
+func credit_pop(event_id: String, points: int, run_id: String) -> int:
+	if event_id.is_empty() or run_id.is_empty() or event_id in seen_pop_ids or points <= 0:
 		return 0
-	var gained: int = _credit(earned_from_pop(points))
-	if gained <= 0:
-		return 0
+	if pop_run_id != run_id:
+		pop_run_id = run_id
+		pop_run_earned = 0
+	var reward: int = mini(earned_from_pop(points),maxi(0,POP_RUN_CAP-pop_run_earned))
+	var gained: int = _credit(reward)
+	pop_run_earned += gained
+	# Record even zero-value events, so repeated callbacks cannot mint currency.
 	seen_pop_ids.append(event_id)
 	if seen_pop_ids.size() > MAX_EVENT_HISTORY:
 		seen_pop_ids.pop_front()
@@ -199,18 +210,20 @@ func load_data() -> void:
 	if not FileAccess.file_exists(PATH):
 		return
 	var value: Variant = JSON.parse_string(FileAccess.get_file_as_string(PATH))
-	if not (value is Dictionary) or int(value.get("version",0)) not in [1,2,VERSION]:
+	if not (value is Dictionary) or int(value.get("version",0)) not in [1,2,3,VERSION]:
 		return
 	coins = clampi(int(value.get("coins",0)),0,MAX_COINS)
 	total_earned = clampi(int(value.get("total_earned",0)),0,MAX_COINS)
 	total_spent = clampi(int(value.get("total_spent",0)),0,MAX_COINS)
+	pop_run_id = str(value.get("pop_run_id",""))
+	pop_run_earned = clampi(int(value.get("pop_run_earned",0)),0,POP_RUN_CAP)
 	var stored_inventory: Variant = value.get("inventory",{})
 	var refund_magic: int = 0
 	if stored_inventory is Dictionary:
 		for boost_id in inventory.keys():
 			inventory[boost_id] = clampi(int(stored_inventory.get(boost_id,0)),0,MAX_BOOST_STOCK)
 		# Deprecated color charges are refunded exactly once during migration.
-		if int(value.get("version",0)) < VERSION:
+		if int(value.get("version",0)) < 3:
 			refund_magic = clampi(int(stored_inventory.get("magic",0)),0,MAX_BOOST_STOCK)*220
 		# Preserve previously purchased +10s stock as the new reroll power.
 		if int(value.get("version",0)) == 1:
@@ -244,6 +257,7 @@ func _save() -> bool:
 	var contents: Dictionary = {
 		"version":VERSION,"coins":coins,
 		"total_earned":total_earned,"total_spent":total_spent,
+		"pop_run_id":pop_run_id,"pop_run_earned":pop_run_earned,
 		"inventory":inventory,"owned_skins":owned_skins,
 		"equipped_skin":equipped_skin,"seen_pop_ids":seen_pop_ids,
 		"seen_bonus_ids":seen_bonus_ids,"energy":energy,
