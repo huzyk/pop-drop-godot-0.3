@@ -1,8 +1,8 @@
 config_version=5
 
 [application]
-config/name="POP DROP Gravity - Prototype"
-config/description="Original casual cascade puzzle prototype."
+config/name="POP DROP: Gravity"
+config/description="A lively gravity puzzle with collectible marble characters."
 config/version="0.12.0-alpha"
 run/main_scene="res://scenes/gravity.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
