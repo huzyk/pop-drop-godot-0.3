@@ -2119,6 +2119,21 @@ func _draw_mission_toast() -> void:
 	_fit_center(mission_notice,360,792,24,359,
 		Color(1.0,0.91,0.66,strength))
 
+const BADGE_NAMES_PL := {
+	"first_drop":"PIERWSZY RUCH","drops_25":"ROZGRZEWKA","drops_100":"WETERAN",
+	"pop_1":"PIERWSZY POP","pop_50":"ŁOWCA POPÓW","pop_200":"MISTRZ POP",
+	"combo_2":"PODWÓJNA KASKADA","combo_4":"SUPERKASKADA",
+	"score_10000":"10 TYS. PUNKTÓW","rounds_10":"WYTRWAŁY",
+	"streak_3":"TRZY DNI Z RZĘDU","streak_7":"TYDZIEŃ GRY"
+}
+const BADGE_NAMES_EN := {
+	"first_drop":"FIRST DROP","drops_25":"WARM-UP","drops_100":"VETERAN",
+	"pop_1":"FIRST POP","pop_50":"POP HUNTER","pop_200":"POP MASTER",
+	"combo_2":"DOUBLE CASCADE","combo_4":"MEGA CASCADE",
+	"score_10000":"10K POINTS","rounds_10":"PERSISTENT",
+	"streak_3":"THREE-DAY STREAK","streak_7":"WEEKLY HERO"
+}
+
 func _draw_profile() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#030618",0.95))
 	_neon_panel(PROFILE_CARD,Color("#9bb9ed"),true)
@@ -2126,29 +2141,60 @@ func _draw_profile() -> void:
 	_fit_center(profile_t("profile"),295,309,39,440,Color.WHITE)
 	_box(PROFILE_CLOSE,Color("#414b77"),18,Color("#8d9ed1"),2)
 	_fit_center(profile_t("close"),572,301,17,105,Color.WHITE)
-	_fit_center("%s %d" % [profile_t("level"), progression.level()],360,384,37,460,Color("#ffe6a2"))
-	_fit_center(progression.level_xp_text(),360,417,18,410,Color("#bdcbf4"))
-	_box(Rect2(100,433,520,15),Color("#28314f"),8)
-	_box(Rect2(100,433,520*progression.level_fraction(),15),Color("#5be3c3"),8)
-	_fit_center("%s  %d" % [profile_t("streak"),progression.streak],
-		360,488,24,500,Color("#ffb8d8"))
-	_fit_center(profile_t("daily"),360,539,25,500,Color("#edecff"))
-	for i in range(Progression.MISSIONS.size()):
-		var mission: Dictionary = Progression.MISSIONS[i]
-		var key: String = str(mission["id"])
-		var y: float = 550+float(i)*106
-		var complete: bool = bool(progression.claimed.get(key,false))
-		_box(Rect2(89,y,542,94),Color("#20394a") if complete else Color("#222a49"),
-			18,Color("#5fe7b3") if complete else Color("#546c9e"),2)
-		_text(profile_t(key),Vector2(110,y+30),20,
-			Color("#ddfff1") if complete else Color.WHITE)
-		var value: int = mini(int(progression.daily.get(key,0)),int(mission["target"]))
-		var label: String = profile_t("done") if complete else "%d / %d" % [value,int(mission["target"])]
-		_fit_center(label,539,y+32,17,154,Color("#d8f6ed") if complete else Color("#cbd6fb"))
-		_box(Rect2(110,y+57,500,12),Color("#111c33"),7)
-		_box(Rect2(110,y+57,500*progression.mission_ratio(key),12),
-			Color("#6ee9cb") if complete else Color("#ffce84"),7)
-	_fit_center(profile_t("cosmetics"),360,910,25,500,Color("#eae9ff"))
+	_fit_center("%s %d" % [profile_t("level"),progression.level()],360,380,36,460,Color("#ffe6a2"))
+	_fit_center(progression.level_xp_text(),360,414,18,410,Color("#bdcbf4"))
+	_box(Rect2(100,429,520,15),Color("#28314f"),8)
+	_box(Rect2(100,429,520*progression.level_fraction(),15),Color("#5be3c3"),8)
+	_fit_center("%s %d  •  ⚡ %d/%d" % [profile_t("streak"),progression.streak,
+		shop.energy,Shop.MAX_ENERGY],360,485,21,530,Color("#ffb8d8"))
+	for i in range(2):
+		var rect: Rect2 = PROFILE_DAILY_TAB if i==0 else PROFILE_BADGE_TAB
+		_box(rect,Color("#286358") if profile_tab==i else Color("#252f50"),15,
+			Color("#7deed8") if profile_tab==i else Color("#536c9e"),2)
+		var name: String = profile_t("daily") if i==0 else (
+			shop_t("badges")+" %d/12" % progression.achievement_unlocked_count())
+		_fit_center(name,rect.get_center().x,rect.position.y+32,20,226,Color.WHITE)
+	if profile_tab==0:
+		for i in range(Progression.MISSIONS.size()):
+			var mission: Dictionary = Progression.MISSIONS[i]
+			var key: String = str(mission["id"])
+			var y: float = 603+float(i)*102
+			var complete: bool = bool(progression.claimed.get(key,false))
+			_box(Rect2(89,y,542,90),Color("#20394a") if complete else Color("#222a49"),
+				17,Color("#5fe7b3") if complete else Color("#546c9e"),2)
+			_text(profile_t(key),Vector2(110,y+28),20,Color("#ddfff1") if complete else Color.WHITE)
+			var value: int = mini(int(progression.daily.get(key,0)),int(mission["target"]))
+			var label: String = profile_t("done") if complete else "%d / %d" % [
+				value,int(mission["target"])]
+			_fit_center(label,538,y+31,17,160,
+				Color("#d8f6ed") if complete else Color("#cbd6fb"))
+			_box(Rect2(110,y+56,500,11),Color("#111c33"),6)
+			_box(Rect2(110,y+56,500*progression.mission_ratio(key),11),
+				Color("#6ee9cb") if complete else Color("#ffce84"),6)
+	else:
+		for i in range(6):
+			var badge: Dictionary = Progression.ACHIEVEMENTS[badge_page*6+i]
+			var id: String = str(badge["id"])
+			var obtained: bool = bool(progression.unlocked_achievements.get(id,false))
+			var col: int = i%2
+			var row: int = i/2
+			var rect: Rect2 = Rect2(89+col*278,599+row*101,263,91)
+			_box(rect,Color("#365b4d") if obtained else Color("#252e4a"),16,
+				Color("#ffe19b") if obtained else Color("#5d6b92"),2)
+			_fit_center("★" if obtained else "◇",rect.position.x+28,rect.position.y+41,
+				29,49,Color("#ffe69d") if obtained else Color("#8d9cbb"))
+			var title: String = str((BADGE_NAMES_PL if language=="pl" else BADGE_NAMES_EN).get(id,id))
+			_fit_center(title,rect.position.x+153,rect.position.y+33,16,200,Color.WHITE)
+			_fit_center("%d/%d  •  +%d ◉" % [
+				mini(progression.achievement_progress(id),int(badge["target"])),
+				int(badge["target"]),int(badge["coins"])],
+				rect.position.x+149,rect.position.y+66,14,203,Color("#e1d3a4"))
+		_box(PROFILE_PREV,Color("#394665"),12)
+		_box(PROFILE_NEXT,Color("#394665"),12)
+		_fit_center("◀",PROFILE_PREV.get_center().x,942,23,97,Color.WHITE)
+		_fit_center("▶",PROFILE_NEXT.get_center().x,942,23,97,Color.WHITE)
+		_fit_center("%d / 2" % (badge_page+1),360,942,17,120,Color("#ced4f1"))
+	_fit_center(profile_t("cosmetics"),360,963,23,500,Color("#eae9ff"))
 	for i in range(Progression.SKINS.size()):
 		var available: Dictionary = Progression.SKINS[i]
 		var id: String = str(available["id"])
@@ -2161,8 +2207,7 @@ func _draw_profile() -> void:
 			Color("#f0fff8") if unlocked else Color("#9299b4"))
 		var caption: String = profile_t("selected") if chosen else (
 			"%s %d" % [profile_t("locked"),int(available["level"])] if not unlocked else "✓")
-		_fit_center(caption,x+82,1030,15,144,
-			Color("#8bf8d8") if chosen else Color("#bac4e4"))
+		_fit_center(caption,x+82,1030,15,144,Color("#8bf8d8") if chosen else Color("#bac4e4"))
 	_fit_center(profile_t("autoclaim"),360,1091,15,508,Color("#99a9ca"))
 
 func _draw_shop_notice() -> void:
