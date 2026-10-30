@@ -3,6 +3,7 @@ extends "res://scripts/gravity_studio.gd"
 ## Game rules, analytics, shop, save and event handling are still owned by gravity_game.gd.
 ## Geometry mirrors the illustration; every gameplay piece is composited dynamically.
 const SCENE_ART = preload("res://assets/illustrated_v7/illustrated_scene.webp")
+const CLEAN_OVERLAY = preload("res://assets/illustrated_v7/clean_hud_overlay.svg")
 const SELECTED_CARD = preload("res://assets/illustrated_v7/selected_card.png")
 const GLASS_PINK = preload("res://assets/illustrated_v7/orb_pink.webp")
 const GLASS_GREEN = preload("res://assets/illustrated_v7/orb_green.webp")
@@ -16,6 +17,8 @@ const BOARD_LIGHT := Color("#C2FFF4")
 func _draw_world() -> void:
 	# One artist-made source scene. Textures are imported by Godot and sampled linearly.
 	draw_texture_rect(SCENE_ART,Rect2(Vector2.ZERO,BASE),false)
+	# Cover coordinates baked into the illustration and the obsolete 3-power dock.
+	draw_texture_rect(CLEAN_OVERLAY,Rect2(Vector2.ZERO,BASE),false)
 
 func _draw_top() -> void:
 	# The title and shop/profile/settings buttons are already clean high-resolution artwork.
@@ -151,14 +154,22 @@ func _draw_turns() -> void:
 			draw_arc(r.get_center(),52,PI*.2,PI*.8,28,Color("#FFFFFF",.65),3.0,true)
 
 func _draw_boosters() -> void:
-	var ids: Array = ["bomb","magic","reroll"]
-	var centers: Array = [Vector2(283,1115),Vector2(385,1115),Vector2(490,1115)]
-	for i in range(3):
-		# Repaint the live counter over the number printed in the original concept illustration.
-		var count: int = game.shop.stock(str(ids[i]))
-		var p: Vector2 = centers[i]
-		draw_circle(p,13,Color("#F65358"))
-		_center(str(count) if count>0 else "+",p.x,p.y+6,16,CREAM,28)
-		if (ids[i]=="bomb" and game.bomb_aim) or (ids[i]=="magic" and game.magic_aim):
-			var r: Rect2 = [game.BOOST_BOMB,game.BOOST_MAGIC,game.BOOST_REROLL][i]
-			draw_arc(r.get_center(),r.size.x*.48,0,TAU,64,Color("#FFEB94"),4,true)
+	# Two large illustrated buttons; old MAGIC art and red badges are hidden by overlay.
+	var ids: Array = ["bomb","reroll"]
+	var rects: Array = [game.BOOST_BOMB,game.BOOST_REROLL]
+	for i in range(ids.size()):
+		var id: String = str(ids[i])
+		var r: Rect2 = rects[i]
+		var count: int = game.shop.stock(id)
+		var at: Vector2 = Vector2(r.get_center().x,r.position.y+48)
+		_icon(id,at,60,1.0 if count>0 else .65)
+		_center("BOMBA" if id=="bomb" and game.language=="pl" else
+			"BOMB" if id=="bomb" else
+			"ZAMIEŃ" if game.language=="pl" else "SWAP",
+			r.get_center().x,r.position.y+96,19,DARK,135)
+		var badge: Vector2 = Vector2(r.end.x-21,r.position.y+12)
+		draw_circle(badge,17,Color("#008E87"))
+		draw_arc(badge,17,0,TAU,36,Color("#E3FFF1"),2,true)
+		_center(str(count) if count>0 else "+",badge.x,badge.y+6,17,CREAM,30)
+		if id=="bomb" and game.bomb_aim:
+			draw_arc(at,40,0,TAU,64,Color("#FFF3B3"),4,true)
