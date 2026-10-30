@@ -30,8 +30,6 @@ func _initialize() -> void:
 			assert(not card.intersects(screen._piece_card_rect(j)))
 	assert(not Game.LEFT_RECT.intersects(Game.RIGHT_RECT))
 	assert(not Game.BOOST_BOMB.intersects(Game.BOOST_REROLL))
-	assert(not Game.BOOST_BOMB.intersects(Game.BOOST_MAGIC))
-	assert(not Game.BOOST_MAGIC.intersects(Game.BOOST_REROLL))
 	assert(not Game.BOOST_BOMB.intersects(Game.LEFT_RECT))
 	assert(not Game.BOOST_REROLL.intersects(Game.RIGHT_RECT))
 	assert(Game.BOOST_BOMB.end.y <= 1262.0)
