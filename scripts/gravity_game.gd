@@ -1387,6 +1387,8 @@ func _ball(center: Vector2, radius: float, color_index: int,
 	# High-resolution candy-glass sprite with a lit rim and subtle physical halo.
 	var marble: Texture2D = MARBLE_TEXTURES[clampi(color_index,0,2)]
 	var tint: Color = COLORS[clampi(color_index,0,2)]
+	var marble_skin: String = preview_skin if not preview_skin.is_empty() else (
+		shop.equipped_skin if shop != null else "default")
 	draw_circle(center,radius*1.24,
 		Color(tint.r,tint.g,tint.b,0.11*alpha))
 	var half_width: float = radius*1.255*stretch.x
@@ -1400,15 +1402,59 @@ func _ball(center: Vector2, radius: float, color_index: int,
 		Color(tint.r,tint.g,tint.b,0.48*alpha),1.8,true)
 	draw_arc(center,radius*0.83,-PI*0.79,-PI*0.24,22,
 		Color("#ecfaff",0.47*alpha),1.5,true)
-	if shop != null and shop.equipped_skin == "neon":
+	if marble_skin == "neon":
 		var tint_neon: Color = COLORS[clampi(color_index,0,2)]
 		draw_arc(center,radius*1.07,0,TAU,42,
 			Color(tint_neon.r,tint_neon.g,tint_neon.b,0.83*alpha),3.0,true)
 		draw_arc(center,radius*0.79,-PI*0.82,-PI*0.17,19,Color("#ffffff",0.84*alpha),2.8,true)
-	elif shop != null and shop.equipped_skin == "gold":
+	elif marble_skin == "gold":
 		draw_arc(center,radius*1.06,0,TAU,46,Color("#ffd37e",0.96*alpha),3.4,true)
 		draw_circle(center+Vector2(-radius*0.35,-radius*0.49),radius*0.14,
 			Color("#fff4cc",0.74*alpha))
+	if marble_skin == "donut":
+		draw_circle(center,radius*0.88,Color("#704356",alpha))
+		draw_circle(center,radius*0.74,Color(tint.r*0.68+0.27,tint.g*0.68+0.22,tint.b*0.68+0.18,alpha))
+		draw_circle(center,radius*0.31,Color("#302439",alpha))
+		draw_arc(center,radius*0.73,PI*1.05,PI*1.85,26,Color("#fff8f0",0.58*alpha),2,true)
+		for i in range(5):
+			var a: float = float(i)*TAU/5.0
+			var p: Vector2 = center+Vector2.from_angle(a)*radius*0.56
+			draw_line(p,p+Vector2(3,4),Color("#fff3a7",alpha),2.3,true)
+	elif marble_skin == "capybara" or marble_skin == "star_capybara":
+		var fur: Color = Color("#b97f59",alpha) if color_index==0 else (
+			Color("#b89971",alpha) if color_index==1 else Color("#a37a66",alpha))
+		draw_circle(center+Vector2(-radius*0.65,-radius*0.61),radius*0.25,fur)
+		draw_circle(center+Vector2(radius*0.65,-radius*0.61),radius*0.25,fur)
+		draw_circle(center,radius*0.86,fur)
+		draw_circle(center+Vector2(0,radius*0.20),radius*0.36,Color("#d6a884",alpha))
+		draw_circle(center+Vector2(-radius*0.31,-radius*0.16),radius*0.09,Color("#342735",alpha))
+		draw_circle(center+Vector2(radius*0.31,-radius*0.16),radius*0.09,Color("#342735",alpha))
+		draw_circle(center+Vector2(0,radius*0.15),radius*0.12,Color("#4a3135",alpha))
+		if marble_skin == "star_capybara":
+			var sp: Vector2 = center+Vector2(radius*0.57,-radius*0.77)
+			draw_line(sp+Vector2(-6,0),sp+Vector2(6,0),Color("#ffe48c",alpha),3,true)
+			draw_line(sp+Vector2(0,-6),sp+Vector2(0,6),Color("#ffe48c",alpha),3,true)
+	elif marble_skin == "crystal":
+		var diamond: PackedVector2Array = PackedVector2Array([
+			center+Vector2(0,-radius*0.95),
+			center+Vector2(radius*0.78,-radius*0.40),
+			center+Vector2(radius*0.65,radius*0.64),
+			center+Vector2(0,radius*0.92),
+			center+Vector2(-radius*0.65,radius*0.64),
+			center+Vector2(-radius*0.78,-radius*0.40)])
+		draw_colored_polygon(diamond,Color(tint.r*0.65+0.22,tint.g*0.65+0.22,tint.b*0.65+0.22,alpha))
+		draw_line(center+Vector2(0,-radius*0.9),center,Color("#f5ffff",0.86*alpha),2,true)
+		draw_line(center,center+Vector2(radius*0.63,radius*0.62),Color("#d1ffff",0.75*alpha),2,true)
+		draw_line(center,center+Vector2(-radius*0.63,radius*0.62),Color("#ffffff",0.69*alpha),2,true)
+	elif marble_skin == "cosmos":
+		draw_circle(center,radius*0.87,Color("#24204e",alpha))
+		draw_circle(center+Vector2(radius*0.33,radius*0.21),radius*0.43,
+			Color(tint.r,tint.g,tint.b,0.34*alpha))
+		draw_arc(center,radius*0.64,PI*0.16,PI*1.6,35,Color("#a6b8ff",0.89*alpha),2.6,true)
+		for i in range(5):
+			var a: float = float(i)*TAU/5.0+0.4
+			var p: Vector2 = center+Vector2.from_angle(a)*radius*0.57
+			draw_circle(p,maxf(1.2,radius*0.058),Color("#fff5e2",alpha))
 	if progression != null and progression.skin == "aurora":
 		draw_arc(center,radius*0.91,-PI*0.90,PI*0.12,30,
 			Color("#ddfcff",0.55*alpha),2.3,true)
