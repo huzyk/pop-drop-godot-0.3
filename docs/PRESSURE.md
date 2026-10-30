@@ -1,4 +1,19 @@
-# POP DROP Gravity 0.17 — monety bez limitu, progresja przez ekonomię
+# POP DROP Gravity 0.18 — FLOW, szybkie animacje, prawdziwe tempo
+
+## Dynamika — FLOW
+
+Po POP-ie wykonanym przez gracza rozpoczyna się **8 sekund czasu decyzyjnego** na następny POP. Timer nie biegnie podczas animacji, otwartych menu ani przy przerwanej rozgrywce. Każda kolejna akcja z POP-em podtrzymuje serię, a bonus do **punktów wyniku** rośnie:
+
+| Kolejna akcja z POP-em | Premia do wyniku |
+|---|---:|
+| 1 | ×1,00 |
+| 2 | ×1,25 |
+| 3 | ×1,50 |
+| 4 i kolejne | ×2,00 |
+
+Dwa POP-y w jednej kaskadzie nadal liczą się jako **jedna akcja FLOW**, aby nie nabijać premii przypadkowo. POP uzyskany po obrocie planszy również liczy się jako świadoma akcja. Automatyczna fala i bomba mogą czyścić planszę, ale nie nabijają FLOW. Seria wygasa po ośmiu sekundach aktywnego czasu gracza bez nowego POP-a.
+
+Interfejs pokazuje **FLOW xN** i pasek czasu bez zasłaniania planszy. Zwykłe POP-y używają krótszego, subtelnego komunikatu; pełniejsze efekty graficzne zostają dla prawdziwych kombinacji. Audio przyspieszono, a wysokość dźwięku kolejnych POP-ów w FLOW rośnie. Obrót skrócono z około 0,97 s do około 0,59 s, upadek kształtu z 0,23 s do 0,16 s. Następne etapy kaskady animują się szybciej. Nie przyspieszono fal i nie zwiększono liczby skał.
 
 ## Koniec rundy
 
