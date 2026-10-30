@@ -329,7 +329,7 @@ func _draw_rock_damage(center: Vector2, hp: int) -> void:
 	_center(str(hp),badge.x,badge.y+8,27,Color("#FFF8E9"),36)
 
 func _draw_rock(center: Vector2, value: int) -> void:
-	var hp: int = clampi(value-Rules.ROCK_MIN+1,1,3)
+	var hp: int = Rules.rock_health(value)
 	draw_texture_rect(ROCK_ART,Rect2(center-Vector2(36,36),Vector2(72,72)),false)
 	if Rules.is_gold_rock(value):
 		var breath: float = 0.55+0.45*sin(game.clock*3.4+center.x*.018+center.y*.013)
