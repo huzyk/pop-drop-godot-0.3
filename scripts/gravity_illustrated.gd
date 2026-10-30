@@ -143,7 +143,7 @@ func _draw_status() -> void:
 	if flow_active:
 		# A compact illuminated timer tells players how long they have
 		# to extend their chain without covering the board.
-		_center("FLOW x%d" % game.flow_streak,174,910,22,Color("#FFE89D"),192)
+		_center("%s x%d" % [game.fx_t("flow"),game.flow_streak],174,910,22,Color("#FFE89D"),192)
 		_round(Rect2(99,919,150,5),Color("#134B58"),3)
 		_round(Rect2(99,919,maxf(2.0,150.0*game.flow_time_left/game.FLOW_WINDOW),5),
 			Color("#79F4C6") if game.flow_streak<3 else Color("#FFCF78"),3)
