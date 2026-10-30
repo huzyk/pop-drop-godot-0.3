@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+<defs>
+ <radialGradient id="well" cx="45%" cy="24%" r="85%" fx="50%" fy="30%">
+  <stop offset="0" stop-color="#586EA8"/>
+  <stop offset=".48" stop-color="#455B92"/>
+  <stop offset=".76" stop-color="#2B3B70"/>
+  <stop offset="1" stop-color="#1C2857"/>
+ </radialGradient>
+ <radialGradient id="shade" cx="50%" cy="40%" r="54%">
+  <stop offset="0" stop-color="#0D1538" stop-opacity="0"/>
+  <stop offset=".8" stop-color="#0B1438" stop-opacity=".14"/>
+  <stop offset="1" stop-color="#081334" stop-opacity=".55"/>
+ </radialGradient>
+ <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+  <stop stop-color="#B7C7FA" stop-opacity=".68"/>
+  <stop offset=".35" stop-color="#788DBF" stop-opacity=".22"/>
+  <stop offset=".7" stop-color="#0D1C49" stop-opacity=".32"/>
+  <stop offset="1" stop-color="#141B47" stop-opacity=".83"/>
+ </linearGradient>
+</defs>
+<ellipse cx="130" cy="134" rx="121" ry="120" fill="#121B43" opacity=".65"/>
+<circle cx="128" cy="126" r="113" fill="url(#well)" stroke="url(#rim)" stroke-width="9"/>
+<circle cx="128" cy="126" r="102" fill="url(#shade)"/>
+<path d="M40 92 C52 57 88 35 129 35 C170 35 207 61 216 90" fill="none" stroke="#C3D1FF" stroke-opacity=".29" stroke-width="9" stroke-linecap="round"/>
+<path d="M54 178 C74 210 107 222 140 221 C177 220 198 201 209 178" fill="none" stroke="#121A47" stroke-opacity=".47" stroke-width="8" stroke-linecap="round"/>
+</svg>
