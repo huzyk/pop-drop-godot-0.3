@@ -10,6 +10,7 @@ const WORLD = preload("res://assets/visual_v2/world.svg")
 const TURN_PINK = preload("res://assets/visual_v3/turn_left.svg")
 const TURN_TEAL = preload("res://assets/visual_v3/turn_right.svg")
 const BOARD_SHELL = preload("res://assets/visual_v3/organic_board.svg")
+const SOCKET = preload("res://assets/visual_v3/socket.svg")
 const PIECE_ACTIVE = preload("res://assets/visual_v3/piece_selected.svg")
 const PIECE_IDLE = preload("res://assets/visual_v3/piece_idle.svg")
 const BOOST_ART = [
@@ -65,11 +66,13 @@ func _moved(rect: Rect2, distance: Vector2) -> Rect2:
 	return Rect2(rect.position+distance,rect.size)
 
 func _round(rect: Rect2, color: Color, radius: int=18, stroke: Color=Color.TRANSPARENT, stroke_width: int=0) -> void:
-	var key: String = "%s|%d|%s|%d" % [color.to_html(true),radius,stroke.to_html(true),stroke_width]
+	# All chips, options, tabs and rewards use full capsule corners by default.
+	var smooth: int = mini(86,maxi(radius,int(rect.size.y*0.48)))
+	var key: String = "%s|%d|%s|%d" % [color.to_html(true),smooth,stroke.to_html(true),stroke_width]
 	if not styles.has(key):
 		var s: StyleBoxFlat = StyleBoxFlat.new()
 		s.bg_color = color
-		s.set_corner_radius_all(radius)
+		s.set_corner_radius_all(smooth)
 		s.anti_aliasing = true
 		s.anti_aliasing_size = 1.5
 		if stroke_width > 0:
@@ -119,8 +122,8 @@ func _orb(center: Vector2, radius: float, index: int, alpha: float=1.0, squish: 
 
 func _button(rect: Rect2, fill: Color, base: Color, pressed: bool=false) -> void:
 	var push: float = 6.0 if pressed else 0.0
-	_round(_moved(rect,Vector2(0,11)),base,28)
-	_round(_moved(rect,Vector2(0,push)),fill,28,Color("#FFFFFF",0.17),2)
+	_round(_moved(rect,Vector2(0,11)),base,mini(55,int(rect.size.y*0.5)))
+	_round(_moved(rect,Vector2(0,push)),fill,mini(55,int(rect.size.y*0.5)),Color("#FFFFFF",0.17),2)
 	_round(Rect2(rect.position+Vector2(19,10+push),Vector2(rect.size.x-38,12)),
 		Color("#FFFFFF",0.14),7)
 
@@ -182,31 +185,31 @@ func _draw_top() -> void:
 		_bubble(boxes[i].get_center(),27,Color("#293B6D"),Color("#BECEFF",0.32))
 		_icon(str(ids[i]),boxes[i].get_center(),32 if i!=3 else 29)
 	_center(game.language.to_upper(),659,89,14,GOLD,53)
-	_label("ENERGIA" if game.language=="pl" else "ENERGY",38,135,16,MIST)
-	_center("%d / %d" % [game.shop.energy,Shop.MAX_ENERGY],235,136,20,GOLD,83)
+	_label("ENERGIA" if game.language=="pl" else "ENERGY",38,122,16,MIST)
+	_center("%d / %d" % [game.shop.energy,Shop.MAX_ENERGY],235,123,20,GOLD,83)
 
 func _draw_stats() -> void:
-	var score_rect: Rect2 = Rect2(22,143,231,86)
-	var wave_rect: Rect2 = Rect2(265,143,274,86)
-	var life_rect: Rect2 = Rect2(551,143,147,86)
+	var score_rect: Rect2 = Rect2(22,133,231,86)
+	var wave_rect: Rect2 = Rect2(265,133,274,86)
+	var life_rect: Rect2 = Rect2(551,133,147,86)
 	_card(score_rect,Color("#283B72"),44,6)
 	_card(wave_rect,Color("#283B72"),44,6)
 	_card(life_rect,Color("#283B72"),44,6)
-	_label(game.t("score"),39,168,17,MIST)
-	_center(str(int(round(game.display_score))),125,215,44,WHITE,199)
-	_center(game.t("best")+": "+str(game.best),204,167,13,GOLD,88)
-	_label("FALA" if game.language=="pl" else "WAVE",284,170,18,MIST)
-	_center(str(game.wave_number+1),369,213,41,WHITE,150)
+	_label(game.t("score"),39,158,17,MIST)
+	_center(str(int(round(game.display_score))),125,205,44,WHITE,199)
+	_center(game.t("best")+": "+str(game.best),204,157,13,GOLD,88)
+	_label("FALA" if game.language=="pl" else "WAVE",284,160,18,MIST)
+	_center(str(game.wave_number+1),369,203,41,WHITE,150)
 	var timer: int = maxi(0,int(ceil(game.wave_time_left)))
-	_center("%02d:%02d" % [int(timer/60),timer%60],476,197,29,
+	_center("%02d:%02d" % [int(timer/60),timer%60],476,187,29,
 		PEACH if timer<=5 else WHITE,102)
 	var full: float = maxf(1.0,Rules.wave_interval(game.wave_number))
-	_round(Rect2(415,209,103,9),Color("#516185"),5)
-	_round(Rect2(415,209,maxf(5.0,103.0*(1.0-clampf(game.wave_time_left/full,0.0,1.0))),9),
+	_round(Rect2(415,199,103,9),Color("#516185"),5)
+	_round(Rect2(415,199,maxf(5.0,103.0*(1.0-clampf(game.wave_time_left/full,0.0,1.0))),9),
 		PEACH if timer<=5 else AQUA,5)
-	_center(game.t("life"),624,169,16,MIST,119)
+	_center(game.t("life"),624,159,16,MIST,119)
 	for i in range(3):
-		var pos: Vector2 = Vector2(577+i*45,199)
+		var pos: Vector2 = Vector2(577+i*45,189)
 		_icon("heart",pos,38,1.0 if i<game.lives else 0.19)
 
 func _draw_board() -> void:
@@ -224,13 +227,8 @@ func _draw_board() -> void:
 		for x in range(8):
 			var tile: Vector2 = BOARD.position+Vector2(x,y)*CELL
 			var center: Vector2 = tile+Vector2(38,38)
-			# Rounded recessed sockets: no tessellated square grid or pixel edges.
-			draw_circle(center+Vector2(0,3),34.2,Color("#121B43",0.80))
-			draw_circle(center,32.5,Color("#3E507E") if (x+y)%2==0 else Color("#425481"))
-			draw_circle(center+Vector2(-3,-5),28.5,Color("#788BBB",0.12))
-			draw_arc(center,31.0,PI*0.14,PI*0.91,25,Color("#151E45",0.44),3.0,true)
-			draw_arc(center+Vector2(-1,-1),30.5,-PI*0.88,-PI*0.16,24,
-				Color("#C5D3FC",0.30),2.1,true)
+			# Retina SVG inlaid wells; no aliased circle stacks.
+			draw_texture_rect(SOCKET,Rect2(center-Vector2(36,36),Vector2(72,72)),false)
 			if x==hovering:
 				draw_circle(center,32.0,Color("#82FFE6",0.20))
 				draw_arc(center,33.0,0.0,TAU,48,Color("#A5FFE8",0.66),3.0,true)
