@@ -30,7 +30,11 @@ const ITEMS := [
 	{"id":"elephant","kind":"skin","price":4100},
 	{"id":"giraffe","kind":"skin","price":3500},
 	{"id":"fox","kind":"skin","price":2300},
-	{"id":"owl","kind":"skin","price":2600}
+	{"id":"owl","kind":"skin","price":2600},
+	{"id":"dragon","kind":"skin","price":5700},
+	{"id":"unicorn","kind":"skin","price":4600},
+	{"id":"phoenix","kind":"skin","price":6200},
+	{"id":"griffin","kind":"skin","price":5400}
 ]
 const SPECIAL_SKIN := "star_capybara"
 
@@ -43,7 +47,8 @@ var owned_skins: Dictionary = {"neon":false,"gold":false,"donut":false,
 	"capybara":false,"crystal":false,"star_capybara":false,
 	"toucan":false,"parrot":false,"frog":false,"monkey":false,
 	"jaguar":false,"sloth":false,"lion":false,"zebra":false,
-	"elephant":false,"giraffe":false,"fox":false,"owl":false}
+	"elephant":false,"giraffe":false,"fox":false,"owl":false,
+	"dragon":false,"unicorn":false,"phoenix":false,"griffin":false}
 var equipped_skin: String = "default"
 var seen_pop_ids: Array = []
 var seen_bonus_ids: Array = []
