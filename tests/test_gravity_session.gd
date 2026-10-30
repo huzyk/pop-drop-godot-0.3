@@ -6,6 +6,23 @@ func _initialize() -> void:
 	# Importing Game also parses all its core dependencies.
 	var instance = Game.new()
 	assert(instance != null)
+	# FLOW only advances on successful manual POPs. The timer refreshes,
+	# reaches x4 and never runs beyond the maximum multiplier.
+	instance._register_flow_pop()
+	assert(instance.flow_streak == 1)
+	assert(instance.flow_time_left == Game.FLOW_WINDOW)
+	instance.flow_time_left = 4.0
+	instance._register_flow_pop()
+	assert(instance.flow_streak == 2)
+	assert(instance.flow_time_left == Game.FLOW_WINDOW)
+	instance._register_flow_pop()
+	instance._register_flow_pop()
+	instance._register_flow_pop()
+	assert(instance.flow_streak == 4)
+	assert(instance.Rules.flow_multiplier_percent(instance.flow_streak) == 200)
+	instance.flow_time_left = 0.0
+	instance._register_flow_pop()
+	assert(instance.flow_streak == 1) # Expired streak starts over.
 	instance.free()
 	var board: Array = []
 	for y in range(8):
