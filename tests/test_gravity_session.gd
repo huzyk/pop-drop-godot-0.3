@@ -32,6 +32,9 @@ func _initialize() -> void:
 			row.append(-1)
 		board.append(row)
 	board[7][1] = 0
+	board[6][1] = Rules.GOLD_ROCK_MAX
+	assert(Session.valid({"board":board,"pieces":[[[0,0,0]],[[0,0,1]],[[0,0,2]]],
+		"phase":"drop","score":0,"moves":0,"lives":1,"revives":0}))
 	var piece: Array = [[0,0,0],[1,0,1]]
 	var original: Dictionary = {
 		"board":board,"pieces":[piece.duplicate(true),piece.duplicate(true),piece.duplicate(true)],
