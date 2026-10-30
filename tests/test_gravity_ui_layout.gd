@@ -90,6 +90,11 @@ func _initialize() -> void:
 	shop_view.language = "en"
 	assert(shop_view.analytics_erase_label() == "CLEAR ANALYTICS DATA")
 	assert(Game.FREE_PLAY_BETA)
+	assert(shop_view.badge_t("first_drop") == "FIRST DROP")
+	assert(shop_view.badge_icon("streak_7") == "heart")
+	assert(shop_view.badge_icon("score_10000") == "coins")
+	shop_view.language = "pl"
+	assert(shop_view.badge_t("combo_4") == "KASKADA ×4")
 	shop_view.free()
 	# Hit mapping still fits the new cell coordinate system.
 	assert(view._board_cell(Game.BOARD.position + Vector2(3.0,3.0)) == Vector2i(0,0))
