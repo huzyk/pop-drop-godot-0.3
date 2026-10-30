@@ -17,7 +17,6 @@ const ICON_SETTINGS = preload("res://assets/ui/icons/settings.svg")
 const ICON_ROTATE_LEFT = preload("res://assets/ui/icons/rotate_left.svg")
 const ICON_ROTATE_RIGHT = preload("res://assets/ui/icons/rotate_right.svg")
 const ICON_BOMB = preload("res://assets/ui/icons/bomb.svg")
-const ICON_MAGIC = preload("res://assets/ui/icons/magic.svg")
 const ICON_REROLL = preload("res://assets/ui/icons/reroll.svg")
 const ICON_HEART = preload("res://assets/ui/icons/heart.svg")
 const ICON_GLOBE = preload("res://assets/ui/icons/globe.svg")
@@ -80,9 +79,8 @@ const PROFILE_CARD := Rect2(54,224,612,906)
 const SHOP_CLOSE := Rect2(514,266,120,54)
 const SHOP_TAB_BOOST := Rect2(94,410,251,57)
 const SHOP_TAB_SKINS := Rect2(375,410,251,57)
-const BOOST_BOMB := Rect2(209,1098,90,104)
-const BOOST_MAGIC := Rect2(313,1098,90,104)
-const BOOST_REROLL := Rect2(417,1098,90,104)
+const BOOST_BOMB := Rect2(203,1100,154,113)
+const BOOST_REROLL := Rect2(364,1100,154,113)
 const SHOP_PREV := Rect2(105,970,113,55)
 const SHOP_NEXT := Rect2(502,970,113,55)
 const PROFILE_DAILY_TAB := Rect2(92,526,248,51)
@@ -161,7 +159,6 @@ var shop_page: int = 0
 var profile_tab: int = 0
 var badge_page: int = 0
 var preview_skin: String = ""
-var magic_aim: bool = false
 var ad_reward_kind: String = ""
 var bomb_aim: bool = false
 var bomb_hover: Vector2i = Vector2i(-1,-1)
@@ -180,9 +177,9 @@ var run_id: String = ""
 var rounds_played: int = 0
 var best_at_round_start: int = 0
 var game_over_reported: bool = false
-# The first wave hits quickly; intervals become longer as the board fills.
+# Incoming waves accelerate while rocks accumulate.
 var wave_number: int = 0
-var wave_time_left: float = 15.0
+var wave_time_left: float = 12.0
 var wave_queued: bool = false
 
 func _ready() -> void:
@@ -242,14 +239,14 @@ func profile_t(key: String) -> String:
 
 const SHOP_PL := {
 	"shop":"SKLEP","boosts":"MOCE","skins":"SKÓRKI","close":"ZAMKNIJ",
-	"coins":"MONETY","bomb":"BOMBA","magic":"MAGICZNY KOLOR","reroll":"NOWY ZESTAW",
+	"coins":"MONETY","bomb":"BOMBA","reroll":"NOWY ZESTAW",
 	"neon":"NEON","gold":"ZŁOTO","donut":"DONUTY","capybara":"KAPIBARY",
 	"crystal":"KRYSZTAŁY","cosmos":"KOSMOS","star_capybara":"GWIEZDNA KAPIBARA",
 	"buy":"KUP","owned":"KUPIONE","active":"AKTYWNE","equip":"WYBIERZ","stock":"POSIADASZ",
 	"poor":"ZA MAŁO MONET","bought":"ZAKUPIONE!","full":"LIMIT ZAPASU",
-	"aim":"DOTKNIJ POLA — BOMBA 3×3","magic_aim":"DOTKNIJ KULKI — ZMIANA KOLORU",
+	"aim":"DOTKNIJ POLA — BOMBA 3×3",
 	"tip":"Monety i wynik gry są niezależne","energy":"ENERGIA",
-	"bomb_desc":"Usuwa kulki w polu 3×3","magic_desc":"Zmienia kolor wybranej kulki",
+	"bomb_desc":"Usuwa kulki w polu 3×3",
 	"reroll_desc":"Losuje trzy nowe kształty",
 	"neon_desc":"Elektryczna poświata","gold_desc":"Złota oprawa",
 	"donut_desc":"Słodkie lukrowane kulki","capybara_desc":"Kapibary na planszy",
@@ -258,14 +255,14 @@ const SHOP_PL := {
 }
 const SHOP_EN := {
 	"shop":"SHOP","boosts":"POWERS","skins":"SKINS","close":"CLOSE",
-	"coins":"COINS","bomb":"BOMB","magic":"MAGIC COLOR","reroll":"NEW SET",
+	"coins":"COINS","bomb":"BOMB","reroll":"NEW SET",
 	"neon":"NEON","gold":"GOLD","donut":"DONUTS","capybara":"CAPYBARAS",
 	"crystal":"CRYSTALS","cosmos":"COSMOS","star_capybara":"STAR CAPYBARA",
 	"buy":"BUY","owned":"OWNED","active":"ACTIVE","equip":"EQUIP","stock":"OWNED",
 	"poor":"NOT ENOUGH COINS","bought":"PURCHASED!","full":"INVENTORY FULL",
-	"aim":"TAP CELL — BOMB 3×3","magic_aim":"TAP A MARBLE TO RECOLOR",
+	"aim":"TAP CELL — BOMB 3×3",
 	"tip":"Coins never affect your score","energy":"ENERGY",
-	"bomb_desc":"Clear a 3×3 region","magic_desc":"Recolor a chosen marble",
+	"bomb_desc":"Clear a 3×3 region",
 	"reroll_desc":"Roll three fresh shapes",
 	"neon_desc":"Electric glowing edges","gold_desc":"Gold outline",
 	"donut_desc":"Sweet glazed marbles","capybara_desc":"Capybaras on the board",
@@ -280,7 +277,7 @@ func _shop_card(index: int) -> Rect2:
 	return Rect2(91,498+index*231,538,213)
 
 func _shop_catalog() -> Array:
-	return ["bomb","magic","reroll"] if shop_tab==0 else [
+	return ["bomb","reroll"] if shop_tab==0 else [
 		"default","neon","gold","donut","capybara","crystal","cosmos","star_capybara"]
 
 func _shop_pages() -> int:
@@ -333,7 +330,7 @@ func _use_reroll() -> void:
 	if not shop.use_boost("reroll"):
 		shop_open = true
 		shop_tab = 0
-		shop_page = 1
+		shop_page = 0
 		return
 	for i in range(3):
 		pieces[i] = Rules.next_piece(rng,board,recent_shapes)
@@ -347,65 +344,6 @@ func _use_reroll() -> void:
 		_on_game_over()
 	_save_progress()
 	queue_redraw()
-
-func _use_magic(target: Vector2i) -> void:
-	if phase != "drop" or not magic_aim:
-		return
-	if target.x < 0 or target.y < 0 or target.x >= 8 or target.y >= 8:
-		return
-	var previous: int = int(board[target.y][target.x])
-	if previous < 0 or previous > 2:
-		shop_notice = shop_t("magic_aim")
-		shop_notice_time = 1.4
-		return
-	var best_color: int = (previous+1)%3
-	var best_value: int = -1
-	for color in range(3):
-		if color == previous:
-			continue
-		var candidate: Array = Rules.copy_board(board)
-		candidate[target.y][target.x] = color
-		var power: int = 0
-		for group in Rules.find_groups(candidate):
-			for cell in group["cells"]:
-				if cell == target:
-					power = maxi(power,int(group["count"])*10)
-					break
-		for direction in [Vector2i.LEFT,Vector2i.RIGHT,Vector2i.UP,Vector2i.DOWN]:
-			var pos: Vector2i = target+direction
-			if pos.x >= 0 and pos.x < 8 and pos.y >= 0 and pos.y < 8:
-				if int(candidate[pos.y][pos.x]) == color:
-					power += 1
-		if power > best_value:
-			best_value = power
-			best_color = color
-	if not shop.use_boost("magic"):
-		magic_aim = false
-		shop_open = true
-		shop_tab = 0
-		shop_page = 0
-		return
-	magic_aim = false
-	action_serial += 1
-	action_id = "action:%s:%d" % [run_id,action_serial]
-	board[target.y][target.x] = best_color
-	_burst(target,12)
-	_shock(BOARD.position+(Vector2(target)+Vector2(0.5,0.5))*CELL,2.3,Color("#c9a0ff"))
-	_praise(shop_t("magic"),Color("#e1b9ff"),1.3)
-	telemetry.track("powerup_used",{"run_id":run_id,"item":"magic"})
-	phase = "anim"
-	chain_depth = 0
-	await _resolve_cascades()
-	phase = "drop"
-	_check_ceiling()
-	if phase == "drop":
-		_refresh_targets()
-		_check_stuck()
-	if phase == "over":
-		_on_game_over()
-	_save_progress()
-	queue_redraw()
-
 
 func _use_bomb(target: Vector2i) -> void:
 	if phase!="drop" or not bomb_aim:
@@ -421,7 +359,6 @@ func _use_bomb(target: Vector2i) -> void:
 		shop_tab = 0
 		return
 	bomb_aim = false
-	magic_aim = false
 	bomb_hover = Vector2i(-1,-1)
 	phase = "anim"
 	action_serial += 1
@@ -600,10 +537,9 @@ func _restore_progress(data: Dictionary) -> void:
 	action_serial = maxi(0,int(data.get("action_serial",0)))
 	action_id = ""
 	wave_number = maxi(0,int(data.get("wave_number",0)))
-	wave_time_left = clampf(float(data.get("wave_time_left",Rules.wave_interval(wave_number))),0.0,45.0)
+	wave_time_left = minf(Rules.wave_interval(wave_number),clampf(float(data.get("wave_time_left",Rules.wave_interval(wave_number))),0.0,45.0))
 	wave_queued = false
 	bomb_aim = false
-	magic_aim = false
 	shop_open = false
 	best = maxi(best,score)
 	display_score = float(score)
@@ -741,7 +677,7 @@ func _logical(screen: Vector2) -> Vector2:
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		var pointer: Vector2 = _logical(event.position)
-		if bomb_aim or magic_aim:
+		if bomb_aim:
 			bomb_hover = _board_cell(pointer)
 		if dragging_piece:
 			drag_point = pointer
@@ -831,8 +767,7 @@ func _gui_input(event: InputEvent) -> void:
 		shop_tab = 0
 		shop_page = 0
 		bomb_aim = false
-		magic_aim = false
-		telemetry.track("shop_open",{"coins":shop.coins})
+			telemetry.track("shop_open",{"coins":shop.coins})
 		queue_redraw()
 		return
 	if SETTINGS_OPEN.has_point(pt) and phase != "anim":
@@ -883,8 +818,7 @@ func _gui_input(event: InputEvent) -> void:
 	if phase!="drop":
 		return
 	if BOOST_BOMB.has_point(pt):
-		magic_aim = false
-		if bomb_aim:
+			if bomb_aim:
 			bomb_aim = false
 		elif shop.stock("bomb")>0:
 			bomb_aim = true
@@ -895,32 +829,10 @@ func _gui_input(event: InputEvent) -> void:
 			shop_page = 0
 		queue_redraw()
 		return
-	if BOOST_MAGIC.has_point(pt):
-		bomb_aim = false
-		if magic_aim:
-			magic_aim = false
-		elif shop.stock("magic")>0:
-			magic_aim = true
-			bomb_hover = Vector2i(-1,-1)
-		else:
-			shop_open = true
-			shop_tab = 0
-			shop_page = 0
-		queue_redraw()
-		return
 	if BOOST_REROLL.has_point(pt):
 		bomb_aim = false
-		magic_aim = false
-		_use_reroll()
+			_use_reroll()
 		return
-	if magic_aim and BOARD.has_point(pt):
-		_use_magic(_board_cell(pt))
-		return
-	if magic_aim:
-		magic_aim = false
-		queue_redraw()
-		return
-	
 	if bomb_aim and BOARD.has_point(pt):
 		var chosen: Vector2i = _board_cell(pt)
 		if chosen.x>=0:
@@ -1064,16 +976,17 @@ func _trigger_pressure_wave() -> void:
 		feedback.cue("rotate")
 	_shock(BOARD.get_center(),1.6,Color("#ffae83"))
 	await _animate_to(wave.board,wave.motions,0.45,"wave")
-	var rock_added: bool = false
-	if wave_number % 2 == 0:
+	var rocks_added: int = 0
+	# First wave introduces a rock; every later wave tries to add two.
+	for i in range(1 if wave_number == 1 else 2):
 		var rock: Dictionary = Rules.spawn_rock(board,rng)
 		if bool(rock.get("spawned",false)):
 			board = rock.board
-			rock_added = true
+			rocks_added += 1
 			_shock(BOARD.position+(Vector2(rock.cell)+Vector2(0.5,0.5))*CELL,1.4,Color("#ffe0a7"))
 	telemetry.track("pressure_wave",{
 		"run_id":run_id,"wave":wave_number,"marbles":beads,
-		"rock_added":rock_added,"next_interval":wave_time_left
+		"rocks_added":rocks_added,"next_interval":wave_time_left
 	})
 	chain_depth = 0
 	await _resolve_cascades()
