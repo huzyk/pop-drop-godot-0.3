@@ -32,10 +32,14 @@ func _draw_stats() -> void:
 	_center(str(game.wave_number+1),383,257,28,CREAM,70)
 	var seconds: int = maxi(0,int(ceil(game.wave_time_left)))
 	_center("%02d:%02d" % [int(seconds/60),seconds%60],513,257,27,CREAM,90)
-	# Three illustrated hearts are present in the underlying art. Dim any lost ones.
-	for i in range(clampi(game.lives,0,3),3):
-		var center: Vector2 = Vector2(600+i*29,246)
-		draw_circle(center,13.0,Color("#133D50",0.67))
+	# Cover the old baked-in life icons with a coherent free-cells counter.
+	# Touching the top row is no longer a death condition.
+	var counter: Rect2 = Rect2(572,223,145,59)
+	_round(counter,Color("#0C586B"),18,Color("#4EB8B9"),2)
+	_center("WOLNE" if game.language=="pl" else "FREE",
+		644,245,15,CREAM,130)
+	_center(str(Rules.SIZE*Rules.SIZE-Rules.filled(game.board)),
+		644,272,25,CREAM,130)
 
 func _orb(center: Vector2, radius: float, index: int, alpha: float=1.0, squish: Vector2=Vector2.ONE) -> void:
 	var skin_id: String = game.preview_skin if not game.preview_skin.is_empty() else game.shop.equipped_skin
@@ -104,20 +108,18 @@ func _draw_board() -> void:
 				_orb(pt,CELL*.468,int(movement["color"]),0.55)
 		else:
 			draw_rect(Rect2(BOARD.position+Vector2(hovering*CELL,0),Vector2(CELL,BOARD.size.y)),Color("#F26275",.11))
-	if Rules.tallest_column(game.board)>=6:
-		draw_line(BOARD.position+Vector2(7,1),BOARD.position+Vector2(BOARD.size.x-7,1),Color("#FF7887",.92),3.0,true)
 
 func _draw_status() -> void:
 	# All status values must be live. The concept art showed two earned stars
 	# at the beginning of a run; that was misleading, so no baked trophies here.
 	var collected: int = mini(int(game.pending_group.get("count",0)),Rules.POP_THRESHOLD)
-	var height_used: int = Rules.tallest_column(game.board)
+	var free_cells: int = Rules.SIZE*Rules.SIZE-Rules.filled(game.board)
 	_center("GRUPA %d/%d" % [collected,Rules.POP_THRESHOLD] if game.language=="pl" else
 		"GROUP %d/%d" % [collected,Rules.POP_THRESHOLD],174,916,20,CREAM,192)
 	_center("RUCH %d" % [game.moves+1] if game.language=="pl" else
 		"MOVE %d" % [game.moves+1],366,916,20,CREAM,178)
-	_center("WYS. %d/8" % height_used if game.language=="pl" else
-		"HEIGHT %d/8" % height_used,558,916,19,CREAM,176)
+	_center("WOLNE %d" % free_cells if game.language=="pl" else
+		"FREE %d" % free_cells,558,916,19,CREAM,176)
 
 # Layout metrics shared by renderer and tests so even tall pieces
 # cannot overlap the labels printed at the foot of each card.
