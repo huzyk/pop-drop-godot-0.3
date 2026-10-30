@@ -498,6 +498,38 @@ static func next_piece(rng: RandomNumberGenerator, board: Array, avoid_shapes: A
 	# Fully blocked: the no-moves game-over check handles the loss.
 	return [[0,0,rng.randi_range(0,COLOR_COUNT-1)]]
 
+static func can_recover_by_rotating(board: Array, pieces: Array) -> bool:
+	# Rotations are free; calculate whether ANY of the four orientations
+	# can admit one of the offered pieces, including resulting POPs.
+	for clockwise in [false,true]:
+		var virtual: Array = copy_board(board)
+		for quarter in range(4):
+			virtual = rotate(virtual,clockwise).board
+			virtual = settle(virtual).board
+			virtual = spill_after_rotation(virtual,clockwise).board
+			virtual = resolve_preview(virtual,true,clockwise).board
+			for piece in pieces:
+				if any_drop(virtual,piece):
+					return true
+	return false
+
+static func rescue_for_continue(board: Array) -> Array:
+	# A paid/ad rescue must yield at least one viable column, even when
+	# the roof consists entirely of indestructible-to-POP rocks.
+	var result: Array = rescue(board)
+	var openings: int = 0
+	for x in range(SIZE):
+		if int(result[0][x]) == EMPTY:
+			openings += 1
+	if openings < 2:
+		for x in [3,4,2,5,1,6,0,7]:
+			if int(result[0][x]) != EMPTY:
+				result[0][x] = EMPTY
+				openings += 1
+			if openings >= 2:
+				break
+	return result
+
 static func rescue(board: Array) -> Array:
 	var result: Array = copy_board(board)
 	# Clear marbles from the two highest marble-bearing rows.
