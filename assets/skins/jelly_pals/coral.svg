@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+<!-- Jelly Pals v1: single-source 256px vector sprite; no runtime face overlays -->
+<defs>
+ <radialGradient id="body" cx="32%" cy="20%" r="89%">
+  <stop offset="0" stop-color="#FFE0BB"/><stop offset=".27" stop-color="#FF9FA6"/>
+  <stop offset=".59" stop-color="#FF687C"/><stop offset=".84" stop-color="#CE4769"/>
+  <stop offset="1" stop-color="#87365C"/>
+ </radialGradient>
+ <linearGradient id="sheen" x1="0%" y1="0%" x2="20%" y2="100%">
+  <stop offset="0" stop-color="#FFFFFF" stop-opacity=".9"/>
+  <stop offset=".50" stop-color="#FFFFFF" stop-opacity=".27"/>
+  <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+ </linearGradient>
+ <linearGradient id="lower" x1="0%" y1="0%" x2="0%" y2="100%">
+  <stop offset="0" stop-color="#87365C" stop-opacity="0"/>
+  <stop offset="1" stop-color="#87365C" stop-opacity=".23"/>
+ </linearGradient>
+</defs>
+<ellipse cx="132" cy="225" rx="77" ry="14" fill="#87365C" opacity=".23"/>
+<path d="M128 26 C182 26 222 62 223 118 C224 179 184 220 126 220 C69 220 34 179 33 123 C32 66 70 26 128 26Z" fill="url(#body)"/>
+<path d="M128 26 C182 26 222 62 223 118 C224 179 184 220 126 220 C69 220 34 179 33 123 C32 66 70 26 128 26Z" fill="url(#lower)"/>
+<path d="M57 109 C57 63 84 45 124 40 C159 36 188 53 195 74 C199 86 183 85 175 79 C151 60 111 56 88 80 C76 90 71 113 63 119 C59 120 56 116 57 109Z" fill="url(#sheen)" opacity=".72"/>
+<ellipse cx="86" cy="70" rx="15" ry="7" transform="rotate(-38 86 70)" fill="#FFFFFF" opacity=".87"/>
+<path d="M179 183Q199 171 201 147" fill="none" stroke="#FFE0BB" stroke-width="6" stroke-linecap="round" opacity=".34"/>
+<path d="M79 184Q95 203 123 206" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity=".17"/>
+
+<ellipse cx="100" cy="127" rx="9" ry="12" fill="#47324F"/><ellipse cx="153" cy="127" rx="9" ry="12" fill="#47324F"/>
+<circle cx="97" cy="123" r="3.5" fill="#FFFFFF"/><circle cx="150" cy="123" r="3.5" fill="#FFFFFF"/>
+<path d="M108 163 Q128 180 148 162" fill="none" stroke="#753F5C" stroke-width="5" stroke-linecap="round"/><circle cx="100" cy="145" r="9" fill="#FFCAD5" opacity=".72"/><circle cx="156" cy="145" r="9" fill="#FFCAD5" opacity=".72"/>
+<circle cx="174" cy="194" r="3.3" fill="#FFE0BB" opacity=".67"/>
+</svg>
