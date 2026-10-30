@@ -32,14 +32,12 @@ func _draw_stats() -> void:
 	_center(str(game.wave_number+1),383,257,28,CREAM,70)
 	var seconds: int = maxi(0,int(ceil(game.wave_time_left)))
 	_center("%02d:%02d" % [int(seconds/60),seconds%60],513,257,27,CREAM,90)
-	# Cover the old baked-in life icons with a coherent free-cells counter.
-	# Touching the top row is no longer a death condition.
-	var counter: Rect2 = Rect2(572,223,145,59)
-	_round(counter,Color("#0C586B"),18,Color("#4EB8B9"),2)
+	# The matching illustrated panel is part of CLEAN_OVERLAY at x554..672.
+	# It fully masks the old ŻYCIA text and hearts without hanging off the HUD.
 	_center("WOLNE" if game.language=="pl" else "FREE",
-		644,245,15,CREAM,130)
+		613,231,15,CREAM,108)
 	_center(str(Rules.SIZE*Rules.SIZE-Rules.filled(game.board)),
-		644,272,25,CREAM,130)
+		613,264,29,CREAM,108)
 
 func _orb(center: Vector2, radius: float, index: int, alpha: float=1.0, squish: Vector2=Vector2.ONE) -> void:
 	var skin_id: String = game.preview_skin if not game.preview_skin.is_empty() else game.shop.equipped_skin
