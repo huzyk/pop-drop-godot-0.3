@@ -1,4 +1,13 @@
-# POP DROP Gravity 0.18 — FLOW, szybkie animacje, prawdziwe tempo
+# POP DROP Gravity 0.19 — lokalizacja, efekty POP i dźwięki
+
+## Efekty audiowizualne i lokalizacja (v0.19)
+
+- Reakcje POP/GREAT/AMAZING, zachęty, nawałnica oraz serie korzystają z tabeli tekstów dla **PL, EN, ES, PT, DE, FR i RU**. Wersja polska wyświetla **POP! / ŚWIETNIE! / NIESAMOWITE! / SERIA**.
+- W lewym górnym obszarze statystyk interfejsu ilustracyjnego jest widoczny, dotykowy przycisk **JĘZYK: PL**. Przełącznik języka jest też w ustawieniach z nazwą języka w jego własnym zapisie. Preferencja nadal zapisuje się lokalnie.
+- Wyróżniające się kombinacje mają krótki, jasny rozbłysk z promieniami i iskrami w miejscu POP-a, podczas gdy zwykły POP nie blokuje ekranu dużą kartą.
+- **Każda skała pokazuje wyraźny licznik 3/2/1** na kontrastowej tarczy; po pierwszym trafieniu pojawiają się pęknięcia, po drugim kolejne. Przy trzecim skała rozpada się na trójkątne odłamki i pył, z osobnym dudniącym trzaskiem. Bomba również niszczy skały z odpowiednim efektem.
+- Nowe wielowarstwowe, autorskie dźwięki są wytwarzane na starcie z PCM: osobne miękkie lądowanie, obrót, mały i wielki POP, kaskada, uszkodzenie i rozpad skały, bomba oraz nawałnica. Wzrost wysokości tonu przy serii FLOW i odrębne wibracje dla mocniejszych akcji. Dźwięk i wibracje można niezależnie wyłączyć w ustawieniach.
+- Zasady porażki, tempo fal, ekonomia i brak limitu zarabianych monet pozostają bez zmian.
 
 ## Dynamika — FLOW
 
