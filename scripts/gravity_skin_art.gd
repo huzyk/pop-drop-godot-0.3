@@ -23,24 +23,89 @@ const PACKS = {
 		preload("res://assets/skins/donut/blue.svg")
 	],
 	"capybara": [
-		preload("res://assets/skins/capybara/coral.svg"),
-		preload("res://assets/skins/capybara/mint.svg"),
-		preload("res://assets/skins/capybara/blue.svg")
+		preload("res://assets/skins/animals/bear/coral.svg"),
+		preload("res://assets/skins/animals/bear/mint.svg"),
+		preload("res://assets/skins/animals/bear/blue.svg")
 	],
 	"crystal": [
 		preload("res://assets/skins/crystal/coral.svg"),
 		preload("res://assets/skins/crystal/mint.svg"),
 		preload("res://assets/skins/crystal/blue.svg")
 	],
-	"cosmos": [
-		preload("res://assets/skins/cosmos/coral.svg"),
-		preload("res://assets/skins/cosmos/mint.svg"),
-		preload("res://assets/skins/cosmos/blue.svg")
-	],
 	"star_capybara": [
-		preload("res://assets/skins/star_capybara/coral.svg"),
-		preload("res://assets/skins/star_capybara/mint.svg"),
-		preload("res://assets/skins/star_capybara/blue.svg")
+		preload("res://assets/skins/animals/star_bear/coral.svg"),
+		preload("res://assets/skins/animals/star_bear/mint.svg"),
+		preload("res://assets/skins/animals/star_bear/blue.svg")
+	],
+	"bear": [
+		preload("res://assets/skins/animals/bear/coral.svg"),
+		preload("res://assets/skins/animals/bear/mint.svg"),
+		preload("res://assets/skins/animals/bear/blue.svg")
+	],
+	"toucan": [
+		preload("res://assets/skins/animals/toucan/coral.svg"),
+		preload("res://assets/skins/animals/toucan/mint.svg"),
+		preload("res://assets/skins/animals/toucan/blue.svg")
+	],
+	"parrot": [
+		preload("res://assets/skins/animals/parrot/coral.svg"),
+		preload("res://assets/skins/animals/parrot/mint.svg"),
+		preload("res://assets/skins/animals/parrot/blue.svg")
+	],
+	"frog": [
+		preload("res://assets/skins/animals/frog/coral.svg"),
+		preload("res://assets/skins/animals/frog/mint.svg"),
+		preload("res://assets/skins/animals/frog/blue.svg")
+	],
+	"monkey": [
+		preload("res://assets/skins/animals/monkey/coral.svg"),
+		preload("res://assets/skins/animals/monkey/mint.svg"),
+		preload("res://assets/skins/animals/monkey/blue.svg")
+	],
+	"jaguar": [
+		preload("res://assets/skins/animals/jaguar/coral.svg"),
+		preload("res://assets/skins/animals/jaguar/mint.svg"),
+		preload("res://assets/skins/animals/jaguar/blue.svg")
+	],
+	"sloth": [
+		preload("res://assets/skins/animals/sloth/coral.svg"),
+		preload("res://assets/skins/animals/sloth/mint.svg"),
+		preload("res://assets/skins/animals/sloth/blue.svg")
+	],
+	"lion": [
+		preload("res://assets/skins/animals/lion/coral.svg"),
+		preload("res://assets/skins/animals/lion/mint.svg"),
+		preload("res://assets/skins/animals/lion/blue.svg")
+	],
+	"zebra": [
+		preload("res://assets/skins/animals/zebra/coral.svg"),
+		preload("res://assets/skins/animals/zebra/mint.svg"),
+		preload("res://assets/skins/animals/zebra/blue.svg")
+	],
+	"elephant": [
+		preload("res://assets/skins/animals/elephant/coral.svg"),
+		preload("res://assets/skins/animals/elephant/mint.svg"),
+		preload("res://assets/skins/animals/elephant/blue.svg")
+	],
+	"giraffe": [
+		preload("res://assets/skins/animals/giraffe/coral.svg"),
+		preload("res://assets/skins/animals/giraffe/mint.svg"),
+		preload("res://assets/skins/animals/giraffe/blue.svg")
+	],
+	"fox": [
+		preload("res://assets/skins/animals/fox/coral.svg"),
+		preload("res://assets/skins/animals/fox/mint.svg"),
+		preload("res://assets/skins/animals/fox/blue.svg")
+	],
+	"owl": [
+		preload("res://assets/skins/animals/owl/coral.svg"),
+		preload("res://assets/skins/animals/owl/mint.svg"),
+		preload("res://assets/skins/animals/owl/blue.svg")
+	],
+	"star_bear": [
+		preload("res://assets/skins/animals/star_bear/coral.svg"),
+		preload("res://assets/skins/animals/star_bear/mint.svg"),
+		preload("res://assets/skins/animals/star_bear/blue.svg")
 	]
 }
 
