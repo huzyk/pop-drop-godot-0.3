@@ -2012,34 +2012,36 @@ func _draw_game_over() -> void:
 		360,993,15,520,Color("#c0b5d8"))
 
 func _draw_settings() -> void:
-	draw_rect(Rect2(0,0,720,1280),Color("#030618",0.94))
-	_neon_panel(Rect2(72,342,576,735),Color("#8bbde0"),true)
-	_fit_center("USTAWIENIA" if language == "pl" else "SETTINGS",304,414,38,390,Color.WHITE)
-	_box(SETTINGS_CLOSE,Color("#494e78"),18,Color("#a2b0d9"),2)
-	_fit_center("ZAMKNIJ" if language == "pl" else "CLOSE",535,420,17,106,Color.WHITE)
-	_fit_center("ANALITYKA GRY" if language == "pl" else "GAME ANALYTICS",360,513,22,445,Color("#d0e8fa"))
-	_box(SETTINGS_TOGGLE,Color("#225d58") if telemetry.opted_in else Color("#40365d"),20)
-	_fit_center(("WŁĄCZONA" if language == "pl" else "ON")
-		if telemetry.opted_in else ("WYŁĄCZONA" if language == "pl" else "OFF"),
-		360,601,26,420,Color.WHITE)
-	_box(SETTINGS_ERASE,Color("#42354d"),20)
-	_fit_center("USUŃ DANE LOKALNE" if language == "pl" else "CLEAR LOCAL DATA",
-		360,701,21,420,Color("#ffcfdf"))
-	_box(SETTINGS_AD_PRIVACY,Color("#303e61"),19)
-	_fit_center("USTAWIENIA REKLAM" if language == "pl" else "AD PRIVACY OPTIONS",
-		360,794,21,420,Color("#e0eeff"))
-	_fit_center("Analityka jest opcjonalna. Reklamy: osobna zgoda." if language == "pl"
+	draw_rect(Rect2(0,0,720,1280),Color("#E7EFFA",0.96))
+	_box(Rect2(72,350,576,735),Color("#89A8C6",0.20),30)
+	_box(Rect2(72,342,576,735),Color.WHITE,30)
+	_fit_center("USTAWIENIA" if language=="pl" else "SETTINGS",
+		304,414,38,390,Color("#273B54"))
+	_box(SETTINGS_CLOSE,Color("#EDF1F8"),18)
+	_fit_center("ZAMKNIJ" if language=="pl" else "CLOSE",535,420,18,106,Color("#506B86"))
+	_fit_center("ANALITYKA GRY" if language=="pl" else "GAME ANALYTICS",
+		360,513,23,445,Color("#647F9B"))
+	_box(SETTINGS_TOGGLE,Color("#43BEA9") if telemetry.opted_in else Color("#D8E0ED"),20)
+	_fit_center(("WŁĄCZONA" if language=="pl" else "ON")
+		if telemetry.opted_in else ("WYŁĄCZONA" if language=="pl" else "OFF"),
+		360,601,26,420,Color.WHITE if telemetry.opted_in else Color("#516984"))
+	_box(SETTINGS_ERASE,Color("#FFF0F1"),20)
+	_fit_center("USUŃ DANE LOKALNE" if language=="pl" else "CLEAR LOCAL DATA",
+		360,701,22,430,Color("#CC4E75"))
+	_box(SETTINGS_AD_PRIVACY,Color("#EAF0F8"),19)
+	_fit_center("USTAWIENIA REKLAM" if language=="pl" else "AD PRIVACY OPTIONS",
+		360,794,22,430,Color("#56728E"))
+	_fit_center("Analityka jest opcjonalna. Reklamy: osobna zgoda." if language=="pl"
 		else "Analytics is optional. Ads have separate consent.",
-		360,855,15,530,Color("#b6c6db"))
-	_box(SETTINGS_SOUND,Color("#225d58") if feedback.sound_enabled else Color("#40365d"),18)
-	_fit_center(("DŹWIĘKI: TAK" if language == "pl" else "SOUND: ON")
-		if feedback.sound_enabled else ("DŹWIĘKI: NIE" if language == "pl" else "SOUND: OFF"),
-		360,930,23,450,Color.WHITE)
-	_box(SETTINGS_HAPTICS,Color("#225d58") if feedback.haptics_enabled else Color("#40365d"),18)
-	_fit_center(("WIBRACJE: TAK" if language == "pl" else "HAPTICS: ON")
-		if feedback.haptics_enabled else ("WIBRACJE: NIE" if language == "pl" else "HAPTICS: OFF"),
-		360,1018,23,450,Color.WHITE)
-
+		360,855,17,532,Color("#73879B"))
+	_box(SETTINGS_SOUND,Color("#43BEA9") if feedback.sound_enabled else Color("#D8E0ED"),18)
+	_fit_center(("DŹWIĘKI: TAK" if language=="pl" else "SOUND: ON")
+		if feedback.sound_enabled else ("DŹWIĘKI: NIE" if language=="pl" else "SOUND: OFF"),
+		360,930,23,450,Color.WHITE if feedback.sound_enabled else Color("#516984"))
+	_box(SETTINGS_HAPTICS,Color("#43BEA9") if feedback.haptics_enabled else Color("#D8E0ED"),18)
+	_fit_center(("WIBRACJE: TAK" if language=="pl" else "HAPTICS: ON")
+		if feedback.haptics_enabled else ("WIBRACJE: NIE" if language=="pl" else "HAPTICS: OFF"),
+		360,1018,23,450,Color.WHITE if feedback.haptics_enabled else Color("#516984"))
 func _draw_level_celebration() -> void:
 	var progress: float = 1.0-level_fx_time/3.0
 	var alpha: float = clampf(level_fx_time/0.42,0.0,1.0)
@@ -2203,24 +2205,26 @@ func _draw_bomb_target() -> void:
 	_fit_center(shop_t("magic_aim") if magic_aim else shop_t("aim"),360,862,18,407,Color("#fff2d9"))
 
 func _draw_shop() -> void:
-	draw_rect(Rect2(0,0,720,1280),Color("#050819",0.96))
-	_neon_panel(Rect2(54,225,612,863),Color("#f1cb91"),true)
-	_box(Rect2(67,238,586,837),Color("#191d38"),27,Color("#7c679d"),2)
-	_draw_icon(ICON_SHOP,Vector2(129,288),46)
-	_fit_center(shop_t("shop"),324,313,43,324,Color("#fff1d9"))
-	_box(SHOP_CLOSE,Color("#474a70"),18,Color("#9eadd0"),2)
-	_fit_center(shop_t("close"),574,301,17,108,Color.WHITE)
-	_neon_panel(Rect2(98,338,522,51),Color("#ffd487"))
-	_fit_center(shop_t("coins"),253,371,22,187,Color("#ffe8b3"))
+	# All purchase UI belongs to the same bright candy world as the board.
+	draw_rect(Rect2(0,0,720,1280),Color("#E8F0FB",0.97))
+	_box(Rect2(54,234,612,863),Color("#7899BC",0.18),30)
+	_box(Rect2(54,225,612,863),Color("#FFFFFF"),30)
+	draw_circle(Vector2(128,288),29,Color("#5ABEA9"))
+	_draw_icon(ICON_SHOP,Vector2(128,288),47)
+	_fit_center(shop_t("shop"),326,313,43,326,Color("#243750"))
+	_box(SHOP_CLOSE,Color("#EAF0F8"),17)
+	_fit_center(shop_t("close"),574,301,18,112,Color("#4B6683"))
+	_box(Rect2(98,338,522,51),Color("#FFF5DF"),18)
+	_fit_center(shop_t("coins"),253,371,22,190,Color("#596B80"))
 	_draw_icon(ICON_COIN,Vector2(387,361),37)
-	_fit_center(str(shop.coins),494,371,25,192,Color("#ffe8b3"))
+	_fit_center(str(shop.coins),493,372,26,194,Color("#30435C"))
 	for tab in range(2):
 		var rect: Rect2 = SHOP_TAB_BOOST if tab==0 else SHOP_TAB_SKINS
 		var selected: bool = shop_tab==tab
-		_box(rect,Color("#266259") if selected else Color("#262b4d"),
-			19,Color("#86f0d8") if selected else Color("#6475a6"),2)
+		_box(rect,Color("#40BEAD") if selected else Color("#EAF0F8"),18)
 		_fit_center(shop_t("boosts") if tab==0 else shop_t("skins"),
-			rect.get_center().x,447,22,225,Color.WHITE if selected else Color("#bac4d9"))
+			rect.get_center().x,447,23,228,
+			Color.WHITE if selected else Color("#536B88"))
 	var shown: Array = _shop_items()
 	for i in range(shown.size()):
 		var id: String = str(shown[i])
@@ -2231,45 +2235,45 @@ func _draw_shop() -> void:
 		var is_active: bool = is_skin and shop.equipped_skin==id
 		var purchasable: bool = shop.can_purchase(id)
 		var rect: Rect2 = _shop_card(i)
-		var accent: Color = Color("#ffcc91") if i==0 else Color("#91e5ed")
-		_box(rect,Color("#252d49"),22,Color("#82efd5") if is_active else Color("#687397"),2)
+		_box(Rect2(rect.position+Vector2(0,5),rect.size),Color("#98AEC3",0.12),23)
+		_box(rect,Color("#F0F4FA") if i==0 else Color("#FFF3F0"),22,
+			Color("#3FC6B2") if is_active else Color("#E3EAF3"),2)
 		var at: Vector2 = rect.position+Vector2(80,86)
-		draw_circle(at,54,Color(accent.r,accent.g,accent.b,0.1))
+		draw_circle(at,58,Color("#FFFFFF",0.78))
 		if not is_skin:
 			_draw_icon(ICON_BOMB if id=="bomb" else ICON_MAGIC if id=="magic"
-				else ICON_REROLL,at,92)
+				else ICON_REROLL,at,95)
 		else:
 			preview_skin = id
-			_ball(at,38,0)
+			_ball(at,40,0)
 			preview_skin = ""
 		_fit_center("JELLY PALS" if id=="default" else shop_t(id),
-			rect.position.x+339,rect.position.y+58,26,346,Color.WHITE)
+			rect.position.x+339,rect.position.y+58,28,348,Color("#2B405B"))
 		var description: String = shop_t(id+"_desc")
 		if id=="default":
 			description = "BAZOWA SKÓRKA · DARMOWA" if language=="pl" else "BASE SKIN · FREE"
 		elif special:
 			description = "NAGRODA ZA 7 DNI GRY" if language=="pl" else "PLAY 7 DAYS TO UNLOCK"
-		_fit_center(description,rect.position.x+333,rect.position.y+99,16,381,Color("#cbd3e8"))
+		_fit_center(description,rect.position.x+333,rect.position.y+100,17,380,Color("#667D95"))
 		var label: String = shop_t("active") if is_active else (
 			shop_t("equip") if is_owned else ("7 DNI" if language=="pl" else "DAY 7") if special
 			else shop_t("buy")+"  "+str(product["price"]))
 		var available: bool = purchasable or is_owned
-		_box(Rect2(rect.position+Vector2(199,131),Vector2(311,60)),
-			Color("#296157") if available else Color("#46445d"),
-			17,Color("#8bf3d8") if available else Color("#74708b"),2)
+		_box(Rect2(rect.position+Vector2(199,135),Vector2(311,59)),
+			Color("#31BBA9") if available else Color("#D0D9E6"),17)
 		if not is_owned and not special:
-			_draw_icon(ICON_COIN,rect.position+Vector2(232,162),25,1.0 if purchasable else 0.45)
-		_fit_center(label,rect.position.x+370,rect.position.y+172,21,256,
-			Color.WHITE if available else Color("#b6b5c8"))
+			_draw_icon(ICON_COIN,rect.position+Vector2(232,164),25,1.0 if purchasable else 0.50)
+		_fit_center(label,rect.position.x+370,rect.position.y+173,22,258,
+			Color.WHITE if available else Color("#788BA2"))
 		if not is_skin:
 			_fit_center(shop_t("stock")+": "+str(shop.stock(id)),
-				rect.position.x+85,rect.position.y+175,15,166,Color("#d7d9e9"))
-	_box(SHOP_PREV,Color("#2d375c"),14)
-	_box(SHOP_NEXT,Color("#2d375c"),14)
-	_fit_center("◀",SHOP_PREV.get_center().x,1007,23,100,Color.WHITE)
-	_fit_center("▶",SHOP_NEXT.get_center().x,1007,23,100,Color.WHITE)
+				rect.position.x+84,rect.position.y+179,17,168,Color("#66839A"))
+	_box(SHOP_PREV,Color("#EAF0F8"),15)
+	_box(SHOP_NEXT,Color("#EAF0F8"),15)
+	_fit_center("◀",SHOP_PREV.get_center().x,1007,23,100,Color("#455C79"))
+	_fit_center("▶",SHOP_NEXT.get_center().x,1007,23,100,Color("#455C79"))
 	_fit_center("%s %d / %d" % [shop_t("page"),shop_page+1,_shop_pages()],
-		360,1007,17,230,Color("#dfe3ff"))
-	_fit_center(shop_t("tip"),360,1046,17,522,Color("#b9c7e0"))
+		360,1007,18,230,Color("#4D6781"))
+	_fit_center(shop_t("tip"),360,1046,18,526,Color("#6D8299"))
 	if shop_notice_time>0:
-		_fit_center(shop_notice,360,1075,18,526,Color("#ffe6b5"))
+		_fit_center(shop_notice,360,1075,19,530,Color("#E6547C"))
