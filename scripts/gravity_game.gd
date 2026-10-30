@@ -284,6 +284,39 @@ func _cycle_language() -> void:
 func analytics_erase_label() -> String:
 	return "USUŃ DANE ANALITYKI" if language == "pl" else "CLEAR ANALYTICS DATA"
 
+const BADGES_PL := {
+	"first_drop":"PIERWSZY RUCH","drops_25":"25 ZRZUTÓW",
+	"drops_100":"100 ZRZUTÓW","pop_1":"PIERWSZY POP",
+	"pop_50":"50 POPÓW","pop_200":"200 POPÓW",
+	"combo_2":"KASKADA ×2","combo_4":"KASKADA ×4",
+	"score_10000":"10 TYS. PKT","rounds_10":"10 RUND",
+	"streak_3":"SERIA 3 DNI","streak_7":"SERIA 7 DNI"
+}
+const BADGES_EN := {
+	"first_drop":"FIRST DROP","drops_25":"25 DROPS",
+	"drops_100":"100 DROPS","pop_1":"FIRST POP",
+	"pop_50":"50 POPS","pop_200":"200 POPS",
+	"combo_2":"CASCADE ×2","combo_4":"CASCADE ×4",
+	"score_10000":"10K POINTS","rounds_10":"10 ROUNDS",
+	"streak_3":"3-DAY STREAK","streak_7":"7-DAY STREAK"
+}
+
+func badge_t(id: String) -> String:
+	return str((BADGES_PL if language=="pl" else BADGES_EN).get(id,id))
+
+func badge_icon(id: String) -> String:
+	if id.begins_with("streak"):
+		return "heart"
+	if id.begins_with("score"):
+		return "coins"
+	if id.begins_with("rounds"):
+		return "shop"
+	if id.begins_with("combo"):
+		return "reroll"
+	if id.begins_with("pop"):
+		return "bomb"
+	return "user"
+
 func profile_t(key: String) -> String:
 	return str(PROFILE_TR.get(language,PROFILE_TR["en"]).get(key,key))
 
