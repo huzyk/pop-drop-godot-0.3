@@ -13,6 +13,24 @@ func _initialize() -> void:
 	assert(Game.BOARD.size.x == Game.BOARD.size.y)
 	assert(Game.BOARD.size.x >= 530.0)
 
+	# Language control must be visible, directly tappable and reachable
+	# independently in settings, with no obstruction by top controls.
+	assert(Game.LANG_RECT.size.x >= 100)
+	assert(Game.SETTINGS_LANGUAGE.size.y >= 50)
+	assert(Game.SETTINGS_LANGUAGE.position.y > Game.SETTINGS_AD_PRIVACY.end.y)
+	assert(Game.SETTINGS_LANGUAGE.end.y < Game.SETTINGS_SOUND.position.y)
+	assert(not Game.LANG_RECT.intersects(Game.SETTINGS_OPEN))
+	var localize = Game.new()
+	assert(localize.fx_t("amazing") == "AMAZING!") # Default en
+	localize.language = "pl"
+	assert(localize.fx_t("great") == "ŚWIETNIE!")
+	assert(localize.fx_t("amazing") == "NIESAMOWITE!")
+	assert(localize.fx_t("surge") == "NAWAŁNICA!")
+	assert(localize.language_name() == "POLSKI")
+	localize._cycle_language()
+	assert(localize.language == "en")
+	localize.free()
+
 	# The board must not collide with any dashboard or action panels.
 	for hud in [Game.HUD_SCORE,Game.HUD_WAVE,Game.HUD_LIVES]:
 		assert(not Game.BOARD.grow(6).intersects(hud))
