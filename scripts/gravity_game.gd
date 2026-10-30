@@ -54,13 +54,13 @@ const COLORS := [Color("#ff7096"),Color("#55dcad"),Color("#62b5ff")]
 const SAVE_FILE := "user://pop_drop_gravity.json"
 const LOCALES := ["pl","en","es","pt","de","fr","ru"]
 const TR := {
-	"pl":{"life":"ŻYCIA","tap_short":"DOTKNIJ KOLUMNY","score":"WYNIK","best":"REKORD","move":"RUCH","drop":"DOTKNIJ KOLUMNĘ, ABY ZRZUCIĆ","turn":"OBRÓĆ PLANSZĘ LUB GRAJ DALEJ","left":"W LEWO","right":"W PRAWO","skip":"DALEJ","next":"WYBIERZ KSZTAŁT","ready":"5 KULEK POŁĄCZONYCH BOKAMI = POP  •  GÓRA = -1 ŻYCIE","over":"KONIEC RUNDY","again":"ZAGRAJ PONOWNIE","rescue":"TEST: +1 ŻYCIE","lost":"STRATA ŻYCIA","rotate_controls":"OBRACAJ PRZYCISKAMI PONIŻEJ","rotate_help":"SPRÓBUJ OBRÓCIĆ PLANSZĘ","charge":"GRUPA","danger":"WYSOKOŚĆ","danger_soon":"UWAGA: GÓRNA LINIA!","overflow":"UTRATA ŻYCIA!","hint":"Wybierz kolumnę dla spadającego kształtu"},
-	"en":{"life":"LIVES","tap_short":"TAP A COLUMN","score":"SCORE","best":"BEST","move":"MOVE","drop":"TAP A COLUMN TO DROP","turn":"ROTATE OR KEEP GOING","left":"LEFT","right":"RIGHT","skip":"NEXT","next":"CHOOSE A SHAPE","ready":"5 TOUCHING BALLS = POP  •  TOP = -1 LIFE","over":"GAME OVER","again":"PLAY AGAIN","rescue":"TEST: +1 LIFE","lost":"LIFE LOST","rotate_controls":"ROTATE WITH THE BUTTONS BELOW","rotate_help":"ROTATE TO MAKE ROOM","charge":"GROUP","danger":"HEIGHT","danger_soon":"CAREFUL: TOP ROW!","overflow":"LIFE LOST!","hint":"Choose a column for the falling piece"},
-	"es":{"life":"VIDAS","tap_short":"TOCA COLUMNA","score":"PUNTOS","best":"RÉCORD","move":"JUGADA","drop":"TOCA UNA COLUMNA PARA SOLTAR","turn":"GIRA O CONTINÚA","left":"IZQUIERDA","right":"DERECHA","skip":"SEGUIR","next":"ELIGE UNA FIGURA","ready":"5 BOLAS CONECTADAS = POP  •  ARRIBA = -1 VIDA","over":"FIN DEL JUEGO","again":"JUGAR OTRA VEZ","rescue":"PRUEBA: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USA LOS BOTONES PARA GIRAR","rotate_help":"GIRA PARA HACER ESPACIO","charge":"GRUPO","danger":"ALTURA","danger_soon":"¡FILA SUPERIOR!","overflow":"¡VIDA PERDIDA!","hint":"Elige una columna para las bolas"},
-	"pt":{"life":"VIDAS","tap_short":"TOQUE A COLUNA","score":"PONTOS","best":"RECORDE","move":"JOGADA","drop":"TOQUE NA COLUNA PARA SOLTAR","turn":"GIRE OU CONTINUE","left":"ESQUERDA","right":"DIREITA","skip":"SEGUIR","next":"ESCOLHA UMA PEÇA","ready":"5 BOLAS CONECTADAS = POP  •  TOPO = -1 VIDA","over":"FIM DE JOGO","again":"JOGAR DE NOVO","rescue":"TESTE: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USE OS BOTÕES PARA GIRAR","rotate_help":"GIRE PARA ABRIR ESPAÇO","charge":"GRUPO","danger":"ALTURA","danger_soon":"CUIDADO: TOPO!","overflow":"VIDA PERDIDA!","hint":"Escolha uma coluna para jogar"},
-	"de":{"life":"LEBEN","tap_short":"SPALTE TIPPEN","score":"PUNKTE","best":"REKORD","move":"ZUG","drop":"SPALTE ANTIPPEN ZUM FALLEN","turn":"DREHEN ODER WEITER","left":"LINKS","right":"RECHTS","skip":"WEITER","next":"FORM WÄHLEN","ready":"5 VERBUNDENE KUGELN = POP  •  OBEN = -1 LEBEN","over":"SPIEL VORBEI","again":"NOCHMAL SPIELEN","rescue":"TEST: +1 LEBEN","lost":"LEBEN VERLOREN","rotate_controls":"MIT DEN TASTEN UNTEN DREHEN","rotate_help":"DREHE FÜR MEHR PLATZ","charge":"GRUPPE","danger":"HÖHE","danger_soon":"ACHTUNG: OBERSTE REIHE!","overflow":"LEBEN VERLOREN!","hint":"Wähle eine Spalte zum Einwerfen"},
-	"fr":{"life":"VIES","tap_short":"TOUCHE COLONNE","score":"SCORE","best":"RECORD","move":"COUP","drop":"TOUCHE UNE COLONNE POUR LÂCHER","turn":"TOURNE OU CONTINUE","left":"GAUCHE","right":"DROITE","skip":"SUITE","next":"CHOISIS UNE FORME","ready":"5 BILLES CONNECTÉES = POP  •  HAUT = -1 VIE","over":"PARTIE FINIE","again":"REJOUER","rescue":"TEST : +1 VIE","lost":"VIE PERDUE","rotate_controls":"TOURNE AVEC LES BOUTONS","rotate_help":"TOURNE POUR LIBÉRER DE LA PLACE","charge":"GROUPE","danger":"HAUTEUR","danger_soon":"ATTENTION AU SOMMET!","overflow":"VIE PERDUE!","hint":"Choisis une colonne pour les billes"},
-	"ru":{"life":"ЖИЗНИ","tap_short":"ВЫБЕРИ СТОЛБЕЦ","score":"ОЧКИ","best":"РЕКОРД","move":"ХОД","drop":"НАЖМИ СТОЛБЕЦ ДЛЯ СБРОСА","turn":"ПОВЕРНИ ИЛИ ПРОДОЛЖИ","left":"ВЛЕВО","right":"ВПРАВО","skip":"ДАЛЕЕ","next":"ВЫБЕРИ ФИГУРУ","ready":"5 СОЕДИНЁННЫХ ШАРОВ = POP  •  ВЕРХ = -1 ЖИЗНЬ","over":"ИГРА ОКОНЧЕНА","again":"ИГРАТЬ СНОВА","rescue":"ТЕСТ: +1 ЖИЗНЬ","lost":"МИНУС ЖИЗНЬ","rotate_controls":"ПОВОРОТ КНОПКАМИ ВНИЗУ","rotate_help":"ПОВЕРНИ, ЧТОБЫ ОСВОБОДИТЬ МЕСТО","charge":"ГРУППА","danger":"ВЫСОТА","danger_soon":"ВНИМАНИЕ: ВЕРХ!","overflow":"МИНУС ЖИЗНЬ!","hint":"Выбери столбец для шариков"}
+	"pl":{"life":"ŻYCIA","tap_short":"DOTKNIJ KOLUMNY","score":"WYNIK","best":"REKORD","move":"RUCH","drop":"DOTKNIJ KOLUMNĘ, ABY ZRZUCIĆ","turn":"OBRÓĆ PLANSZĘ LUB GRAJ DALEJ","left":"W LEWO","right":"W PRAWO","skip":"DALEJ","next":"WYBIERZ KSZTAŁT","ready":"5 KULEK POŁĄCZONYCH BOKAMI = POP  •  BRAK RUCHÓW = KONIEC GRY","over":"KONIEC RUNDY","again":"ZAGRAJ PONOWNIE","rescue":"TEST: +1 ŻYCIE","lost":"STRATA ŻYCIA","rotate_controls":"OBRACAJ PRZYCISKAMI PONIŻEJ","rotate_help":"SPRÓBUJ OBRÓCIĆ PLANSZĘ","charge":"GRUPA","danger":"WYSOKOŚĆ","danger_soon":"UWAGA: GÓRNA LINIA!","overflow":"UTRATA ŻYCIA!","hint":"Wybierz kolumnę dla spadającego kształtu"},
+	"en":{"life":"LIVES","tap_short":"TAP A COLUMN","score":"SCORE","best":"BEST","move":"MOVE","drop":"TAP A COLUMN TO DROP","turn":"ROTATE OR KEEP GOING","left":"LEFT","right":"RIGHT","skip":"NEXT","next":"CHOOSE A SHAPE","ready":"5 TOUCHING BALLS = POP  •  NO MOVES = GAME OVER","over":"GAME OVER","again":"PLAY AGAIN","rescue":"TEST: +1 LIFE","lost":"LIFE LOST","rotate_controls":"ROTATE WITH THE BUTTONS BELOW","rotate_help":"ROTATE TO MAKE ROOM","charge":"GROUP","danger":"HEIGHT","danger_soon":"CAREFUL: TOP ROW!","overflow":"LIFE LOST!","hint":"Choose a column for the falling piece"},
+	"es":{"life":"VIDAS","tap_short":"TOCA COLUMNA","score":"PUNTOS","best":"RÉCORD","move":"JUGADA","drop":"TOCA UNA COLUMNA PARA SOLTAR","turn":"GIRA O CONTINÚA","left":"IZQUIERDA","right":"DERECHA","skip":"SEGUIR","next":"ELIGE UNA FIGURA","ready":"5 BOLAS CONECTADAS = POP  •  SIN JUGADAS = FIN","over":"FIN DEL JUEGO","again":"JUGAR OTRA VEZ","rescue":"PRUEBA: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USA LOS BOTONES PARA GIRAR","rotate_help":"GIRA PARA HACER ESPACIO","charge":"GRUPO","danger":"ALTURA","danger_soon":"¡FILA SUPERIOR!","overflow":"¡VIDA PERDIDA!","hint":"Elige una columna para las bolas"},
+	"pt":{"life":"VIDAS","tap_short":"TOQUE A COLUNA","score":"PONTOS","best":"RECORDE","move":"JOGADA","drop":"TOQUE NA COLUNA PARA SOLTAR","turn":"GIRE OU CONTINUE","left":"ESQUERDA","right":"DIREITA","skip":"SEGUIR","next":"ESCOLHA UMA PEÇA","ready":"5 BOLAS CONECTADAS = POP  •  SEM JOGADAS = FIM","over":"FIM DE JOGO","again":"JOGAR DE NOVO","rescue":"TESTE: +1 VIDA","lost":"VIDA PERDIDA","rotate_controls":"USE OS BOTÕES PARA GIRAR","rotate_help":"GIRE PARA ABRIR ESPAÇO","charge":"GRUPO","danger":"ALTURA","danger_soon":"CUIDADO: TOPO!","overflow":"VIDA PERDIDA!","hint":"Escolha uma coluna para jogar"},
+	"de":{"life":"LEBEN","tap_short":"SPALTE TIPPEN","score":"PUNKTE","best":"REKORD","move":"ZUG","drop":"SPALTE ANTIPPEN ZUM FALLEN","turn":"DREHEN ODER WEITER","left":"LINKS","right":"RECHTS","skip":"WEITER","next":"FORM WÄHLEN","ready":"5 VERBUNDENE KUGELN = POP  •  KEINE ZÜGE = ENDE","over":"SPIEL VORBEI","again":"NOCHMAL SPIELEN","rescue":"TEST: +1 LEBEN","lost":"LEBEN VERLOREN","rotate_controls":"MIT DEN TASTEN UNTEN DREHEN","rotate_help":"DREHE FÜR MEHR PLATZ","charge":"GRUPPE","danger":"HÖHE","danger_soon":"ACHTUNG: OBERSTE REIHE!","overflow":"LEBEN VERLOREN!","hint":"Wähle eine Spalte zum Einwerfen"},
+	"fr":{"life":"VIES","tap_short":"TOUCHE COLONNE","score":"SCORE","best":"RECORD","move":"COUP","drop":"TOUCHE UNE COLONNE POUR LÂCHER","turn":"TOURNE OU CONTINUE","left":"GAUCHE","right":"DROITE","skip":"SUITE","next":"CHOISIS UNE FORME","ready":"5 BILLES CONNECTÉES = POP  •  AUCUN COUP = FIN","over":"PARTIE FINIE","again":"REJOUER","rescue":"TEST : +1 VIE","lost":"VIE PERDUE","rotate_controls":"TOURNE AVEC LES BOUTONS","rotate_help":"TOURNE POUR LIBÉRER DE LA PLACE","charge":"GROUPE","danger":"HAUTEUR","danger_soon":"ATTENTION AU SOMMET!","overflow":"VIE PERDUE!","hint":"Choisis une colonne pour les billes"},
+	"ru":{"life":"ЖИЗНИ","tap_short":"ВЫБЕРИ СТОЛБЕЦ","score":"ОЧКИ","best":"РЕКОРД","move":"ХОД","drop":"НАЖМИ СТОЛБЕЦ ДЛЯ СБРОСА","turn":"ПОВЕРНИ ИЛИ ПРОДОЛЖИ","left":"ВЛЕВО","right":"ВПРАВО","skip":"ДАЛЕЕ","next":"ВЫБЕРИ ФИГУРУ","ready":"5 СОЕДИНЁННЫХ ШАРОВ = POP  •  НЕТ ХОДОВ = КОНЕЦ","over":"ИГРА ОКОНЧЕНА","again":"ИГРАТЬ СНОВА","rescue":"ТЕСТ: +1 ЖИЗНЬ","lost":"МИНУС ЖИЗНЬ","rotate_controls":"ПОВОРОТ КНОПКАМИ ВНИЗУ","rotate_help":"ПОВЕРНИ, ЧТОБЫ ОСВОБОДИТЬ МЕСТО","charge":"ГРУППА","danger":"ВЫСОТА","danger_soon":"ВНИМАНИЕ: ВЕРХ!","overflow":"МИНУС ЖИЗНЬ!","hint":"Выбери столбец для шариков"}
 }
 const LEFT_RECT := Rect2(30,1085,160,127)
 const RIGHT_RECT := Rect2(522,1085,160,127)
@@ -181,6 +181,7 @@ var game_over_reported: bool = false
 var wave_number: int = 0
 var wave_time_left: float = 12.0
 var wave_queued: bool = false
+var loss_reason: String = "" # Exact reason displayed after the game ends
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -377,10 +378,8 @@ func _use_bomb(target: Vector2i) -> void:
 	chain_depth = 0
 	await _resolve_cascades()
 	phase = "drop"
-	_check_ceiling()
-	if phase == "drop":
-		_refresh_targets()
-		_check_stuck()
+	_refresh_targets()
+	_check_stuck()
 	if phase == "over":
 		_on_game_over()
 	_save_progress()
@@ -471,8 +470,9 @@ func new_game() -> void:
 		board[5][x] = [-1,-1,2,0,1,2,0,1][x]
 	score = 0
 	moves = 0
-	lives = 3
+	lives = 1 # Legacy checkpoint field, not a multi-life mechanic.
 	revives = 0
+	loss_reason = ""
 	chain_depth = 0
 	pieces = []
 	recent_shapes.clear()
@@ -520,7 +520,8 @@ func _save_progress() -> void:
 		"over_reported": game_over_reported,
 		"action_serial": action_serial,
 		"wave_number":wave_number,
-		"wave_time_left":wave_time_left
+		"wave_time_left":wave_time_left,
+		"loss_reason":loss_reason
 	})
 
 func _restore_progress(data: Dictionary) -> void:
@@ -529,8 +530,9 @@ func _restore_progress(data: Dictionary) -> void:
 	phase = str(data["phase"])
 	score = int(data["score"])
 	moves = int(data["moves"])
-	lives = int(data["lives"])
+	lives = 0 if phase == "over" else 1
 	revives = int(data["revives"])
+	loss_reason = str(data.get("loss_reason","no_moves" if phase == "over" else ""))
 	run_id = str(data.get("run_id","restored"))
 	best_at_round_start = int(data.get("best_at_start",best))
 	game_over_reported = bool(data.get("over_reported",phase=="over"))
@@ -571,7 +573,7 @@ func _on_game_over() -> void:
 	telemetry.track("game_over", {
 		"run_id":run_id, "score":score, "moves":moves,
 		"revives":revives, "distance_to_previous_best":maxi(0,best_at_round_start-score),
-		"round_number":rounds_played
+		"round_number":rounds_played, "cause":loss_reason
 	})
 
 func _revive() -> bool:
@@ -585,6 +587,7 @@ func _revive() -> bool:
 	selected_piece = 0
 	phase = "drop"
 	ad_note = ""
+	loss_reason = ""
 	wave_time_left = Rules.wave_interval(wave_number)
 	_refresh_targets()
 	_praise("+1 ♥",Color("#ff9bb7"),1.2)
@@ -898,10 +901,8 @@ func _play_drop(column: int) -> void:
 	# No Next button: the next shape is ready immediately after this drop.
 	_advance_piece(used_index)
 	phase = "drop"
-	_check_ceiling()
-	if phase == "drop":
-		_refresh_targets()
-		_check_stuck()
+	_refresh_targets()
+	_check_stuck()
 	if phase == "over":
 		_on_game_over()
 	_save_progress()
@@ -932,10 +933,8 @@ func _rotate_board(clockwise: bool) -> void:
 	await _animate_to(spill.board,spill.motions,0.51,"roll")
 	await _resolve_cascades(true)
 	phase = "drop"
-	_check_ceiling()
-	if phase == "drop":
-		_refresh_targets()
-		_check_stuck()
+	_refresh_targets()
+	_check_stuck()
 	if phase == "over":
 		_on_game_over()
 	_save_progress()
@@ -950,51 +949,31 @@ func _trigger_pressure_wave() -> void:
 	action_serial += 1
 	action_id = "action:%s:%d" % [run_id,action_serial]
 	wave_number += 1
-	var beads: int = Rules.wave_marble_count(wave_number)
 	wave_time_left = Rules.wave_interval(wave_number)
-	var wave: Dictionary = Rules.rise_wave(board,rng,beads)
-	if bool(wave.get("overflow",false)):
-		# An incoming row cannot silently delete occupied top cells.
-		lives -= 1
-		if feedback != null:
-			feedback.cue("fail")
-		telemetry.track("life_lost",{"run_id":run_id,"cause":"wave_overflow","wave":wave_number,"lives_left":lives})
-		_shock(BOARD.position+Vector2(BOARD.size.x*0.5,CELL*0.5),2.6,Color("#ff678f"))
-		if lives <= 0:
-			phase = "over"
-			_on_game_over()
-			_save_progress()
-			queue_redraw()
-			return
-		board = Rules.rescue(board)
-		wave = Rules.rise_wave(board,rng,beads)
-		if not bool(wave.get("valid",false)):
-			phase = "drop"
-			_save_progress()
-			return
+	var beads: int = Rules.wave_marble_count(wave_number)
+	var wave: Dictionary = Rules.drop_wave(board,rng,beads)
 	if feedback != null:
-		feedback.cue("rotate")
-	_shock(BOARD.get_center(),1.6,Color("#ffae83"))
-	await _animate_to(wave.board,wave.motions,0.45,"wave")
-	var rocks_added: int = 0
-	# First wave introduces a rock; every later wave tries to add two.
-	for i in range(1 if wave_number == 1 else 2):
+		feedback.cue("drop")
+	if int(wave["added"]) > 0:
+		_shock(BOARD.get_center(),1.05,Color("#ffae83"))
+	await _animate_to(wave.board,wave.motions,0.31,"wave")
+	# Rocks are not artificially capped; spawn just one every third wave.
+	var rock_added: bool = false
+	if wave_number % 3 == 0:
 		var rock: Dictionary = Rules.spawn_rock(board,rng)
 		if bool(rock.get("spawned",false)):
 			board = rock.board
-			rocks_added += 1
-			_shock(BOARD.position+(Vector2(rock.cell)+Vector2(0.5,0.5))*CELL,1.4,Color("#ffe0a7"))
+			rock_added = true
+			_shock(BOARD.position+(Vector2(rock.cell)+Vector2(0.5,0.5))*CELL,1.2,Color("#ffe0a7"))
 	telemetry.track("pressure_wave",{
-		"run_id":run_id,"wave":wave_number,"marbles":beads,
-		"rocks_added":rocks_added,"next_interval":wave_time_left
+		"run_id":run_id,"wave":wave_number,"marbles":int(wave["added"]),
+		"rock_added":rock_added,"next_interval":wave_time_left
 	})
 	chain_depth = 0
 	await _resolve_cascades()
 	phase = "drop"
-	_check_ceiling()
-	if phase == "drop":
-		_refresh_targets()
-		_check_stuck()
+	_refresh_targets()
+	_check_stuck()
 	if phase == "over":
 		_on_game_over()
 	_save_progress()
@@ -1053,24 +1032,6 @@ func _could_recover_by_rotating() -> bool:
 			if _any_piece_can_drop(virtual):
 				return true
 	return false
-func _check_ceiling() -> void:
-	# Reaching the clearly highlighted top row costs one life, even if there
-	# are other empty columns. Rotating can prevent the loss beforehand.
-	if not Rules.ceiling_reached(board):
-		return
-	if feedback != null:
-		feedback.cue("fail")
-	lives -= 1
-	telemetry.track("life_lost", {"run_id":run_id,"cause":"ceiling","moves":moves,"lives_left":lives})
-	_praise(t("overflow"),Color("#ff879d"),1.3)
-	_shock(BOARD.position+Vector2(BOARD.size.x*0.5,CELL*0.5),2.5,Color("#ff6389"))
-	if lives <= 0:
-		phase = "over"
-	else:
-		# Remove the highest two occupied rows, settle and keep playing.
-		board = Rules.rescue(board)
-	queue_redraw()
-
 func _any_piece_can_drop(on_board: Array) -> bool:
 	for piece in pieces:
 		if Rules.any_drop(on_board,piece):
@@ -1085,23 +1046,19 @@ func _check_stuck() -> void:
 	if _could_recover_by_rotating():
 		_praise(t("rotate_help"),Color("#ffe49c"),1.1)
 		return
+	# The ONLY natural loss condition: no offered piece fits, even after a turn.
+	# There are no ceiling deaths, wave-overflow penalties or extra lives.
+	loss_reason = "no_moves"
+	lives = 0
+	phase = "over"
 	if feedback != null:
 		feedback.cue("fail")
-	lives -= 1
-	telemetry.track("life_lost", {"run_id":run_id,"cause":"blocked","moves":moves,"lives_left":lives})
-	_praise(t("lost"),Color("#ff8ca4"),1.2)
-	if lives <= 0:
-		phase = "over"
-	else:
-		board = Rules.rescue(board)
-		pieces[0] = Rules.next_piece(rng,board,recent_shapes)
-		_remember_shape(pieces[0])
-		if not _any_piece_can_drop(board):
-			# Preserve hard obstacles during the last-resort clear.
-			# Only adjacent POPs / bomb damage may actually destroy rocks.
-			board = Rules.clear_marbles(board)
-		selected_piece = 0
-		_refresh_targets()
+	telemetry.track("life_lost", {
+		"run_id":run_id, "cause":loss_reason, "moves":moves,
+		"board_filled":Rules.filled(board),"wave":wave_number
+	})
+	_shock(BOARD.get_center(),2.1,Color("#ff6389"))
+	_on_game_over()
 	queue_redraw()
 
 func _animate_to(next_board: Array, motions: Array, seconds: float, kind: String) -> void:
