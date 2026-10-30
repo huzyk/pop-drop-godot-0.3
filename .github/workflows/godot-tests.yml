@@ -91,12 +91,14 @@ jobs:
           if grep -E 'SCRIPT ERROR:|Parse Error:|Failed to load script|Compile Error:|Invalid call\.' /tmp/godot-preview.log; then
             exit 1
           fi
-          test -s artifacts/preview-phone.png
-          file artifacts/preview-phone.png
-      - name: Publish phone screenshot for visual QA
+          for picture in preview-phone.png preview-shop.png preview-profile.png preview-settings.png preview-over.png; do
+            test -s "artifacts/$picture"
+            file "artifacts/$picture"
+          done
+      - name: Publish five real Godot screen renders for visual QA
         uses: actions/upload-artifact@v4
         with:
           name: pop-drop-actual-godot-preview
-          path: artifacts/preview-phone.png
+          path: artifacts/*.png
           if-no-files-found: error
           retention-days: 14
