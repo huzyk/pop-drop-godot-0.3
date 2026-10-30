@@ -4,6 +4,7 @@ extends RefCounted
 signal mission_completed(mission_id: String, bonus_xp: int)
 signal level_reached(new_level: int)
 signal streak_updated(days: int)
+signal achievement_unlocked(id: String, reward_coins: int)
 
 const PATH := "user://gravity_profile_v1.json"
 const TEMP := "user://gravity_profile_v1.tmp"
@@ -13,6 +14,20 @@ const MISSIONS := [
 	{"id":"drops", "target":10, "reward":60},
 	{"id":"pops", "target":3, "reward":90},
 	{"id":"points", "target":1800, "reward":120}
+]
+const ACHIEVEMENTS := [
+	{"id":"first_drop","target":1,"metric":"drops","coins":20},
+	{"id":"drops_25","target":25,"metric":"drops","coins":60},
+	{"id":"drops_100","target":100,"metric":"drops","coins":180},
+	{"id":"pop_1","target":1,"metric":"pops","coins":25},
+	{"id":"pop_50","target":50,"metric":"pops","coins":130},
+	{"id":"pop_200","target":200,"metric":"pops","coins":300},
+	{"id":"combo_2","target":2,"metric":"chain","coins":45},
+	{"id":"combo_4","target":4,"metric":"chain","coins":160},
+	{"id":"score_10000","target":10000,"metric":"points","coins":180},
+	{"id":"rounds_10","target":10,"metric":"rounds","coins":100},
+	{"id":"streak_3","target":3,"metric":"streak","coins":80},
+	{"id":"streak_7","target":7,"metric":"streak","coins":220}
 ]
 const SKINS := [
 	{"id":"classic", "level":1},
@@ -32,6 +47,8 @@ var total_drops: int = 0
 var total_pops: int = 0
 var total_rounds: int = 0
 var best_chain: int = 0
+var total_pop_points: int = 0
+var unlocked_achievements: Dictionary = {}
 var recent_event_ids: Array = []
 
 static func xp_to_level(level: int) -> int:
@@ -88,6 +105,12 @@ func load_data() -> void:
 			total_pops = clampi(int(raw.get("total_pops", 0)), 0, 100000000)
 			total_rounds = clampi(int(raw.get("total_rounds", 0)), 0, 100000000)
 			best_chain = clampi(int(raw.get("best_chain", 0)), 0, 20)
+			total_pop_points = clampi(int(raw.get("total_pop_points",0)),0,MAX_XP)
+			var stored_badges: Variant = raw.get("unlocked_achievements",{})
+			if stored_badges is Dictionary:
+				for badge in ACHIEVEMENTS:
+					var key: String = str(badge["id"])
+					unlocked_achievements[key] = bool(stored_badges.get(key,false))
 			var ids: Variant = raw.get("recent_event_ids", [])
 			if ids is Array:
 				for value in ids.slice(maxi(0, ids.size()-128)):
@@ -113,6 +136,7 @@ func record_drop(event_id: String, day_override: String = "") -> void:
 	total_drops = mini(total_drops+1,100000000)
 	_grant_xp(2)
 	_update_mission("drops",1)
+	_check_achievements()
 	_save()
 
 func record_pop(event_id: String, groups: int, balls: int, points: int, chain: int, day_override: String = "") -> void:
@@ -121,15 +145,18 @@ func record_pop(event_id: String, groups: int, balls: int, points: int, chain: i
 		return
 	total_pops = mini(total_pops+maxi(0,groups),100000000)
 	best_chain = maxi(best_chain,chain)
+	total_pop_points = mini(MAX_XP,total_pop_points+maxi(0,points))
 	_grant_xp(mini(90, maxi(0,balls)*2 + maxi(0,groups)*5 + maxi(0,chain-1)*5))
 	_update_mission("pops",maxi(0,groups))
 	_update_mission("points",maxi(0,points))
+	_check_achievements()
 	_save()
 
 func record_round(event_id: String) -> void:
 	if not _accept_event(event_id):
 		return
 	total_rounds = mini(total_rounds+1,100000000)
+	_check_achievements()
 	_save()
 
 func mission_ratio(mission_id: String) -> float:
@@ -151,7 +178,38 @@ func _played_today(day_override: String) -> void:
 		return
 	streak = mini(100000,streak+1) if gap == 1 else 1
 	last_play_day = today
+	_check_achievements()
 	streak_updated.emit(streak)
+
+func achievement_progress(id: String) -> int:
+	for badge in ACHIEVEMENTS:
+		if str(badge["id"]) != id:
+			continue
+		match str(badge["metric"]):
+			"drops": return total_drops
+			"pops": return total_pops
+			"chain": return best_chain
+			"points": return total_pop_points
+			"rounds": return total_rounds
+			"streak": return streak
+	return 0
+
+func achievement_unlocked_count() -> int:
+	var result: int = 0
+	for badge in ACHIEVEMENTS:
+		if bool(unlocked_achievements.get(str(badge["id"]),false)):
+			result += 1
+	return result
+
+func _check_achievements() -> void:
+	for badge in ACHIEVEMENTS:
+		var id: String = str(badge["id"])
+		if bool(unlocked_achievements.get(id,false)):
+			continue
+		if achievement_progress(id) < int(badge["target"]):
+			continue
+		unlocked_achievements[id] = true
+		achievement_unlocked.emit(id,int(badge["coins"]))
 
 func _accept_event(event_id: String) -> bool:
 	# Durable idempotency: animations/replayed callbacks cannot farm extra XP.
@@ -194,6 +252,7 @@ func _save() -> bool:
 		"daily_day":daily_day,"daily":daily,"claimed":claimed,
 		"skin":skin,"total_drops":total_drops,"total_pops":total_pops,
 		"total_rounds":total_rounds,"best_chain":best_chain,
+		"total_pop_points":total_pop_points,"unlocked_achievements":unlocked_achievements,
 		"recent_event_ids":recent_event_ids
 	}
 	var file: FileAccess = FileAccess.open(TEMP, FileAccess.WRITE)
