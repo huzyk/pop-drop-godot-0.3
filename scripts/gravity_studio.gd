@@ -382,21 +382,20 @@ func _draw_turns() -> void:
 			Color("#6E6872"),210)
 
 func _draw_boosters() -> void:
-	var names: Array = ["bomb","magic","reroll"]
-	var x_positions: Array = [27,254,481]
-	for i in range(3):
-		var id: String = str(names[i])
-		var r: Rect2 = Rect2(x_positions[i],1192,211,66)
-		var active: bool = (id=="bomb" and game.bomb_aim) or (id=="magic" and game.magic_aim)
-		var art: Texture2D = BOOST_ART[i]
-		draw_texture_rect(art,r,false,Color(1,1,1,1.0 if game.shop.stock(id)>0 else .66))
-		if active:
-			draw_arc(r.get_center(),28,0,TAU,32,Color("#218E86",.6),3,true)
-		_icon(id,r.position+Vector2(35,33),42,1.0 if game.shop.stock(id)>0 else .52)
-		_center(game.shop_t(id),r.position.x+130,r.position.y+39,18,INK,139)
-		var badge_center: Vector2 = r.position+Vector2(r.size.x-18,r.size.y-13)
-		draw_texture_rect(UTILITY_ART,Rect2(badge_center-Vector2(15,15),Vector2(30,30)),false)
-		_center(str(game.shop.stock(id)),badge_center.x,badge_center.y+6,16,INK,28)
+	var ids: Array = ["bomb","reroll"]
+	var rects: Array = [game.BOOST_BOMB,game.BOOST_REROLL]
+	for i in range(ids.size()):
+		var id: String = str(ids[i])
+		var r: Rect2 = rects[i]
+		var art: Texture2D = BOOST_ART[0] if id=="bomb" else BOOST_ART[2]
+		draw_texture_rect(art,r,false,Color(1,1,1,1.0 if game.shop.stock(id)>0 else .7))
+		_icon(id,r.position+Vector2(43,47),51,1.0 if game.shop.stock(id)>0 else .66)
+		_center(game.shop_t(id),r.get_center().x,r.position.y+99,17,INK,140)
+		_round(Rect2(r.end-Vector2(38,109),Vector2(30,29)),Color("#1C9288"),14)
+		_center(str(game.shop.stock(id)) if game.shop.stock(id)>0 else "+",
+			r.end.x-23,r.position.y+22,17,WHITE,27)
+		if id=="bomb" and game.bomb_aim:
+			draw_arc(r.get_center(),53,0,TAU,48,Color("#D6FBEA"),3.0,true)
 
 func _draw_drag() -> void:
 	if not game.dragging_piece or game.phase!="drop" or game.pieces.is_empty():
@@ -417,18 +416,16 @@ func _draw_drag() -> void:
 		_orb(at,31,int(bead[2]))
 
 func _draw_aim() -> void:
-	if not (game.bomb_aim or game.magic_aim) or game.phase!="drop":
+	if not game.bomb_aim or game.phase!="drop":
 		return
 	var hover: Vector2i = game.bomb_hover
 	if hover.x>=0:
-		var range_x: int = 0 if game.magic_aim else 1
-		for y in range(maxi(0,hover.y-range_x),mini(8,hover.y+range_x+1)):
-			for x in range(maxi(0,hover.x-range_x),mini(8,hover.x+range_x+1)):
-				_round(Rect2(BOARD.position+Vector2(x,y)*CELL+Vector2(3,3),Vector2(70,70)),
-					Color("#FEC88D",.36) if game.bomb_aim else Color("#C7A4FF",.36),15)
+		for y in range(maxi(0,hover.y-1),mini(8,hover.y+2)):
+			for x in range(maxi(0,hover.x-1),mini(8,hover.x+2)):
+				_round(Rect2(BOARD.position+Vector2(x,y)*CELL+Vector2(3,3),Vector2(61,61)),
+					Color("#FEC88D",.36),15)
 	_card(Rect2(142,824,436,50),Color("#293660"),19,6)
-	_center(game.shop_t("aim") if game.bomb_aim else game.shop_t("magic_aim"),
-		360,857,18,WHITE,420)
+	_center(game.shop_t("aim"),360,857,18,WHITE,420)
 
 func _draw_feedback() -> void:
 	if game.praise_timer>0 and game.phase!="over":
