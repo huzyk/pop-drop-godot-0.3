@@ -15,19 +15,26 @@ static func is_marble(cell: int) -> bool:
 	return cell >= 0 and cell < COLOR_COUNT
 
 static func wave_interval(waves_completed: int) -> float:
-	# Three readable pressure tiers; never faster than 14 real-time seconds.
+	# Fair mid-point between the old overwhelming 8s waves and the dull 18s mode.
 	if waves_completed < 4:
-		return 18.0
-	if waves_completed < 9:
 		return 16.0
-	return 14.0
+	if waves_completed < 9:
+		return 14.0
+	return 12.0
 
 static func wave_marble_count(wave_number: int) -> int:
 	if wave_number < 5:
-		return 3
-	if wave_number < 10:
 		return 4
-	return 5
+	if wave_number < 10:
+		return 5
+	return 6
+
+static func wave_is_surge(wave_number: int) -> bool:
+	# Every fifth wave is a clearly signalled, slightly heavier challenge.
+	return wave_number > 0 and wave_number % 5 == 0
+
+static func wave_total_marbles(wave_number: int) -> int:
+	return mini(SIZE,wave_marble_count(wave_number) + (2 if wave_is_surge(wave_number) else 0)
 
 static func rock_count(board: Array) -> int:
 	var count: int = 0
@@ -413,27 +420,29 @@ static func any_drop(board: Array, piece: Array) -> bool:
 static func choose_piece_size(rng: RandomNumberGenerator, board: Array) -> int:
 	var density: float = float(filled(board)) / float(SIZE*SIZE)
 	var roll: float = rng.randf()
-	# Four-ball silhouettes now show up often enough to learn to recognise them.
-	# Once the board fills, small pieces remain available as lifelines.
+	# A satisfying majority of shapes are 3–4 beads. Don't gift singles on
+	# every crowded board; fallback in next_piece() still prevents unfair traps.
 	if density > 0.72:
-		if roll < 0.24:
-			return 1
-		if roll < 0.79:
-			return 2
-		return 3
-	if density > 0.55:
 		if roll < 0.12:
 			return 1
-		if roll < 0.54:
+		if roll < 0.40:
 			return 2
-		if roll < 0.88:
+		if roll < 0.76:
 			return 3
 		return 4
-	if roll < 0.06:
+	if density > 0.55:
+		if roll < 0.06:
+			return 1
+		if roll < 0.30:
+			return 2
+		if roll < 0.68:
+			return 3
+		return 4
+	if roll < 0.02:
 		return 1
-	if roll < 0.40:
+	if roll < 0.22:
 		return 2
-	if roll < 0.71:
+	if roll < 0.60:
 		return 3
 	return 4
 
@@ -453,7 +462,7 @@ static func make_piece(rng: RandomNumberGenerator, board: Array, desired_size: i
 	for attempt in range(12):
 		var piece: Array = []
 		for p in shape:
-			var color: int = primary if rng.randf() < 0.58 else rng.randi_range(0,COLOR_COUNT-1)
+			var color: int = primary if rng.randf() < 0.49 else rng.randi_range(0,COLOR_COUNT-1)
 			piece.append([p.x,p.y,color])
 		var landed: Dictionary = drop(empty_board(),piece,0)
 		if landed.get("valid",false) and find_matches(landed.board).is_empty():
@@ -484,12 +493,11 @@ static func next_piece(rng: RandomNumberGenerator, board: Array, avoid_shapes: A
 				useful = maxi(useful,find_matches(trial.board).size())
 			if playable == 0:
 				continue
-			# Reward useful opportunities but don't always select the widest
-			# or shortest outline: meaningful variety matters to the player.
-			var rating: float = float(mini(playable,6))*0.25 + float(mini(useful,7))*1.0 + rng.randf_range(-2.5,2.5)
-			# A new silhouette is worth more than one more easy clear.
+			# Offer viable choices without automatically solving the next POP.
+			# The old score gave near-guaranteed matches, making play passive.
+			var rating: float = float(mini(playable,6))*0.16 + float(mini(useful,7))*0.23 + rng.randf_range(-3.0,3.0)
 			if avoid_shapes.has(piece_shape_id(candidate)):
-				rating -= 10.0
+				rating -= 4.0
 			if rating > highest:
 				highest = rating
 				best = candidate
