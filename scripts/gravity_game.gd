@@ -8,6 +8,16 @@ const Progression = preload("res://scripts/gravity_progression.gd")
 const Feedback = preload("res://scripts/gravity_feedback.gd")
 const Shop = preload("res://scripts/gravity_shop.gd")
 const BACKDROP = preload("res://assets/ui/arcade_backdrop.svg")
+const ICON_COIN = preload("res://assets/ui/icons/coin.svg")
+const ICON_SHOP = preload("res://assets/ui/icons/shop.svg")
+const ICON_PROFILE = preload("res://assets/ui/icons/profile.svg")
+const ICON_SETTINGS = preload("res://assets/ui/icons/settings.svg")
+const ICON_ROTATE_LEFT = preload("res://assets/ui/icons/rotate_left.svg")
+const ICON_ROTATE_RIGHT = preload("res://assets/ui/icons/rotate_right.svg")
+const ICON_BOMB = preload("res://assets/ui/icons/bomb.svg")
+const ICON_TIME = preload("res://assets/ui/icons/time.svg")
+const ICON_HEART = preload("res://assets/ui/icons/heart.svg")
+const ICON_GLOBE = preload("res://assets/ui/icons/globe.svg")
 const FONT = preload("res://fonts/ClearSans-Regular.ttf")
 const BOLD = preload("res://fonts/ClearSans-Bold.ttf")
 # Artist-authored vector sprites imported as textures by Godot (no more circle stacks).
@@ -1101,6 +1111,14 @@ func _fit_center(value: String, center_x: float, baseline: float, pt: int, max_w
 		size_pt -= 1
 	_center(value,center_x,baseline,size_pt,color)
 
+# SVG sources are imported at 256px and drawn down at mobile touch-icon sizes.
+# One pixel-aligned path for all UI glyphs; CanvasItem uses linear filtering.
+func _draw_icon(sprite: Texture2D, at: Vector2, size_px: float, opacity: float=1.0) -> void:
+	var edge: float = roundf(size_px)
+	var top_left: Vector2 = (at-Vector2.ONE*edge*0.5).round()
+	draw_texture_rect(sprite,Rect2(top_left,Vector2.ONE*edge),false,
+		Color(1.0,1.0,1.0,clampf(opacity,0.0,1.0)))
+
 func _spark(at: Vector2, radius: float, tint: Color, opacity: float=1.0) -> void:
 	var c: Color = Color(tint.r,tint.g,tint.b,opacity)
 	draw_line(at+Vector2(-radius,0),at+Vector2(radius,0),c,2.2,true)
@@ -1221,31 +1239,18 @@ func _draw_header() -> void:
 	draw_arc(Vector2(274,59),24,-PI*0.07,PI*0.62,14,Color("#7ceeff",0.55),2.2,true)
 	_spark(Vector2(291,45),3.2,Color("#f8daff"),0.78)
 	_neon_panel(COINS_OPEN,Color("#f7c879"))
-	draw_circle(COINS_OPEN.position+Vector2(24,27),16,Color("#9c5a2b",0.55))
-	draw_circle(COINS_OPEN.position+Vector2(24,27),13,Color("#f2b454"))
-	draw_arc(COINS_OPEN.position+Vector2(24,27),11.5,0,TAU,32,Color("#fff3cb"),2.2,true)
-	_center("★",COINS_OPEN.position.x+24,COINS_OPEN.position.y+34,16,Color("#fff8d9"))
+	_draw_icon(ICON_COIN,COINS_OPEN.position+Vector2(24,27),40)
 	_fit_center(str(shop.coins),COINS_OPEN.position.x+88,COINS_OPEN.position.y+36,23,66,Color("#fff4df"))
 	_neon_panel(SHOP_OPEN,Color("#ffd390"))
-	var bag: Vector2 = SHOP_OPEN.get_center()
-	_box(Rect2(bag-Vector2(13,7),Vector2(26,25)),Color("#e9b96a"),6,Color("#fff0bd"),2)
-	draw_arc(bag+Vector2(0,-6),8,PI,TAU,20,Color("#fff0c0"),2.3,true)
-	draw_line(bag+Vector2(-7,5),bag+Vector2(7,5),Color("#805176"),2.1,true)
+	_draw_icon(ICON_SHOP,SHOP_OPEN.get_center(),37)
 	_neon_panel(PROFILE_OPEN,Color("#9bcaed"))
-	var person: Vector2 = PROFILE_OPEN.get_center()
-	draw_circle(person+Vector2(0,-7),8.5,Color("#ebf5ff"))
-	draw_arc(person+Vector2(0,24),19,-PI*0.88,-PI*0.12,28,Color("#ecf5ff"),5.3,true)
+	_draw_icon(ICON_PROFILE,PROFILE_OPEN.get_center(),37)
 	_neon_panel(SETTINGS_OPEN,Color("#a7b2f2"))
-	var cog: Vector2 = SETTINGS_OPEN.get_center()
-	draw_arc(cog,13,0,TAU,32,Color("#f1efff"),3.1,true)
-	draw_circle(cog,4,Color("#f1efff"))
-	for spoke in range(8):
-		var angle: float = float(spoke)*TAU/8.0
-		draw_line(cog+Vector2.from_angle(angle)*13,cog+Vector2.from_angle(angle)*18,
-			Color("#f1efff"),2.4,true)
+	_draw_icon(ICON_SETTINGS,SETTINGS_OPEN.get_center(),37)
 	_neon_panel(LANG_RECT,Color("#8496d7"))
-	_fit_center(language.to_upper(),LANG_RECT.get_center().x,LANG_RECT.position.y+36,
-		19,LANG_RECT.size.x-8,Color("#f2f4ff"))
+	_draw_icon(ICON_GLOBE,Vector2(LANG_RECT.get_center().x,LANG_RECT.position.y+20),24)
+	_fit_center(language.to_upper(),LANG_RECT.get_center().x,LANG_RECT.position.y+46,
+		14,LANG_RECT.size.x-8,Color("#f2f4ff"))
 func _draw_hud() -> void:
 	# The information hierarchy: score / upcoming wave / lives.
 	_neon_panel(HUD_SCORE,Color("#da7dab"))
@@ -1275,11 +1280,7 @@ func _draw_hud() -> void:
 	for i in range(3):
 		var alive: bool = i<lives
 		var position: Vector2 = Vector2(HUD_LIVES.position.x+29+i*43,HUD_LIVES.position.y+64)
-		draw_circle(position,18,Color("#3b284d") if alive else Color("#1d2643"))
-		draw_arc(position,18,0,TAU,34,
-			Color("#fca6bf",0.5) if alive else Color("#4c5a7f",0.38),1.5,true)
-		_center("♥",position.x,position.y+9,26,
-			Color("#ff8cb0") if alive else Color("#556582"))
+		_draw_icon(ICON_HEART,position,38,1.0 if alive else 0.24)
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO,size),Color("#080d24"))
 	draw_set_transform(_offset(),0,Vector2.ONE*_scale())
@@ -1715,15 +1716,6 @@ func _draw_pieces() -> void:
 					Color(color.r,color.g,color.b,0.11))
 			_ball(position,radius,int(bead[2]),
 				0.43 if dragging_piece and selected else 1.0)
-func _draw_button_arrow(at: Vector2, clockwise: bool, tint: Color) -> void:
-	# Clear direction glyph with arrowhead anchored to the actual arc.
-	var start: float = -PI*0.65 if clockwise else PI*0.15
-	var finish: float = PI*0.73 if clockwise else PI*1.52
-	draw_arc(at,24,start,finish,40,tint,4.4,true)
-	var tip: Vector2 = at+Vector2.from_angle(finish if clockwise else start)*24
-	var direction: Vector2 = Vector2.from_angle(finish+PI*0.77 if clockwise else start-PI*0.77)
-	draw_line(tip,tip+direction*12,tint,4.5,true)
-	draw_line(tip,tip+direction.rotated(PI*0.49)*12,tint,4.5,true)
 func _draw_buttons() -> void:
 	# Primary actions live beneath the selector with a true 32px touch gap.
 	var enabled: bool = phase=="drop"
@@ -1742,9 +1734,8 @@ func _draw_buttons() -> void:
 			Color("#fff7ff",0.10 if enabled else 0.035),14)
 		var disc: Vector2 = rect.position+Vector2(50 if left else rect.size.x-50,42)
 		draw_circle(disc,32,Color("#10152d",0.39))
-		draw_arc(disc,29,0,TAU,40,
-			Color(bright.r,bright.g,bright.b,0.64 if enabled else 0.25),2.8,true)
-		_draw_button_arrow(disc,not left,Color.WHITE if enabled else Color("#8395b3"))
+		_draw_icon(ICON_ROTATE_LEFT if left else ICON_ROTATE_RIGHT,
+			disc,59,1.0 if enabled else 0.38)
 		var txt_x: float = rect.position.x+(195 if left else 121)
 		_fit_center("OBRÓĆ" if language=="pl" else "ROTATE",txt_x,
 			rect.position.y+31,20,166,Color("#fff6fa") if enabled else Color("#99a5be"))
@@ -1918,18 +1909,9 @@ func _draw_boost_controls() -> void:
 		_box(Rect2(rect.position+Vector2(7,7),Vector2(rect.size.x-14,22)),
 			Color(1,1,1,0.075),11)
 		var at: Vector2 = rect.position+Vector2(39,32)
-		draw_circle(at,25,Color(accent.r,accent.g,accent.b,0.095))
-		if bomb:
-			draw_circle(at,17,Color("#f2ad52") if usable else Color("#756b69"))
-			draw_circle(at-Vector2(5,6),6.5,Color("#fff5ca",0.63))
-			draw_line(at+Vector2(8,-13),at+Vector2(14,-21),Color("#ffe2a0"),3,true)
-			if selected:
-				draw_arc(at,25,0,TAU,42,Color("#ffe2a0"),2.5,true)
-		else:
-			draw_arc(at,20,0,TAU,36,Color("#99ddff") if usable else Color("#8296ac"),3.0,true)
-			draw_line(at,at+Vector2(0,-12),Color("#f5fcff"),3.2,true)
-			draw_line(at,at+Vector2(10,8),Color("#f5fcff"),3.2,true)
-			draw_line(at+Vector2(-8,-24),at+Vector2(8,-24),Color("#9cdeff"),2.4,true)
+		draw_circle(at,28,Color(accent.r,accent.g,accent.b,0.10))
+		_draw_icon(ICON_BOMB if bomb else ICON_TIME,at,55,
+			1.0 if usable or selected else 0.47)
 		var text_center: float = rect.position.x+140
 		_fit_center(shop_t("bomb") if bomb else shop_t("time"),
 			text_center,rect.position.y+41,21,145,
@@ -1952,11 +1934,14 @@ func _draw_shop() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#050819",0.96))
 	_neon_panel(Rect2(54,225,612,863),Color("#f1cb91"),true)
 	_box(Rect2(67,238,586,837),Color("#191d38"),27,Color("#7c679d"),2)
-	_fit_center("✦ "+shop_t("shop"),292,313,43,429,Color("#fff1d9"))
+	_draw_icon(ICON_SHOP,Vector2(129,288),46)
+	_fit_center(shop_t("shop"),324,313,43,324,Color("#fff1d9"))
 	_box(SHOP_CLOSE,Color("#474a70"),18,Color("#9eadd0"),2)
 	_fit_center(shop_t("close"),574,301,17,108,Color.WHITE)
 	_neon_panel(Rect2(98,338,522,51),Color("#ffd487"))
-	_fit_center(shop_t("coins")+"   ◉ "+str(shop.coins),360,371,25,482,Color("#ffe8b3"))
+	_fit_center(shop_t("coins"),253,371,22,187,Color("#ffe8b3"))
+	_draw_icon(ICON_COIN,Vector2(387,361),37)
+	_fit_center(str(shop.coins),494,371,25,192,Color("#ffe8b3"))
 	for tab in range(2):
 		var rect: Rect2 = SHOP_TAB_BOOST if tab==0 else SHOP_TAB_SKINS
 		var selected: bool = shop_tab==tab
@@ -1977,15 +1962,8 @@ func _draw_shop() -> void:
 		_box(rect,Color("#252d49"),22,Color("#82efd5") if is_active else Color("#687397"),2)
 		var at: Vector2 = rect.position+Vector2(80,86)
 		draw_circle(at,54,Color(accent.r,accent.g,accent.b,0.10))
-		if id=="bomb":
-			draw_circle(at,33,Color("#ef986b"))
-			draw_circle(at,25,Color("#302840"))
-			draw_arc(at,26,0,TAU,38,Color("#ffe4b1"),3.2,true)
-			_spark(at+Vector2(20,-23),8,Color("#fff1bc"))
-		elif id=="time":
-			draw_arc(at,33,0,TAU,40,Color("#7bf9e6"),4.5,true)
-			draw_line(at,at+Vector2(0,-20),Color.WHITE,4,true)
-			draw_line(at,at+Vector2(16,9),Color.WHITE,4,true)
+		if id=="bomb" or id=="time":
+			_draw_icon(ICON_BOMB if id=="bomb" else ICON_TIME,at,98)
 		else:
 			_ball(at,29,0)
 			draw_arc(at,37,0,TAU,43,Color("#ffe3a2") if id=="gold" else Color("#65f6fa"),3.8,true)
@@ -1993,11 +1971,14 @@ func _draw_shop() -> void:
 		_fit_center(shop_t(id+"_desc"),rect.position.x+333,rect.position.y+99,
 			16,385,Color("#cbd3e8"))
 		var label: String = shop_t("active") if is_active else (
-			shop_t("equip") if is_owned else shop_t("buy")+"  ◉ "+str(product["price"]))
+			shop_t("equip") if is_owned else shop_t("buy")+"  "+str(product["price"]))
 		_box(Rect2(rect.position+Vector2(199,131),Vector2(311,60)),
 			Color("#296157") if purchasable or is_owned else Color("#46445d"),
 			17,Color("#8bf3d8") if purchasable or is_owned else Color("#74708b"),2)
-		_fit_center(label,rect.position.x+354,rect.position.y+172,21,294,
+		if not is_owned:
+			_draw_icon(ICON_COIN,rect.position+Vector2(232,162),25,
+				1.0 if purchasable else 0.45)
+		_fit_center(label,rect.position.x+370,rect.position.y+172,21,256,
 			Color.WHITE if purchasable or is_owned else Color("#b6b5c8"))
 		if not is_skin:
 			_fit_center(shop_t("stock")+": "+str(shop.stock(id)),

@@ -48,6 +48,8 @@ jobs:
         run: timeout 40s godot --headless --path . --script res://tests/test_gravity_ui_layout.gd
       - name: Test coin economy and bomb
         run: timeout 40s godot --headless --path . --script res://tests/test_gravity_shop.gd
+      - name: Verify crisp SVG icons
+        run: timeout 40s godot --headless --path . --script res://tests/test_gravity_icons.gd
       - name: Test mobile arcade layout and touch zones
         run: timeout 40s godot --headless --path . --script res://tests/test_gravity_layout.gd
       - name: Test audio and haptics
