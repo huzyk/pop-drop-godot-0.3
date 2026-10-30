@@ -92,4 +92,17 @@ static func valid(s: Dictionary) -> bool:
 		var remaining: float = float(s["wave_time_left"])
 		if not is_finite(remaining) or remaining < 0.0 or remaining > 45.0:
 			return false
+	if "flow_streak" in s:
+		if typeof(s["flow_streak"]) not in [TYPE_INT,TYPE_FLOAT]:
+			return false
+		if float(s["flow_streak"]) != float(int(s["flow_streak"])):
+			return false
+		if int(s["flow_streak"]) < 0 or int(s["flow_streak"]) > 4:
+			return false
+	if "flow_time_left" in s:
+		if typeof(s["flow_time_left"]) not in [TYPE_INT,TYPE_FLOAT]:
+			return false
+		var flow_remaining: float = float(s["flow_time_left"])
+		if not is_finite(flow_remaining) or flow_remaining < 0.0 or flow_remaining > 8.0:
+			return false
 	return true
