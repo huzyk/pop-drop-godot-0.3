@@ -520,8 +520,8 @@ func _draw_game_over() -> void:
 	_center(str(game.score),360,682,75,PEACH,495)
 	_center("%s  %d" % [game.t("best"),game.best],360,705,23,Color("#617394"),465)
 	var restart: Rect2 = Rect2(104,722,512,84)
-	_button(restart,AQUA if game.shop.energy>0 else Color("#B4BFCD"),Color("#188A87"))
-	_center(game.t("again") if game.shop.energy>0 else game.shop_t("no_energy"),
+	_button(restart,AQUA if game.FREE_PLAY_BETA or game.shop.energy>0 else Color("#B4BFCD"),Color("#188A87"))
+	_center(game.t("again") if game.FREE_PLAY_BETA or game.shop.energy>0 else game.shop_t("no_energy"),
 		360,773,27,INK,450)
 	var ad_ok: bool = game.ads!=null and game.ads.rewarded_ready()
 	var allowed: bool = game.revives<1 and not game.pieces.is_empty()
@@ -534,10 +534,14 @@ func _draw_game_over() -> void:
 	_center("%d • %s" % [Shop.RESCUE_PRICE,"DALEJ" if game.language=="pl" else "CONTINUE"],
 		coins.get_center().x,868,20,INK if allowed else Color("#9DAAC0"),222)
 	_round(Rect2(221,908,278,54),Color("#DFE8F5"),19)
-	var seconds: int = game.shop.energy_seconds_remaining()
-	_center("ENERGIA %d/5 • %d MIN" % [game.shop.energy,int(ceil(float(seconds)/60.0))] if game.language=="pl"
-		else "ENERGY %d/5 • %d MIN" % [game.shop.energy,int(ceil(float(seconds)/60.0))],
-		360,942,18,INK,264)
+	if game.FREE_PLAY_BETA:
+		_center("BETA • GRA BEZ LIMITU" if game.language=="pl" else "BETA • UNLIMITED PLAY",
+			360,942,18,INK,264)
+	else:
+		var seconds: int = game.shop.energy_seconds_remaining()
+		_center("ENERGIA %d/5 • %d MIN" % [game.shop.energy,int(ceil(float(seconds)/60.0))] if game.language=="pl"
+			else "ENERGY %d/5 • %d MIN" % [game.shop.energy,int(ceil(float(seconds)/60.0))],
+			360,942,18,INK,264)
 	_center(game.ad_note if not game.ad_note.is_empty() else
 		("JEDEN RATUNEK NA RUNDĘ" if game.language=="pl" else "ONE CONTINUE PER ROUND"),
 		360,998,16,Color("#70809D"),520)
@@ -566,7 +570,7 @@ func _draw_settings() -> void:
 		_center(str(row[2]) if checked else str(row[3]),r.get_center().x,
 			r.position.y+r.size.y*.65,22,INK,440)
 	_round(Rect2(120,654,480,74),Color("#FFE2E9"),22)
-	_center("USUŃ DANE LOKALNE" if game.language=="pl" else "CLEAR LOCAL DATA",
+	_center(game.analytics_erase_label(),
 		360,703,23,Color("#AD3B68"),430)
 	_round(Rect2(120,748,480,37),Color("#E1E7F5"),15)
 	_center("PRYWATNOŚĆ REKLAM" if game.language=="pl" else "AD PRIVACY",
@@ -598,8 +602,9 @@ func _draw_profile() -> void:
 	_center(game.progression.level_xp_text(),360,413,19,Color("#7886A0"),410)
 	_round(Rect2(100,429,520,15),Color("#CBD5EA"),8)
 	_round(Rect2(100,429,maxf(4,520.0*game.progression.level_fraction()),15),AQUA,8)
-	_center("%s %d • %d/%d" % [game.profile_t("streak"),game.progression.streak,
-		game.shop.energy,Shop.MAX_ENERGY],360,485,21,INK,530)
+	_center(("%s %d • BETA" % [game.profile_t("streak"),game.progression.streak]) if game.FREE_PLAY_BETA else
+		("%s %d • %d/%d" % [game.profile_t("streak"),game.progression.streak,
+		game.shop.energy,Shop.MAX_ENERGY]),360,485,21,INK,530)
 	var tabs: Array = [Rect2(92,526,248,51),Rect2(380,526,248,51)]
 	for i in range(2):
 		var selected: bool = i==game.profile_tab
