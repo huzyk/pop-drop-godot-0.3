@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1280" viewBox="0 0 720 1280">
+<defs>
+<linearGradient id="night" x1="0%" y1="0%" x2="35%" y2="100%"><stop stop-color="#121029"/><stop offset=".46" stop-color="#1D173C"/><stop offset="1" stop-color="#231A45"/></linearGradient>
+<radialGradient id="purple"><stop stop-color="#8975EE" stop-opacity=".26"/><stop offset="1" stop-color="#8975EE" stop-opacity="0"/></radialGradient>
+<radialGradient id="pink"><stop stop-color="#FB6B9A" stop-opacity=".22"/><stop offset="1" stop-color="#FB6B9A" stop-opacity="0"/></radialGradient>
+<radialGradient id="teal"><stop stop-color="#57D9D1" stop-opacity=".16"/><stop offset="1" stop-color="#57D9D1" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="720" height="1280" fill="url(#night)"/>
+<ellipse cx="-60" cy="270" rx="420" ry="550" fill="url(#purple)"/>
+<ellipse cx="720" cy="910" rx="480" ry="540" fill="url(#pink)"/>
+<ellipse cx="600" cy="92" rx="380" ry="390" fill="url(#teal)"/>
+<ellipse cx="91" cy="1188" rx="350" ry="410" fill="url(#teal)" opacity=".65"/>
+<path d="M-20 233 Q95 195 150 220 M605 219 Q661 195 737 213" fill="none" stroke="#BBA5FC" stroke-width="2" stroke-opacity=".16"/>
+<g fill="#D6D1FF" opacity=".6"><circle cx="64" cy="232" r="2"/><circle cx="682" cy="236" r="2"/><circle cx="703" cy="878" r="2"/><circle cx="21" cy="882" r="2"/><circle cx="679" cy="1107" r="2"/><circle cx="44" cy="1135" r="2"/></g>
+</svg>
