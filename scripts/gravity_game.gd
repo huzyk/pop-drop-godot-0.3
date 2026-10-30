@@ -1716,7 +1716,7 @@ func _draw_pieces() -> void:
 					Color(color.r,color.g,color.b,0.11))
 			_ball(position,radius,int(bead[2]),
 				0.43 if dragging_piece and selected else 1.0)
- func _draw_buttons() -> void:
+func _draw_buttons() -> void:
 	# Primary actions live beneath the selector with a true 32px touch gap.
 	var enabled: bool = phase=="drop"
 	for i in range(2):
