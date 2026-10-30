@@ -1,10 +1,12 @@
-# POP DROP Gravity 0.19 alpha — eksplozje, dźwięki, języki i pękające skały
+# POP DROP Gravity 0.20 alpha — zwierzęta, Bajkowa Kraina i złote skały
 
 **Brak linii śmierci, brak limitu skał, brak trzech serc.** Porażka następuje dopiero wtedy, gdy żaden z dostępnych kształtów nie może być położony — także po możliwych obrotach. Fale co 18/16/14 sekund wrzucają z góry po 3/4/5 kulek do wolnych kolumn. Co trzecia fala może dodać skałę. Jeden ratunek za monety albo reklamę zapewnia ponownie możliwy ruch. Zamiast życia w HUD jest licznik wolnych pól, a koniec rundy wyjaśnia powód porażki.
 
 **Nowe w 0.18:** Po każdym ręcznie uzyskanym POP-ie zaczyna się 8-sekundowy FLOW. Kolejne udane akcje dają mnożnik wyniku ×1,25 / ×1,5 / ×2; fale i bomby nie budują serii. Animacje obrotów, spadków i kaskad są szybsze, a zwykłe POP-y nie zasłaniają już planszy dużą kartą. Częstotliwość fal pozostaje bez zmian.
 
 **Nowe w 0.19:** polskie komunikaty POP/ŚWIETNIE/NIESAMOWITE/SERIA, dostępny przycisk języka na ekranie i w ustawieniach, pęknięcia i duże liczniki HP skał (3/2/1), animowane odłamki, światło mocnego combo i nowe, pełniejsze dźwięki lądowania, obrotu, POP, rozbicia skały, bomby oraz nawałnicy.
+
+**Nowe w 0.20:** 12 dodatkowych zwierząt (tukany, papugi, żabki, małpki, jaguary, leniwce, lwy, zebry, słonie, żyrafy, liski, sowy) i 4 stworzenia bajkowe: smoki, jednorożce, feniksy, gryfy. Każde ma odmienny kolor całej postaci w każdym z 3 rodzajów kulek. Kupowana skórka zmienia też wystrój planszy i autorską zapętloną muzykę. Są motywy dżungli, safari, lasu, mokradeł, ptasiej krainy i bajkowej krainy. Osobne włączniki muzyki, jej głośności, efektów dźwiękowych i wibracji. Stare „Kapibary” zmieniono na Misie (bez utraty zakupu), Kosmos wycofano z oferty, zwracając jego dawnym właścicielom po 5200 monet. Rzadkie złote skały (1 na 6 nowych skał) świecą, pękają po 3 trafieniach i dają 5–10 monet przy rozbiciu. Brak limitu monet z rundy.
 
 Szczegóły i parametry: [docs/PRESSURE.md](docs/PRESSURE.md).
 
