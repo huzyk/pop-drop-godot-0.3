@@ -39,6 +39,7 @@ const MODAL_SHOP = preload("res://assets/ui/modals/shop.svg")
 const MODAL_PROFILE = preload("res://assets/ui/modals/profile.svg")
 const MODAL_SETTINGS = preload("res://assets/ui/modals/settings.svg")
 const MODAL_OVER = preload("res://assets/ui/modals/over.svg")
+const MODAL_TUTORIAL = preload("res://assets/ui/modals/tutorial.svg")
 const FONT = preload("res://fonts/ClearSans-Regular.ttf")
 const BOLD = preload("res://fonts/ClearSans-Bold.ttf")
 const ICONS = {
@@ -194,6 +195,8 @@ func _draw() -> void:
 		_draw_profile()
 	if game.shop_open:
 		_draw_shop()
+	if game.tutorial_open:
+		_draw_tutorial()
 	draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
 
 func _draw_world() -> void:
@@ -725,3 +728,20 @@ func _draw_shop() -> void:
 	_center(game.shop_t("tip"),360,1048,18,Color("#677A98"),515)
 	if game.shop_notice_time>0:
 		_center(game.shop_notice,360,1074,20,PEACH,500)
+
+func _draw_tutorial() -> void:
+	# Immersive first session, fully isolated from touches on the board.
+	draw_texture_rect(MODAL_TUTORIAL,Rect2(Vector2.ZERO,BASE),false)
+	_center("POP DROP",360,364,45,WHITE,420)
+	_center(game.ui_t("tutorial_intro"),360,403,19,Color("#CDFFF1"),490)
+	var steps: Array = [
+		["tutorial_one","tutorial_one_sub","coins"],
+		["tutorial_two","tutorial_two_sub","chevron_right"],
+		["tutorial_three","tutorial_three_sub","heart"]
+	]
+	for i in range(steps.size()):
+		var y: float = 549+141*i
+		_center(str(i+1),153,y+21,31,INK,57)
+		_label(game.ui_t(str(steps[i][0])),216,y-7,25,INK)
+		_center(game.ui_t(str(steps[i][1])),411,y+34,18,Color("#567184"),392,false)
+	_center(game.ui_t("tutorial_go"),360,996,30,INK,396)
