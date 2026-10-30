@@ -7,7 +7,6 @@ const POP_THRESHOLD := 5
 # Rock durability encoded as cells: 5=3 hits, 4=2 hits, 3=1 hit.
 const ROCK_MIN := 3
 const ROCK_MAX := 5
-const MAX_ROCKS := 8
 
 static func is_rock(cell: int) -> bool:
 	return cell >= ROCK_MIN and cell <= ROCK_MAX
@@ -16,15 +15,19 @@ static func is_marble(cell: int) -> bool:
 	return cell >= 0 and cell < COLOR_COUNT
 
 static func wave_interval(waves_completed: int) -> float:
-	# Wave 1: 12s, then 11/10/9s, and from wave 5 onward 8s.
-	return float(maxi(8,12-maxi(0,waves_completed)))
+	# Three readable pressure tiers; never faster than 14 real-time seconds.
+	if waves_completed < 4:
+		return 18.0
+	if waves_completed < 9:
+		return 16.0
+	return 14.0
 
 static func wave_marble_count(wave_number: int) -> int:
-	if wave_number < 3:
-		return 6
-	if wave_number < 6:
-		return 7
-	return 8
+	if wave_number < 5:
+		return 3
+	if wave_number < 10:
+		return 4
+	return 5
 
 static func rock_count(board: Array) -> int:
 	var count: int = 0
@@ -36,8 +39,6 @@ static func rock_count(board: Array) -> int:
 
 static func spawn_rock(board: Array, rng: RandomNumberGenerator) -> Dictionary:
 	var result: Array = copy_board(board)
-	if rock_count(result) >= MAX_ROCKS:
-		return {"board":result,"spawned":false}
 	var spots: Array = []
 	for y in range(3,7):
 		for x in range(SIZE):
@@ -49,31 +50,32 @@ static func spawn_rock(board: Array, rng: RandomNumberGenerator) -> Dictionary:
 	result[where.y][where.x] = ROCK_MAX
 	return {"board":result,"spawned":true,"cell":where}
 
-static func rise_wave(board: Array, rng: RandomNumberGenerator, marble_count: int) -> Dictionary:
-	# Never silently discard a filled top row; report overflow to game logic.
-	for cell in board[0]:
-		if int(cell) != EMPTY:
-			return {"valid":false,"overflow":true,"board":copy_board(board),"motions":[]}
-	var result: Array = empty_board()
+static func drop_wave(board: Array, rng: RandomNumberGenerator, marble_count: int) -> Dictionary:
+	# Extra beads fall into DIFFERENT free columns, exactly like player pieces.
+	# Full columns are skipped, not punished. Never delete or push the top row.
+	var result: Array = copy_board(board)
 	var motions: Array = []
-	for y in range(1,SIZE):
-		for x in range(SIZE):
-			var cell: int = int(board[y][x])
-			result[y-1][x] = cell
-			if cell != EMPTY:
-				motions.append({"from":Vector2(x,y),"to":Vector2(x,y-1),"color":cell})
-	var columns: Array = range(SIZE)
-	for i in range(SIZE-1,0,-1):
-		var index: int = rng.randi_range(0,i)
-		var tmp: int = int(columns[i])
-		columns[i] = columns[index]
-		columns[index] = tmp
-	for i in range(clampi(marble_count,0,SIZE)):
-		var x: int = int(columns[i])
-		var color: int = rng.randi_range(0,COLOR_COUNT-1)
-		result[SIZE-1][x] = color
-		motions.append({"from":Vector2(x,SIZE),"to":Vector2(x,SIZE-1),"color":color})
-	return {"valid":true,"overflow":false,"board":result,"motions":motions}
+	var eligible: Array = []
+	for x in range(SIZE):
+		if result[0][x] == EMPTY:
+			eligible.append(x)
+	for i in range(eligible.size()-1,0,-1):
+		var pick: int = rng.randi_range(0,i)
+		var temp: int = int(eligible[i])
+		eligible[i] = eligible[pick]
+		eligible[pick] = temp
+	var added: int = 0
+	for x in eligible:
+		if added >= marble_count:
+			break
+		var bead: Array = [[0,0,rng.randi_range(0,COLOR_COUNT-1)]]
+		var landing: Dictionary = drop(result,bead,int(x))
+		if not bool(landing.get("valid",false)):
+			continue
+		result = landing["board"]
+		motions.append_array(landing["motions"])
+		added += 1
+	return {"board":result,"motions":motions,"added":added}
 
 static func damage_rocks(board: Array, popped: Array) -> Dictionary:
 	# One adjacent POP stage = one hit, even if many balls touch the rock.
@@ -158,14 +160,6 @@ static func empty_board() -> Array:
 			row.append(EMPTY)
 		result.append(row)
 	return result
-
-static func ceiling_reached(board: Array) -> bool:
-	# Only marbles can overflow the ceiling. Rocks are permanent obstacles:
-	# rotating one into the top row must not instantly erase it via rescue.
-	for cell in board[0]:
-		if is_marble(int(cell)):
-			return true
-	return false
 
 static func tallest_column(board: Array) -> int:
 	var tallest: int = 0
@@ -501,7 +495,7 @@ static func next_piece(rng: RandomNumberGenerator, board: Array, avoid_shapes: A
 				best = candidate
 		if not best.is_empty():
 			return best
-	# Fully blocked: the life/rescue system handles the loss.
+	# Fully blocked: the no-moves game-over check handles the loss.
 	return [[0,0,rng.randi_range(0,COLOR_COUNT-1)]]
 
 static func rescue(board: Array) -> Array:
