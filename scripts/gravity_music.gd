@@ -21,6 +21,8 @@ var persist_enabled: bool = true
 var theme: String = "classic"
 var streams: Dictionary = {}
 var player: AudioStreamPlayer
+var render_thread: Thread = null
+var rendering_theme: String = ""
 
 func _ready() -> void:
 	_load_prefs()
@@ -29,6 +31,25 @@ func _ready() -> void:
 	player.bus = "Master"
 	add_child(player)
 	_sync()
+
+func _process(_delta: float) -> void:
+	# Render new 8-second synth tracks in a worker rather than blocking the UI.
+	if render_thread == null or render_thread.is_alive():
+		return
+	var completed: AudioStreamWAV = render_thread.wait_to_finish()
+	render_thread = null
+	if completed != null:
+		streams[rendering_theme] = completed
+	rendering_theme = ""
+	_sync()
+
+func _exit_tree() -> void:
+	if render_thread != null:
+		render_thread.wait_to_finish()
+		render_thread = null
+
+func _background_render(id: String) -> AudioStreamWAV:
+	return _render_theme(id)
 
 func set_theme(id: String) -> void:
 	var next: String = id if LOOPS.has(id) else "classic"
@@ -58,7 +79,14 @@ func _sync() -> void:
 		player.stop()
 		return
 	if not streams.has(theme):
-		streams[theme] = _render_theme(theme)
+		if render_thread == null:
+			rendering_theme = theme
+			render_thread = Thread.new()
+			var error: Error = render_thread.start(Callable(self,"_background_render").bind(theme))
+			if error != OK:
+				render_thread = null
+				streams[theme] = _render_theme(theme) # Safe fallback if threads unavailable.
+		return
 	var next: AudioStreamWAV = streams[theme]
 	if player.stream != next:
 		player.stop()
