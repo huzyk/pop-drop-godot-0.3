@@ -1375,13 +1375,12 @@ func _spark(at: Vector2, radius: float, tint: Color, opacity: float=1.0) -> void
 
 
 func _neon_panel(rect: Rect2, accent: Color, strong: bool=false) -> void:
-	# Shared Jelly Pals UI surface: one shadow, one quiet border, no fake neon.
-	var radius: int = 22 if strong else 18
-	_box(Rect2(rect.position+Vector2(0,5),rect.size),Color("#070F20",0.48),radius)
-	_box(rect,Color("#223450",0.98),radius,
-		Color(accent.r,accent.g,accent.b,0.38 if strong else 0.17),1)
-	_box(Rect2(rect.position+Vector2(12,6),Vector2(rect.size.x-24,3)),
-		Color("#E3F2FF",0.07),2)
+	# Single tactile white card. Accent is reserved for states, not outlines.
+	var radius: int = 25 if strong else 21
+	_box(Rect2(rect.position+Vector2(0,7),rect.size),Color("#7193AE",0.13),radius)
+	_box(rect,Color("#FFFFFF",0.98),radius)
+	_box(Rect2(rect.position+Vector2(13,8),Vector2(rect.size.x-26,3)),
+		Color("#FFFFFF",0.45),2)
 func _corner(at: Vector2, direction: Vector2, color: Color, length: float=34.0) -> void:
 	draw_line(at,at+Vector2(direction.x*length,0),Color(color.r,color.g,color.b,0.24),10.0,true)
 	draw_line(at,at+Vector2(0,direction.y*length),Color(color.r,color.g,color.b,0.24),10.0,true)
@@ -1409,7 +1408,7 @@ func _ball(center: Vector2, radius: float, color_index: int,
 	var authored_sprite: Texture2D = SkinArt.sprite_for(marble_skin,color_index)
 	if authored_sprite != null:
 		# Real art pack: one texture owns all reflections, expression and silhouette.
-		var diameter: Vector2 = Vector2(radius*2.55*stretch.x,radius*2.55*stretch.y)
+		var diameter: Vector2 = Vector2(radius*2.84*stretch.x,radius*2.84*stretch.y)
 		var top_left: Vector2 = center-diameter*0.5
 		draw_texture_rect(authored_sprite,Rect2(top_left,diameter),false,Color(1,1,1,alpha))
 		return
@@ -1493,61 +1492,62 @@ func _ball(center: Vector2, radius: float, color_index: int,
 		draw_line(gleam+Vector2(0,-5),gleam+Vector2(0,5),
 			Color(1,1,1,0.85*alpha),1.5,true)
 func _draw_background() -> void:
-	# Clean scene: hero objects, not glowing cabinet chrome, are the focus.
 	draw_texture_rect(BACKDROP,Rect2(Vector2.ZERO,BASE),false)
+	# Form a single white dock so controls feel like actual play pieces.
 	_box(Rect2(DOCK_SHAPES.position+Vector2(0,5),DOCK_SHAPES.size),
-		Color("#090F20",0.45),25)
-	_box(DOCK_SHAPES,Color("#20304B",0.96),24)
+		Color("#7497B5",0.12),26)
+	_box(DOCK_SHAPES,Color("#FFFFFF",0.91),25)
 	_box(Rect2(DOCK_ACTIONS.position+Vector2(0,5),DOCK_ACTIONS.size),
-		Color("#080E20",0.40),24)
-	_box(DOCK_ACTIONS,Color("#1B2A44",0.97),23)
+		Color("#7593A9",0.11),27)
+	_box(DOCK_ACTIONS,Color("#FFFFFF",0.31),26)
 func _draw_header() -> void:
-	_text("POP",Vector2(25,70),50,Color("#FFF9F4"))
-	_text("DROP",Vector2(137,70),50,Color("#A1F4DD"))
-	_text("G R A V I T Y",Vector2(27,104),18,Color("#B6C7DF"))
-	_box(Rect2(28,112,205,3),Color("#64DBC2"),2)
-	_neon_panel(COINS_OPEN,Color("#F4CB83"))
-	_draw_icon(ICON_COIN,COINS_OPEN.position+Vector2(24,27),39)
-	_fit_center(str(shop.coins),COINS_OPEN.position.x+88,COINS_OPEN.position.y+36,23,66,Color("#FFF1D7"))
-	_neon_panel(SHOP_OPEN,Color("#ABBBDD"))
-	_draw_icon(ICON_SHOP,SHOP_OPEN.get_center(),36)
-	_neon_panel(PROFILE_OPEN,Color("#ABBBDD"))
-	_draw_icon(ICON_PROFILE,PROFILE_OPEN.get_center(),36)
-	_neon_panel(SETTINGS_OPEN,Color("#ABBBDD"))
-	_draw_icon(ICON_SETTINGS,SETTINGS_OPEN.get_center(),36)
-	_neon_panel(LANG_RECT,Color("#ABBBDD"))
-	_draw_icon(ICON_GLOBE,Vector2(LANG_RECT.get_center().x,LANG_RECT.position.y+20),24)
+	# Candy-pop wordmark; menu controls visually subordinate to score and board.
+	_text("POP",Vector2(24,72),50,Color("#27364E"))
+	_text("DROP",Vector2(136,72),50,Color("#EB5B80"))
+	_text("G R A V I T Y",Vector2(28,103),19,Color("#5F7A91"))
+	_neon_panel(COINS_OPEN,Color("#FFFFFF"))
+	draw_circle(COINS_OPEN.position+Vector2(24,27),21,Color("#FFCF63"))
+	_draw_icon(ICON_COIN,COINS_OPEN.position+Vector2(24,27),38)
+	_fit_center(str(shop.coins),COINS_OPEN.position.x+89,
+		COINS_OPEN.position.y+36,23,68,Color("#273750"))
+	for slot in [SHOP_OPEN,PROFILE_OPEN,SETTINGS_OPEN,LANG_RECT]:
+		_neon_panel(slot,Color.WHITE)
+	_draw_icon(ICON_SHOP,SHOP_OPEN.get_center(),35)
+	_draw_icon(ICON_PROFILE,PROFILE_OPEN.get_center(),35)
+	_draw_icon(ICON_SETTINGS,SETTINGS_OPEN.get_center(),35)
+	_draw_icon(ICON_GLOBE,LANG_RECT.position+Vector2(LANG_RECT.size.x*0.5,19),23)
 	_fit_center(language.to_upper(),LANG_RECT.get_center().x,LANG_RECT.position.y+46,
-		16,LANG_RECT.size.x-8,Color("#EDF3FF"))
-	_fit_center("⚡ %d/%d" % [shop.energy,Shop.MAX_ENERGY],253,110,18,90,Color("#F8DEA5"))
+		16,LANG_RECT.size.x-10,Color("#355574"))
+	# Energy is a compact wordmark companion, not another large panel.
+	_fit_center("⚡ %d/%d" % [shop.energy,Shop.MAX_ENERGY],255,112,18,93,Color("#8B657E"))
 func _draw_hud() -> void:
-	# Three purposeful areas, no nested glass highlights or microscopic tracking.
-	_neon_panel(HUD_SCORE,Color("#8BA5CF"))
-	_text(t("score").to_upper(),Vector2(39,159),17,Color("#B7C8E1"))
-	_fit_center(str(int(round(display_score))),HUD_SCORE.position.x+89,HUD_SCORE.position.y+75,
-		38,178,Color("#FFFFFF"))
-	_fit_center(t("best")+": "+str(best),HUD_SCORE.position.x+157,HUD_SCORE.position.y+25,
-		14,128,Color("#EDD8AA"))
-	_neon_panel(HUD_WAVE,Color("#8BA5CF"))
+	_neon_panel(HUD_SCORE,Color.WHITE)
+	_text(t("score").to_upper(),Vector2(39,160),18,Color("#6E849C"))
+	_fit_center(str(int(round(display_score))),HUD_SCORE.position.x+95,
+		HUD_SCORE.position.y+76,39,183,Color("#26384F"))
+	_fit_center(t("best")+": "+str(best),HUD_SCORE.position.x+160,
+		HUD_SCORE.position.y+27,14,130,Color("#8C9AAC"))
+	_neon_panel(HUD_WAVE,Color.WHITE)
 	_fit_center(("FALA" if language=="pl" else "WAVE")+" %d" % (wave_number+1),
-		HUD_WAVE.position.x+80,HUD_WAVE.position.y+33,21,140,Color("#CEE6FF"))
-	var warning: bool = wave_time_left<=5.0
+		HUD_WAVE.position.x+83,HUD_WAVE.position.y+33,21,145,Color("#697E97"))
+	var warning: bool = wave_time_left <= 5.0
 	_fit_center("%02d:%02d" % [int(wave_time_left)/60,int(ceil(wave_time_left))%60],
-		HUD_WAVE.position.x+222,HUD_WAVE.position.y+33,26,101,
-		Color("#FFAFAC") if warning else Color("#FFFFFF"))
+		HUD_WAVE.position.x+221,HUD_WAVE.position.y+34,26,106,
+		Color("#E94F77") if warning else Color("#25364E"))
 	var interval: float = maxf(1.0,Rules.wave_interval(wave_number))
 	var progress: float = 1.0-clampf(wave_time_left/interval,0.0,1.0)
-	_box(Rect2(HUD_WAVE.position+Vector2(19,58),Vector2(242,12)),Color("#111D33"),6)
-	_box(Rect2(HUD_WAVE.position+Vector2(20,59),Vector2(maxf(1.0,240.0*progress),10)),
-		Color("#FF899A") if warning else Color("#73DCC5"),5)
-	_neon_panel(HUD_LIVES,Color("#8BA5CF"))
-	_fit_center(t("life").to_upper(),HUD_LIVES.get_center().x,HUD_LIVES.position.y+25,
-		17,117,Color("#B9CDE1"))
+	_box(Rect2(HUD_WAVE.position+Vector2(22,60),Vector2(237,12)),
+		Color("#E5EDF4"),6)
+	_box(Rect2(HUD_WAVE.position+Vector2(23,61),
+		Vector2(maxf(1.0,235.0*progress),10)),Color("#FD7193") if warning else Color("#64DCC3"),5)
+	_neon_panel(HUD_LIVES,Color.WHITE)
+	_fit_center(t("life").to_upper(),HUD_LIVES.get_center().x,HUD_LIVES.position.y+26,
+		18,124,Color("#697E97"))
 	for i in range(3):
-		var pos: Vector2 = Vector2(HUD_LIVES.position.x+29+i*43,HUD_LIVES.position.y+64)
-		_draw_icon(ICON_HEART,pos,40,1.0 if i<lives else 0.21)
+		var at: Vector2 = Vector2(HUD_LIVES.position.x+29+i*43,HUD_LIVES.position.y+65)
+		_draw_icon(ICON_HEART,at,40,1.0 if i<lives else 0.17)
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO,size),Color("#080d24"))
+	draw_rect(Rect2(Vector2.ZERO,size),Color("#F0EAF5"))
 	draw_set_transform(_offset(),0,Vector2.ONE*_scale())
 	_draw_background()
 	_draw_header()
@@ -1674,16 +1674,15 @@ func _draw_rock(center: Vector2, stone: int, alpha: float = 1.0) -> void:
 		draw_circle(pos,4.3,Color("#ffdc94",alpha) if n < hp else Color(0.05,0.07,0.14,0.86*alpha))
 
 func _draw_board() -> void:
-	# Large quiet play surface, one frame; no faux holes below every piece.
-	var frame: Rect2 = BOARD.grow(11)
-	_box(Rect2(frame.position+Vector2(0,7),frame.size),Color("#070E20",0.46),29)
-	_box(frame,Color("#324764"),27,Color("#6F8BAA",0.34),2)
-	_box(BOARD,Color("#1B2C47"),15)
-	# Selection lives inside the board and never competes with the pieces.
-	if phase=="drop" and hover_column >= 0 and hover_column < 8:
+	# White toy-tray frame; soft lavender cells, no intimidating black wells.
+	var frame: Rect2 = BOARD.grow(14)
+	_box(Rect2(frame.position+Vector2(0,9),frame.size),Color("#7294B8",0.16),36)
+	_box(frame,Color("#FFFFFF"),35)
+	_box(BOARD.grow(3),Color("#E1E5F4"),21)
+		if phase=="drop" and hover_column >= 0 and hover_column < 8:
 		var column_x: float = BOARD.position.x+float(hover_column)*CELL
 		draw_rect(Rect2(column_x,BOARD.position.y,CELL,BOARD.size.y),
-			Color("#8ae9e8",0.075))
+			Color("#57DAC2",0.10))
 	var hidden: Dictionary = {}
 	if animating:
 		for m in motion:
@@ -1693,11 +1692,11 @@ func _draw_board() -> void:
 	for y in range(8):
 		for x in range(8):
 			var tile: Vector2 = BOARD.position+Vector2(x,y)*CELL
-			_box(Rect2(tile+Vector2(1.5,1.5),Vector2(CELL-3.0,CELL-3.0)),
-				Color("#263A57") if (x+y)%2==0 else Color("#293E5B"),9)
+			_box(Rect2(tile+Vector2(2,2),Vector2(CELL-4.0,CELL-4.0)),
+				Color("#E6E9F6") if (x+y)%2==0 else Color("#DDE2F1"),13)
 			if phase=="drop" and x==hover_column:
-				_box(Rect2(tile+Vector2(2,2),Vector2(CELL-4.0,CELL-4.0)),
-					Color("#6BE4C6",0.16),9)
+				_box(Rect2(tile+Vector2(3,3),Vector2(CELL-6.0,CELL-6.0)),
+					Color("#6BDEC8",0.19),12)
 			var center: Vector2 = tile+Vector2(CELL*0.5,CELL*0.5)
 			var occupied: bool = board[y][x] != Rules.EMPTY
 			if occupied and not hidden.has(y*8+x) and Rules.is_rock(int(board[y][x])):
@@ -1717,9 +1716,9 @@ func _draw_board() -> void:
 				if Vector2i(x,y) in charged and phase == "drop":
 					var pulse: float = 0.46+0.25*sin(clock*3.8)
 					draw_arc(center,CELL*0.445,-PI*0.75,PI*1.25,42,
-						Color("#ffd27e",pulse),3.4,true)
+						Color("#FFF5CB",pulse),2.5,true)
 					if (x+y)%3==0:
-						_spark(center+Vector2(22,-22),4.0,Color("#ffedbe"),pulse)
+						_spark(center+Vector2(22,-22),3.0,Color("#FFFFFF"),pulse*0.55)
 	if motion_kind=="spin" and animating:
 		var step: float = clampf(motion_time/motion_duration,0.0,1.0)
 		for i in range(4):
@@ -1789,13 +1788,13 @@ func _draw_board() -> void:
 	var used: int = Rules.tallest_column(board)
 	var danger: Color = Color("#ff657e") if used >= 6 else Color("#e577a2")
 	var danger_alpha: float = 0.88+0.12*sin(clock*7.0) if used >= 6 else 0.42
-	draw_line(BOARD.position+Vector2(2,3),BOARD.position+Vector2(BOARD.size.x-2,3),
+	draw_line(BOARD.position+Vector2(5,3),BOARD.position+Vector2(BOARD.size.x-5,3),
 		Color(danger.r,danger.g,danger.b,danger_alpha),
-		5.0 if used>=6 else 3.0,true)
+		4.0 if used>=6 else 2.0,true)
 	# Tiny numbered roof markers visually separate the eight drop lanes.
 	for x in range(8):
 		var marker: Vector2 = Vector2(BOARD.position.x+CELL*(float(x)+0.5),BOARD.position.y+9)
-		draw_circle(marker,3,Color("#6b9ec5",0.23))
+		draw_circle(marker,2.6,Color("#9DAFC6",0.37))
 
 func _draw_particles() -> void:
 	for ring in rings:
@@ -1835,29 +1834,23 @@ func _draw_particles() -> void:
 
 
 func _draw_status() -> void:
-	# Single compact status line gives shapes room; no second full HUD.
-	_neon_panel(DOCK_STATUS,Color("#607da6"))
-	_fit_center("%s %02d" % [t("move"),moves+1],109,904,17,147,Color("#f4f6ff"))
-	draw_line(Vector2(202,882),Vector2(202,909),Color("#637292",0.48),1.1,true)
+	_neon_panel(DOCK_STATUS,Color.WHITE)
+	_fit_center("%s %02d" % [t("move"),moves+1],106,903,19,162,Color("#29435F"))
 	var actual: int = mini(int(pending_group.get("count",0)),Rules.POP_THRESHOLD)
 	var bead_color: Color = COLORS[clampi(int(pending_group.get("color",0)),0,2)]
-	_fit_center(t("charge").to_upper(),266,892,12,100,Color("#9daccc"))
 	for i in range(Rules.POP_THRESHOLD):
-		var center: Vector2 = Vector2(237+float(i)*31,902)
-		var lit: bool = i<actual
-		draw_circle(center,10.1,Color("#0b142a"))
-		draw_circle(center,7.7,bead_color if lit else Color("#394663"))
-		if lit:
-			draw_circle(center+Vector2(-2,-2),2.1,Color(1,1,1,0.65))
-	_fit_center("%d/5" % actual,436,905,18,69,Color("#ffe7c3"))
-	draw_line(Vector2(478,882),Vector2(478,909),Color("#637292",0.48),1.1,true)
+		var pos: Vector2 = Vector2(257+float(i)*33,901)
+		draw_circle(pos,9.0,Color("#E2E8F1"))
+		draw_circle(pos,7.8,bead_color if i<actual else Color("#D5DCE8"))
+		if i<actual:
+			draw_circle(pos+Vector2(-2.2,-2.5),2.2,Color("#FFFFFF",0.75))
+	_fit_center("%d/5" % actual,449,905,20,80,Color("#2F4967"))
 	var height_used: int = Rules.tallest_column(board)
 	var warning: bool = height_used>=6
-	var accent: Color = Color("#ff819f") if warning else Color("#86e8ce")
-	_fit_center(t("danger").to_upper(),556,889,12,126,Color("#9cafd1"))
-	_box(Rect2(502,896,130,8),Color("#090e22"),5)
-	_box(Rect2(504,898,126.0*float(height_used)/8.0,4),accent,3)
-	_fit_center("%d/8" % height_used,657,906,16,55,accent)
+	var accent: Color = Color("#F26988") if warning else Color("#4EC4BB")
+	_box(Rect2(513,896,102,9),Color("#E5EAF2"),6)
+	_box(Rect2(514,897,maxf(2.0,100.0*float(height_used)/8.0),7),accent,4)
+	_fit_center("%d/8" % height_used,655,905,19,60,Color("#59758F"))
 func _draw_wave_timer() -> void:
 	# Integrated into the HUD; keep a single timer instead of duplicate strips.
 	pass
@@ -1920,58 +1913,53 @@ func _draw_drag_overlay() -> void:
 
 
 func _draw_pieces() -> void:
-	_text(t("next").to_upper(),Vector2(39,944),18,Color("#E3EAF8"))
-	var instruction: String = "DOTKNIJ LUB PRZECIĄGNIJ" if language=="pl" else "TAP OR DRAG"
-	_fit_center(instruction,572,944,16,230,Color("#B1C3DA"))
+	_text(t("next").to_upper(),Vector2(38,946),19,Color("#607A94"))
+	var instruction: String = "PRZECIĄGNIJ LUB DOTKNIJ" if language=="pl" else "DRAG OR TAP TO PLACE"
+	_fit_center(instruction,566,946,16,244,Color("#839BB1"))
 	for i in range(pieces.size()):
 		var rect: Rect2 = _piece_card_rect(i)
 		var selected: bool = selected_piece==i
-		var accent: Color = Color("#83E8D4") if selected else Color("#617999")
-		_box(Rect2(rect.position+Vector2(0,4),rect.size),Color("#0A1529",0.42),19)
-		_box(rect,Color("#294E62") if selected else Color("#26364F"),18,
-			Color(accent.r,accent.g,accent.b,0.82 if selected else 0.26),2 if selected else 1)
-		var medallion: Vector2 = rect.position+Vector2(23,20)
-		draw_circle(medallion,16,Color("#53BDAE") if selected else Color("#405575"))
+		_box(Rect2(rect.position+Vector2(0,4),rect.size),Color("#7291B8",0.11),20)
+		_box(rect,Color("#EAF4F8") if selected else Color("#F0F3FA"),19,
+			Color("#36CDBF") if selected else Color("#D2DDEA"),3 if selected else 1)
+		var medallion: Vector2 = rect.position+Vector2(22,21)
+		draw_circle(medallion,16,Color("#42CABA") if selected else Color("#ADBED3"))
 		_center(str(i+1),medallion.x,medallion.y+6,17,Color.WHITE)
 		var piece: Array = pieces[i]
 		var span: Vector2i = _piece_span(piece)
-		var step: float = minf(37.0,minf(72.0/float(maxi(1,span.y-1)),
-			151.0/float(maxi(1,span.x-1))))
-		var radius: float = minf(20.5,step*0.49)
+		var step: float = minf(38.0,minf(73.0/float(maxi(1,span.y-1)),
+			150.0/float(maxi(1,span.x-1))))
+		var radius: float = minf(21.0,step*0.49)
 		var center_x: float = rect.get_center().x-float(span.x-1)*step*0.5
 		var center_y: float = rect.get_center().y+3.0-float(span.y-1)*step*0.5
 		for bead in piece:
-			var position: Vector2 = Vector2(
-				center_x+float(bead[0])*step,center_y+float(bead[1])*step)
-			_ball(position,radius,int(bead[2]),
-				0.43 if dragging_piece and selected else 1.0)
+			var pos: Vector2 = Vector2(center_x+float(bead[0])*step,
+				center_y+float(bead[1])*step)
+			_ball(pos,radius,int(bead[2]),0.43 if dragging_piece and selected else 1.0)
 func _draw_buttons() -> void:
-	# Large thumb actions. One bold hue per action, no glowing bezel.
 	var enabled: bool = phase=="drop"
 	for i in range(2):
 		var left: bool = i==0
 		var rect: Rect2 = LEFT_RECT if left else RIGHT_RECT
-		var base: Color = Color("#B95377") if left else Color("#2D8A94")
-		var tint: Color = Color("#FFB2C6") if left else Color("#A2EFE3")
-		var score_hint: int = int(preview_left.get("score",0)) if left else int(preview_right.get("score",0))
+		var bright: Color = Color("#FF6388") if left else Color("#32B8BB")
+		var shade: Color = Color("#C7466A") if left else Color("#188D9B")
 		var pressed: bool = enabled and tap_time>0.0 and rect.has_point(tap_point)
-		_box(Rect2(rect.position+Vector2(0,6),rect.size),Color("#091226",0.6),22)
-		_box(rect,base if enabled else Color("#364961"),21)
-		if pressed:
-			_box(Rect2(rect.position+Vector2(4,4),rect.size-Vector2(8,8)),
-				Color(1,1,1,0.12),18)
-		var disc: Vector2 = rect.position+Vector2(50 if left else rect.size.x-50,42)
-		draw_circle(disc,31,Color("#152842",0.26))
-		_draw_icon(ICON_ROTATE_LEFT if left else ICON_ROTATE_RIGHT,
-			disc,57,1.0 if enabled else 0.35)
-		var txt_x: float = rect.position.x+(195 if left else 121)
+		var score_hint: int = int(preview_left.get("score",0)) if left else int(preview_right.get("score",0))
+		_box(Rect2(rect.position+Vector2(0,9),rect.size),shade if enabled else Color("#8FA2B6"),24)
+		_box(Rect2(rect.position+Vector2(0,4 if pressed else 0),rect.size),
+			bright if enabled else Color("#A8B9C8"),24)
+		_box(Rect2(rect.position+Vector2(14,9 if not pressed else 13),
+			Vector2(rect.size.x-28,19)),Color("#FFFFFF",0.19),10)
+		var disc: Vector2 = rect.position+Vector2(51 if left else rect.size.x-51,44)
+		draw_circle(disc,32.0,Color("#FFFFFF",0.16))
+		_draw_icon(ICON_ROTATE_LEFT if left else ICON_ROTATE_RIGHT,disc,57,1.0 if enabled else 0.38)
+		var txt_x: float = rect.position.x+(197 if left else 120)
 		_fit_center("OBRÓĆ" if language=="pl" else "ROTATE",txt_x,
-			rect.position.y+32,21,166,Color("#FFF5F5") if enabled else Color("#9CAFC8"))
+			rect.position.y+32,21,173,Color.WHITE)
 		_fit_center(t("left") if left else t("right"),txt_x,
-			rect.position.y+59,26,172,Color.WHITE if enabled else Color("#A1ADC0"))
-		var note: String = "+%d ★" % score_hint if score_hint>0 else "90°"
-		_fit_center(note,txt_x,rect.position.y+78,17,146,
-			Color("#FFF0BE") if score_hint>0 else tint)
+			rect.position.y+59,27,180,Color.WHITE)
+		_fit_center("+%d ★" % score_hint if score_hint>0 else "90°",txt_x,
+			rect.position.y+79,17,151,Color("#FFF4DB") if score_hint>0 else Color("#E8FCFF"))
 func _draw_game_over() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#030618",0.91))
 	var center: Vector2 = Vector2(360,596)
@@ -2181,23 +2169,24 @@ func _draw_boost_controls() -> void:
 	var powers: Array = ["bomb","magic","reroll"]
 	var boxes: Array = [BOOST_BOMB,BOOST_MAGIC,BOOST_REROLL]
 	var icons: Array = [ICON_BOMB,ICON_MAGIC,ICON_REROLL]
+	var backgrounds: Array = [Color("#FFE8D7"),Color("#EAE5FF"),Color("#DDF3FF")]
 	for i in range(3):
 		var id: String = str(powers[i])
 		var rect: Rect2 = boxes[i]
 		var stock: int = shop.stock(id)
 		var usable: bool = phase=="drop" and stock>0
 		var selected: bool = (i==0 and bomb_aim) or (i==1 and magic_aim)
-		_box(Rect2(rect.position+Vector2(0,4),rect.size),Color("#091022",0.48),16)
-		_box(rect,Color("#3F6273") if selected else Color("#2C405C"),16,
-			Color("#85E9D0",0.65) if selected else Color("#88A0BF",0.22),1)
-		var at: Vector2 = rect.position+Vector2(34,33)
-		_draw_icon(icons[i],at,49,1.0 if usable or selected else 0.46)
-		_fit_center(shop_t(id),rect.position.x+121,rect.position.y+40,19,146,
-			Color("#FFFFFF") if usable or selected else Color("#B6C4D4"))
+		_box(Rect2(rect.position+Vector2(0,4),rect.size),Color("#7C91A3",0.12),18)
+		_box(rect,backgrounds[i],18,Color("#5ACAB7") if selected else Color("#FFFFFF",0.65),
+			2 if selected else 1)
+		draw_circle(rect.position+Vector2(34,33),26,Color("#FFFFFF",0.68))
+		_draw_icon(icons[i],rect.position+Vector2(34,33),48,1.0 if usable or selected else 0.54)
+		_fit_center(shop_t(id),rect.position.x+125,rect.position.y+40,19,150,
+			Color("#364E69") if usable else Color("#77869B"))
 		draw_circle(rect.position+Vector2(rect.size.x-17,rect.size.y-14),
-			15,Color("#19283E"))
-		_center(str(stock),rect.position.x+rect.size.x-17,rect.position.y+rect.size.y-8,
-			17,Color("#FFF1C1") if stock>0 else Color("#8197B1"))
+			15,Color("#354F6A"))
+		_center(str(stock),rect.position.x+rect.size.x-17,
+			rect.position.y+rect.size.y-8,16,Color.WHITE)
 func _draw_bomb_target() -> void:
 	if bomb_hover.x >= 0:
 		if magic_aim:
