@@ -48,6 +48,7 @@ jobs:
             test_gravity_rules \
             test_gravity_session \
             test_gravity_ads \
+            test_gravity_telemetry \
             test_gravity_progression \
             test_gravity_pressure \
             test_gravity_ui_layout \
