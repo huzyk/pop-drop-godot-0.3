@@ -887,8 +887,7 @@ func _gui_input(event: InputEvent) -> void:
 		queue_redraw()
 		return
 	
-
-if bomb_aim and BOARD.has_point(pt):
+	if bomb_aim and BOARD.has_point(pt):
 		var chosen: Vector2i = _board_cell(pt)
 		if chosen.x>=0:
 			_use_bomb(chosen)
