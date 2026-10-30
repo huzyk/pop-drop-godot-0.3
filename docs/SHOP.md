@@ -1,53 +1,50 @@
-# POP DROP Gravity 0.8 — Sklep i monety (soft currency)
+# POP DROP Gravity 0.13 — sklep, odznaki, energia i codzienne nagrody
 
-## Waluta: osobno od rekordu
+## Zasady ekonomii
 
-- POP wypłaca dokładnie 1 **monetę** za każde pełne 10 punktów naliczonych z faktycznego POP (np. 320 pkt → 32 monety; 900 pkt → 90 monet). Punkty wyniku i XP nie są pomniejszane przez zakupy.
-- Monety przechodzą między rundami i nie resetują się po przegranej. Zapis: `user://gravity_shop_v1.json`.
-- Dotychczasowe historyczne wyniki nie są automatycznie zamieniane na monety, żeby nie naliczyć dwukrotnie punktów; portfel rozpoczyna się od 0 i nalicza się od przyszłych POP-ów.
-- Każdy POP ma identyfikator `run_id:action_serial:cascade`. Ostatnie 256 jest zapamiętanych w portfelu, więc ponowny callback/ponowne rozwiązanie klatki nie nagradza dwa razy.
-- To waluta **lokalna i bezpłatna**, bez logowania ani prawdziwych transakcji. Nie stosujemy cen w PLN i nie podłączamy IAP.
-- Lokalny zapis nie jest źródłem zaufania dla rankingu sieciowego i może być zmieniony przez właściciela urządzenia.
+Monety są osobne od wyniku i XP. Każdy prawdziwy POP daje jedną monetę za każde pełne 10 zdobytych punktów. W sklepie nie sprzedajemy punktów ani XP; obracanie, bomba i nieudany ruch nie generują monet. Monety zapisują się lokalnie.
 
-## Katalog sklepu
+### Moce (jednorazowe)
 
-| Pozycja | Monety | Typ | Działanie |
-|---|---:|---|---|
-| **Bomba** | 160 | Jednorazowa | Celowany wybuch **3×3**: usuwa kulki i zabiera **jeden punkt wytrzymałości** każdej trafionej skale |
-| **+10 sekund** | 110 | Jednorazowa | Wydłuża aktualny licznik do następnej fali o 10 s (limit 45 s) |
-| **Neon** | 500 | Na zawsze | Dodatkowe świecące kontury kulek |
-| **Złoto** | 1200 | Na zawsze | Złoty pierścień i refleksy każdej kulki |
+| Moc | Cena | Efekt |
+|---|---:|---|
+| Bomba | 160 | Usuwa kulki w obszarze 3×3, osłabia trafione skały o jeden poziom |
+| Magiczny Kolor | 220 | Zmienia kolor wybranej kulki na najbardziej obiecujący do POP-a; potem zwykłe kaskady |
+| Nowy Zestaw | 140 | Losuje trzy nowe kształty bez wydłużania czasu fali |
 
-Dodatkowe skórki Aurora/Gwiezdne nadal odblokowują się przez poziomy doświadczenia — nie zmieniamy ich dostępności.
+**Usunięto premię +10 sekund.** Zakupione wcześniej +10s po wczytaniu starego zapisu stają się Nowym Zestawem. Moce można gromadzić do 20 sztuk każdego rodzaju. Bomba nie nagradza za bezpośrednio usunięte kulki; punktują wyłącznie dalsze naturalne POP-y.
 
-### Bomba
+### Skórki (na stałe)
 
-W dolnym pasku: **BOMBA ×N**. Jeśli N=0, dotknięcie otwiera sklep. Jeśli N>0, przechodzi do trybu celowania. Dotknięcie dowolnego pola detonuje 3×3 w granicach planszy. Powtórne dotknięcie przycisku bomby lub innego obszaru poza planszą anuluje celowanie bez utraty przedmiotu.
+| Wygląd | Cena |
+|---|---:|
+| Neon | 500 |
+| Złoto | 1200 |
+| Donuty | 900 |
+| Kapibary | 1500 |
+| Kryształy | 1800 |
+| Kosmos | 2200 |
 
-Bomba **nie przyznaje punktów/XP/monet za kulki usunięte bezpośrednio**. Po wybuchu zachodzi normalna grawitacja. Jeśli ułożą się prawdziwe POP-y, działają zwykłe kaskady i ich standardowa punktacja. Pusta detonacja nie zużywa przedmiotu. Wybuch osłabia skałę tylko o 1 — nie omija reguły 3 trafień.
+Skórki nie zmieniają trudności, fizyki, punktacji ani monet. Kupiony wygląd pozostaje dostępny. **Gwiezdna Kapibara** jest darmową specjalną skórką za siódmy kolejny dzień aktywnej gry; nie można kupić jej za monety. Dodatkowe skórki Aurora i Gwiezdne za XP nadal działają.
 
-### Dodatkowy czas
+### Ratunek i energia
 
-W dolnym pasku: **CZAS +10s ×N**. Przedmiot jest używany natychmiast; działa tylko podczas aktywnego ruchu. Zmiana od razu zapisuje stan rundy. Czas w sklepie i menu jest wstrzymany.
+Po utracie trzech serc w rundzie można **jeden raz na rundę** kontynuować za **220 monet** lub po faktycznie zakończonej reklamie nagradzanej. Ratunek przywraca jedno serce i zwalnia miejsce na planszy. Nie resetuje punktacji.
 
-### Widok sklepu
+Osobna energia ogranicza starty nowych rund: maksymalnie **5 energii**, koszt nowej rundy **1**, odnowienie **1 co 20 minut** liczone od pierwszego zużycia, także po zamknięciu gry. Reklama nagradzana może od razu dodać jedną energię (nie ponad limit). Serca podczas rozgrywki (3) to osobny licznik i nie odnawiają się podczas samej rundy.
 
-Przycisk **SKLEP** pod logo w górnym pasku (również na ekranie końca rundy). Duży panel z liczbą monet, zakładką **POMOCE**, zakładką **WYGLĄDY**, dwoma kartami ofert i przyciskami kup/wybierz. Po kupieniu wyglądu zostaje on automatycznie założony i na stałe wpisany do listy posiadanych. W wyglądach ponowne dotknięcie pozwala go aktywować. Zapas każdego boosta: maksymalnie 20.
+Przycisk reklamowy wymaga podłączonego, gotowego SDK AdMob i jego potwierdzenia nagrody. Bez SDK uczciwie pojawia się komunikat o niedostępnej reklamie — **nie ma fikcyjnych nagród**. Nie ma ograniczenia liczby obejrzanych reklam na energię, poza gotowością i ograniczeniami dostawcy reklam.
 
-## Integralność stanu
+### Codzienne granie i odznaki
 
-Zakupy, portfel i użycia boostów są zapisywane natychmiast w osobnym pliku metodą temp + rename. Trwająca runda zapisuje swoją planszę i licznik w `gravity_round_v1.json`; brak destrukcyjnej migracji poprzednich save'ów. Nie ma transakcji atomowej między dwoma oddzielnymi plikami w razie wymuszonego zamknięcia dokładnie w trakcie użycia pomocy — w wersji produkcyjnej należy przygotować wspólny transakcyjny save.
+Pierwszy **udany zrzut** danego dnia automatycznie odbiera 7-dniową nagrodę: **20 / 30 / 50 / 70 / 90 / 120 / 150 monet**. Dzień 7 po raz pierwszy odblokowuje Gwiezdną Kapibarę. Kolejne dni rozpoczynają ponownie cykl 7 dni; przerwa resetuje cykl do dnia 1.
 
-Nie przyznajemy monet za reklamy, zakupy pieniężne, kliknięcia i obracanie planszy. Analityka sklepu działa wyłącznie po wcześniej wyrażonej zgodzie.
+Codzienne misje nadal dają XP, ale również monety: **25 / 35 / 50** za misje zrzutów, POP-ów i punktów. Nagroda jest jednorazowa na misję i dzień. Profil ma **12 trwałych odznak**: pierwszy zrzut, 25 i 100 zrzutów; pierwszy, 50 i 200 POP-ów; kaskady ×2 i ×4; 10 000 punktów POP łącznie; 10 rund; serie 3 i 7 dni. Odznaki płacą jednorazową premię monetową (20–300 zależnie od celu).
 
-## Testy
+### Trwałość, testy i ograniczenia
 
-```sh
-godot --headless --path . --script res://tests/test_gravity_shop.gd
-```
+Nowe dane wykorzystują wersjonowany zapis `gravity_shop_v1.json` (wersja formatu 2), migrujący bez kasowania portfela i starych skórek. Liczniki i nagrody mają lokalne identyfikatory zdarzeń, zapisywanie temp+rename i deduplikację; podczas wczytywania profil odtwarza należne premie za odznaki i dzienne misje w razie przerwanego zapisu między modułami.
 
-Test sprawdza: wymianę POP→monety, odporność na duplikaty, zakupy, odmowę przy braku waluty, trwałe skórki, jednokrotne zużywanie boostów, granice eksplozji, 3×3, osłabianie skał i brak mutacji planszy wejściowej. Workflow GitHub Actions uruchamia również wcześniejsze testy fizyki, zapisów i zwykłej rozgrywki.
+Profil i sklep są lokalne i możliwe do edytowania przez użytkownika urządzenia. Nie mogą być podstawą bezpiecznego rankingu online bez backendu. Reklamy AdMob/UMP wymagają konfiguracji SDK i zgód w środowisku produkcyjnym.
 
-## Do przetestowania na telefonie
-
-Po uruchomieniu: zbierz monety POP-em, zakup bombę, sprawdź celowanie dotykowe i ostrzeżenia, zakup +10s, zamknij aplikację i sprawdź zachowanie portfela. Szczególnie ocenić responsywność przycisków na telefonie 720×1280 oraz czy przerwa na sklep nie pozwala łatwo obejść presję. Ceny są eksperymentalne; przed premierą warto zmierzyć medianę monety/minutę, zużycie boostów i odsetek graczy wykonujących pierwszy zakup.
+Testy Godot: `tests/test_gravity_shop.gd`, `tests/test_gravity_progression.gd`, `tests/test_gravity_icons.gd`, `tests/test_gravity_layout.gd`, `tests/test_gravity_ui_layout.gd`. Uruchamia je GitHub Actions przy każdej aktualizacji `main`.
