@@ -1961,56 +1961,53 @@ func _draw_buttons() -> void:
 		_fit_center("+%d ★" % score_hint if score_hint>0 else "90°",txt_x,
 			rect.position.y+79,17,151,Color("#FFF4DB") if score_hint>0 else Color("#E8FCFF"))
 func _draw_game_over() -> void:
-	draw_rect(Rect2(0,0,720,1280),Color("#030618",0.91))
+	draw_rect(Rect2(0,0,720,1280),Color("#E7EBF8",0.92))
 	var center: Vector2 = Vector2(360,596)
-	draw_circle(center,360,Color("#69287e",0.18))
-	draw_circle(center,274,Color("#18a9ca",0.10))
-	for i in range(16):
-		var a: float = float(i)*TAU/16.0+clock*0.14
-		var where: Vector2 = center+Vector2.from_angle(a)*(304.0+9.0*sin(clock+float(i)))
-		_spark(where,5.0+float(i%4),Color("#ffdfac"),0.32+0.10*sin(clock*2.0+float(i)))
-	_neon_panel(Rect2(64,375,592,640),Color("#bd95ff"),true)
-	_box(Rect2(78,389,564,615),Color("#211b3d"),26,Color("#7161a4"),1)
-	draw_arc(Vector2(360,484),62,PI*0.1,PI*1.9,60,Color("#e4b7ff",0.62),3.0,true)
+	draw_circle(center,343,Color("#F6CFE0",0.24))
+	for i in range(14):
+		var a: float = float(i)*TAU/14.0+clock*0.10
+		var where: Vector2 = center+Vector2.from_angle(a)*(311.0+8.0*sin(clock+float(i)))
+		_spark(where,5.0+float(i%3),Color("#E86997"),0.21)
+	_box(Rect2(64,383,592,640),Color("#89A3C2",0.20),31)
+	_box(Rect2(64,375,592,640),Color.WHITE,31)
 	for i in range(3):
 		var angle: float = clock*0.34+TAU*float(i)/3.0
-		_ball(Vector2(360,480)+Vector2.from_angle(angle)*54.0,18.0,i)
-	_fit_center(t("over"),360,567,51,520,Color.WHITE)
-	_fit_center(t("score"),360,604,18,420,Color("#b6c5e6"))
-	_fit_center(str(score),360,681,83,490,Color("#ffe5a9"))
-	_fit_center(t("best")+"  "+str(best),360,718,23,460,Color("#ddc9ff"))
-	_box(Rect2(RESTART_RECT.position+Vector2(0,7),RESTART_RECT.size),Color("#04091a"),25)
-	_box(RESTART_RECT,Color("#50e6c9") if shop.energy>0 else Color("#60677c"),
-		25,Color("#b8fff0") if shop.energy>0 else Color("#798ca5"),3)
-	_fit_center(t("again") if shop.energy>0 else shop_t("no_energy"),360,777,27,462,
-		Color("#102846") if shop.energy>0 else Color.WHITE)
+		_ball(Vector2(360,481)+Vector2.from_angle(angle)*54.0,20.0,i)
+	_fit_center(t("over"),360,567,51,520,Color("#263D59"))
+	_fit_center(t("score"),360,604,19,420,Color("#6E869E"))
+	_fit_center(str(score),360,681,84,490,Color("#EF6289"))
+	_fit_center(t("best")+"  "+str(best),360,719,23,464,Color("#627E9B"))
+	_box(Rect2(RESTART_RECT.position+Vector2(0,7),RESTART_RECT.size),
+		Color("#159B91",0.47),24)
+	_box(RESTART_RECT,Color("#43CCB2") if shop.energy>0 else Color("#B9C8D8"),24)
+	_fit_center(t("again") if shop.energy>0 else shop_t("no_energy"),360,777,28,462,
+		Color.WHITE if shop.energy>0 else Color("#6B7D91"))
 	var ad_ready: bool = ads != null and ads.rewarded_ready()
 	var can_revive: bool = revives<1 and not pieces.is_empty()
-	_box(RESCUE_RECT,Color("#334c69"),21,Color("#85bdf5"),2)
+	_box(RESCUE_RECT,Color("#E8F1FA"),20)
 	_fit_center(("REKLAMA" if language=="pl" else "WATCH AD")
 		if ad_ready and can_revive else ("BRAK REKLAMY" if language=="pl" else "NO AD"),
-		RESCUE_RECT.get_center().x,RESCUE_RECT.position.y+48,19,222,
-		Color.WHITE if ad_ready and can_revive else Color("#9ca8be"))
-	_box(COIN_RESCUE_RECT,Color("#55405e") if shop.coins>=Shop.RESCUE_PRICE and can_revive
-		else Color("#32314c"),21,Color("#efc17d") if can_revive else Color("#756b8a"),2)
+		RESCUE_RECT.get_center().x,RESCUE_RECT.position.y+48,21,223,
+		Color("#344F6B") if ad_ready and can_revive else Color("#9AABC1"))
+	_box(COIN_RESCUE_RECT,Color("#FFE1B8") if shop.coins>=Shop.RESCUE_PRICE and can_revive
+		else Color("#E5EAF2"),20)
 	_fit_center("220 ◉  "+("GRAJ DALEJ" if language=="pl" else "CONTINUE"),
 		COIN_RESCUE_RECT.get_center().x,COIN_RESCUE_RECT.position.y+48,
-		19,222,Color.WHITE if shop.coins>=Shop.RESCUE_PRICE and can_revive else Color("#9490ab"))
-	_box(ENERGY_AD_RECT,Color("#233d58"),14,Color("#608cab"),1)
+		21,230,Color("#9B5A39") if shop.coins>=Shop.RESCUE_PRICE and can_revive else Color("#94A0AF"))
+	_box(ENERGY_AD_RECT,Color("#F1F5FA"),14)
 	var sec: int = shop.energy_seconds_remaining()
 	var min_left: int = int(ceil(float(sec)/60.0))
 	_fit_center("⚡ %d/5  •  +1 / %d MIN" % [shop.energy,min_left] if shop.energy < Shop.MAX_ENERGY
-		else "⚡ 5/5  •  MAX",360,931,16,255,Color("#d6e8ff"))
+		else "⚡ 5/5  •  MAX",360,931,17,264,Color("#57728A"))
 	_fit_center(("REKLAMA: +1 ENERGII" if language=="pl" else "AD: +1 ENERGY")
 		if ad_ready and shop.energy<Shop.MAX_ENERGY
 		else ("REKLAMA NIEDOSTĘPNA" if language=="pl" else "AD NOT AVAILABLE")
 		if shop.energy<Shop.MAX_ENERGY else "MAX",
-		360,952,14,255,Color("#bde5ff"))
+		360,952,15,268,Color("#778FA4"))
 	_fit_center(ad_note if not ad_note.is_empty() else (
 		"RATUNEK: RAZ NA RUNDĘ • REKLAMA = +1 ENERGII"
 		if language=="pl" else "ONE CONTINUE PER RUN • AD = +1 ENERGY"),
-		360,993,15,520,Color("#c0b5d8"))
-
+		360,993,16,520,Color("#788AA4"))
 func _draw_settings() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#E7EFFA",0.96))
 	_box(Rect2(72,350,576,735),Color("#89A8C6",0.20),30)
@@ -2084,42 +2081,44 @@ const BADGE_NAMES_EN := {
 }
 
 func _draw_profile() -> void:
-	draw_rect(Rect2(0,0,720,1280),Color("#030618",0.95))
-	_neon_panel(PROFILE_CARD,Color("#9bb9ed"),true)
-	_box(Rect2(66,236,588,880),Color("#141b38"),28,Color("#657ab2"),2)
-	_fit_center(profile_t("profile"),295,309,39,440,Color.WHITE)
-	_box(PROFILE_CLOSE,Color("#414b77"),18,Color("#8d9ed1"),2)
-	_fit_center(profile_t("close"),572,301,17,105,Color.WHITE)
-	_fit_center("%s %d" % [profile_t("level"),progression.level()],360,380,36,460,Color("#ffe6a2"))
-	_fit_center(progression.level_xp_text(),360,414,18,410,Color("#bdcbf4"))
-	_box(Rect2(100,429,520,15),Color("#28314f"),8)
-	_box(Rect2(100,429,520*progression.level_fraction(),15),Color("#5be3c3"),8)
+	draw_rect(Rect2(0,0,720,1280),Color("#E8F0FA",0.97))
+	_box(Rect2(PROFILE_CARD.position+Vector2(0,8),PROFILE_CARD.size),
+		Color("#7A97B8",0.16),30)
+	_box(PROFILE_CARD,Color.WHITE,30)
+	_fit_center(profile_t("profile"),295,309,39,440,Color("#283C57"))
+	_box(PROFILE_CLOSE,Color("#EDF2F8"),18)
+	_fit_center(profile_t("close"),572,301,18,108,Color("#5B7690"))
+	_fit_center("%s %d" % [profile_t("level"),progression.level()],
+		360,380,39,460,Color("#F06B8C"))
+	_fit_center(progression.level_xp_text(),360,414,19,410,Color("#7B8DA4"))
+	_box(Rect2(100,429,520,15),Color("#E2EAF3"),8)
+	_box(Rect2(100,429,520*progression.level_fraction(),15),Color("#55D4BE"),8)
 	_fit_center("%s %d  •  ⚡ %d/%d" % [profile_t("streak"),progression.streak,
-		shop.energy,Shop.MAX_ENERGY],360,485,21,530,Color("#ffb8d8"))
+		shop.energy,Shop.MAX_ENERGY],360,485,22,532,Color("#A66685"))
 	for i in range(2):
 		var rect: Rect2 = PROFILE_DAILY_TAB if i==0 else PROFILE_BADGE_TAB
-		_box(rect,Color("#286358") if profile_tab==i else Color("#252f50"),15,
-			Color("#7deed8") if profile_tab==i else Color("#536c9e"),2)
+		var selected: bool = profile_tab==i
+		_box(rect,Color("#46C6B0") if selected else Color("#EAF0F7"),16)
 		var name: String = profile_t("daily") if i==0 else (
 			shop_t("badges")+" %d/12" % progression.achievement_unlocked_count())
-		_fit_center(name,rect.get_center().x,rect.position.y+32,20,226,Color.WHITE)
+		_fit_center(name,rect.get_center().x,rect.position.y+33,21,230,
+			Color.WHITE if selected else Color("#59718B"))
 	if profile_tab==0:
 		for i in range(Progression.MISSIONS.size()):
 			var mission: Dictionary = Progression.MISSIONS[i]
 			var key: String = str(mission["id"])
 			var y: float = 603+float(i)*102
 			var complete: bool = bool(progression.claimed.get(key,false))
-			_box(Rect2(89,y,542,90),Color("#20394a") if complete else Color("#222a49"),
-				17,Color("#5fe7b3") if complete else Color("#546c9e"),2)
-			_text(profile_t(key),Vector2(110,y+28),20,Color("#ddfff1") if complete else Color.WHITE)
+			_box(Rect2(89,y,542,90),Color("#E7F9F2") if complete else Color("#F0F4FA"),17)
+			_text(profile_t(key),Vector2(110,y+29),21,Color("#31546D"))
 			var value: int = mini(int(progression.daily.get(key,0)),int(mission["target"]))
 			var label: String = profile_t("done") if complete else "%d / %d" % [
 				value,int(mission["target"])]
-			_fit_center(label,538,y+31,17,160,
-				Color("#d8f6ed") if complete else Color("#cbd6fb"))
-			_box(Rect2(110,y+56,500,11),Color("#111c33"),6)
-			_box(Rect2(110,y+56,500*progression.mission_ratio(key),11),
-				Color("#6ee9cb") if complete else Color("#ffce84"),6)
+			_fit_center(label,538,y+32,19,160,
+				Color("#32A18F") if complete else Color("#788DA4"))
+			_box(Rect2(110,y+57,500,11),Color("#DAE6EF"),6)
+			_box(Rect2(110,y+57,500*progression.mission_ratio(key),11),
+				Color("#53D8B6") if complete else Color("#F6B86F"),6)
 	else:
 		for i in range(6):
 			var badge: Dictionary = Progression.ACHIEVEMENTS[badge_page*6+i]
@@ -2128,37 +2127,37 @@ func _draw_profile() -> void:
 			var col: int = i%2
 			var row: int = i/2
 			var rect: Rect2 = Rect2(89+col*278,599+row*101,263,91)
-			_box(rect,Color("#365b4d") if obtained else Color("#252e4a"),16,
-				Color("#ffe19b") if obtained else Color("#5d6b92"),2)
+			_box(rect,Color("#FFF1D8") if obtained else Color("#EEF2F9"),16)
 			_fit_center("★" if obtained else "◇",rect.position.x+28,rect.position.y+41,
-				29,49,Color("#ffe69d") if obtained else Color("#8d9cbb"))
+				30,50,Color("#EAB54B") if obtained else Color("#A3B4C6"))
 			var title: String = str((BADGE_NAMES_PL if language=="pl" else BADGE_NAMES_EN).get(id,id))
-			_fit_center(title,rect.position.x+153,rect.position.y+33,16,200,Color.WHITE)
+			_fit_center(title,rect.position.x+153,rect.position.y+33,
+				17,204,Color("#344E69"))
 			_fit_center("%d/%d  •  +%d ◉" % [
 				mini(progression.achievement_progress(id),int(badge["target"])),
 				int(badge["target"]),int(badge["coins"])],
-				rect.position.x+149,rect.position.y+66,14,203,Color("#e1d3a4"))
-		_box(PROFILE_PREV,Color("#394665"),12)
-		_box(PROFILE_NEXT,Color("#394665"),12)
-		_fit_center("◀",PROFILE_PREV.get_center().x,942,23,97,Color.WHITE)
-		_fit_center("▶",PROFILE_NEXT.get_center().x,942,23,97,Color.WHITE)
-		_fit_center("%d / 2" % (badge_page+1),360,942,17,120,Color("#ced4f1"))
-	_fit_center(profile_t("cosmetics"),360,963,23,500,Color("#eae9ff"))
+				rect.position.x+149,rect.position.y+66,15,207,Color("#788CA3"))
+		_box(PROFILE_PREV,Color("#EDF2F8"),13)
+		_box(PROFILE_NEXT,Color("#EDF2F8"),13)
+		_fit_center("◀",PROFILE_PREV.get_center().x,942,23,97,Color("#526B87"))
+		_fit_center("▶",PROFILE_NEXT.get_center().x,942,23,97,Color("#526B87"))
+		_fit_center("%d / 2" % (badge_page+1),360,942,18,120,Color("#607B97"))
+	_fit_center(profile_t("cosmetics"),360,963,23,500,Color("#405B75"))
 	for i in range(Progression.SKINS.size()):
 		var available: Dictionary = Progression.SKINS[i]
 		var id: String = str(available["id"])
 		var unlocked: bool = progression.level() >= int(available["level"])
 		var chosen: bool = progression.skin == id
 		var x: float = 90+float(i)*181
-		_box(Rect2(x,975,164,75),Color("#2b625d") if chosen else Color("#29314f"),
-			18,Color("#7cfde0") if chosen else Color("#6677a5"),2)
-		_fit_center(profile_t(id),x+82,1003,18,146,
-			Color("#f0fff8") if unlocked else Color("#9299b4"))
+		_box(Rect2(x,975,164,75),Color("#D7F5EA") if chosen else Color("#F0F4F9"),17,
+			Color("#4BCFB1") if chosen else Color("#DFE6F0"),2)
+		_fit_center(profile_t(id),x+82,1003,19,148,
+			Color("#2D5265") if unlocked else Color("#A0ACC0"))
 		var caption: String = profile_t("selected") if chosen else (
 			"%s %d" % [profile_t("locked"),int(available["level"])] if not unlocked else "✓")
-		_fit_center(caption,x+82,1030,15,144,Color("#8bf8d8") if chosen else Color("#bac4e4"))
-	_fit_center(profile_t("autoclaim"),360,1091,15,508,Color("#99a9ca"))
-
+		_fit_center(caption,x+82,1030,16,146,
+			Color("#23A48D") if chosen else Color("#8194A9"))
+	_fit_center(profile_t("autoclaim"),360,1091,16,520,Color("#879DB2"))
 func _draw_shop_notice() -> void:
 	var alpha: float = minf(1.0,shop_notice_time/0.25)
 	_box(Rect2(198,739,324,56),Color("#252740",0.94*alpha),19,
