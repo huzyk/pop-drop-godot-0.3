@@ -6,23 +6,32 @@ const Rules = preload("res://scripts/gravity_rules.gd")
 const Shop = preload("res://scripts/gravity_shop.gd")
 const SkinArt = preload("res://scripts/gravity_skin_art.gd")
 const Progression = preload("res://scripts/gravity_progression.gd")
-const WORLD = preload("res://assets/visual_v4/world.svg")
-const TURN_PINK = preload("res://assets/visual_v3/turn_left.svg")
-const TURN_TEAL = preload("res://assets/visual_v3/turn_right.svg")
-const BOARD_SHELL = preload("res://assets/visual_v4/board.svg")
-const SOCKET = preload("res://assets/visual_v3/socket.svg")
-const PIECE_ACTIVE = preload("res://assets/visual_v3/piece_selected.svg")
-const PIECE_IDLE = preload("res://assets/visual_v3/piece_idle.svg")
+const WORLD = preload("res://assets/atelier_v5/world.svg")
+const TURN_PINK = preload("res://assets/atelier_v5/turn_left.svg")
+const TURN_TEAL = preload("res://assets/atelier_v5/turn_right.svg")
+const BOARD_SHELL = preload("res://assets/atelier_v5/board.svg")
+const SOCKET = preload("res://assets/atelier_v5/socket.svg")
+const PIECE_ACTIVE = preload("res://assets/atelier_v5/piece_active.svg")
+const PIECE_IDLE = preload("res://assets/atelier_v5/piece_idle.svg")
 const BOOST_ART = [
-	preload("res://assets/visual_v3/boost_bomb.svg"),
-	preload("res://assets/visual_v3/boost_magic.svg"),
-	preload("res://assets/visual_v3/boost_reroll.svg")
+	preload("res://assets/atelier_v5/boost_bomb.svg"),
+	preload("res://assets/atelier_v5/boost_magic.svg"),
+	preload("res://assets/atelier_v5/boost_reroll.svg")
 ]
 const ORBS = [
 	preload("res://assets/visual_v2/orb_peach.svg"),
 	preload("res://assets/visual_v2/orb_aqua.svg"),
 	preload("res://assets/visual_v2/orb_violet.svg")
 ]
+const HUD_ART = preload("res://assets/atelier_v5/hud.svg")
+const STATUS_ART = preload("res://assets/atelier_v5/status.svg")
+const COIN_CHIP = preload("res://assets/atelier_v5/coin_chip.svg")
+const UTILITY_ART = preload("res://assets/atelier_v5/utility.svg")
+const ENERGY_ON = preload("res://assets/atelier_v5/energy_on.svg")
+const ENERGY_OFF = preload("res://assets/atelier_v5/energy_off.svg")
+const CTA_MINT = preload("res://assets/atelier_v5/cta_mint.svg")
+const CTA_MUTED = preload("res://assets/atelier_v5/cta_muted.svg")
+const ROCK_ART = preload("res://assets/atelier_v5/rock.svg")
 const FONT = preload("res://fonts/ClearSans-Regular.ttf")
 const BOLD = preload("res://fonts/ClearSans-Bold.ttf")
 const ICONS = {
@@ -118,12 +127,11 @@ func _orb(center: Vector2, radius: float, index: int, alpha: float=1.0, squish: 
 	var diameter: Vector2 = Vector2(radius*2.32*squish.x,radius*2.32*squish.y)
 	draw_texture_rect(authored,Rect2(center-diameter*0.5,diameter),false,Color(1,1,1,alpha))
 
-func _button(rect: Rect2, fill: Color, base: Color, pressed: bool=false) -> void:
-	var push: float = 6.0 if pressed else 0.0
-	_round(_moved(rect,Vector2(0,11)),base,mini(55,int(rect.size.y*0.5)))
-	_round(_moved(rect,Vector2(0,push)),fill,mini(55,int(rect.size.y*0.5)),Color("#FFFFFF",0.17),2)
-	_round(Rect2(rect.position+Vector2(19,10+push),Vector2(rect.size.x-38,12)),
-		Color("#FFFFFF",0.14),7)
+func _button(rect: Rect2, fill: Color, _base: Color, pressed: bool=false) -> void:
+	# A complete, authored glossy sprite — no procedural rectangle stack.
+	var art: Texture2D = CTA_MINT if fill == AQUA else CTA_MUTED
+	var down: Vector2 = Vector2(0,5) if pressed else Vector2.ZERO
+	draw_texture_rect(art,Rect2(rect.position+down,rect.size),false)
 
 func _draw() -> void:
 	if game == null or game.shop == null:
@@ -165,38 +173,30 @@ func _draw_world() -> void:
 	draw_texture_rect(WORLD,Rect2(Vector2.ZERO,BASE),false)
 
 func _draw_top() -> void:
-	# Header: branding and four utilities, nothing competing with the board.
 	_label("POP",29,69,50,WHITE)
 	_label("DROP",148,69,50,PEACH)
 	_label("G R A V I T Y",34,98,15,Color("#CAC1E6"))
 	var coin_rect: Rect2 = Rect2(292,35,125,51)
-	_round(coin_rect,Color("#332B55",.88),26,Color("#FFFFFF",.11),1)
-	draw_circle(Vector2(320,60),18,Color("#FBC975"))
+	draw_texture_rect(COIN_CHIP,coin_rect.grow(3),false)
 	_icon("coins",Vector2(320,60),34)
 	_center(str(game.shop.coins),380,69,24,WHITE,65)
 	var boxes: Array = [Rect2(430,35,54,54),Rect2(498,35,54,54),
 		Rect2(566,35,54,54),Rect2(634,35,54,54)]
 	var ids: Array = ["shop","user","settings","globe"]
 	for i in range(4):
-		var middle: Vector2 = boxes[i].get_center()
-		draw_circle(middle+Vector2(0,3),26,Color("#09081E",.23))
-		draw_circle(middle,25,Color("#342C57",.94))
-		draw_arc(middle,24,-PI*.79,-PI*.22,20,Color("#FFFFFF",.17),2,true)
-		_icon(str(ids[i]),middle,34 if i!=3 else 29)
+		draw_texture_rect(UTILITY_ART,boxes[i].grow(3),false)
+		_icon(str(ids[i]),boxes[i].get_center(),34 if i!=3 else 29)
 	_center(game.language.to_upper(),662,93,13,GOLD,54)
 	_label("ENERGIA" if game.language=="pl" else "ENERGY",37,126,15,MIST)
 	for i in range(Shop.MAX_ENERGY):
 		var p: Vector2 = Vector2(137+i*27,120)
-		draw_circle(p,8.5,PEACH if i<game.shop.energy else Color("#514664"))
+		var art: Texture2D = ENERGY_ON if i<game.shop.energy else ENERGY_OFF
+		draw_texture_rect(art,Rect2(p-Vector2(11,11),Vector2(22,22)),false)
 	_center("%d/%d" % [game.shop.energy,Shop.MAX_ENERGY],305,127,16,Color("#F9DEE9"),73)
 
 func _draw_stats() -> void:
-	# One coherent scoreboard, with three zones and crisp numeric hierarchy.
-	var rect: Rect2 = Rect2(24,144,672,83)
-	_round(_moved(rect,Vector2(0,5)),Color("#0C0A25",.36),29)
-	_round(rect,Color("#292344",.89),28,Color("#8576AB",.25),1)
-	draw_line(Vector2(226,160),Vector2(226,213),Color("#B6A9D8",.20),2,true)
-	draw_line(Vector2(512,160),Vector2(512,213),Color("#B6A9D8",.20),2,true)
+	# The whole scoreboard comes from one authored enamel asset.
+	draw_texture_rect(HUD_ART,Rect2(24,144,672,83),false)
 	_label(game.t("score"),53,169,16,MIST)
 	_center(str(int(round(game.display_score))),123,214,48,WHITE,185)
 	_center(game.t("best")+": "+str(game.best),179,171,14,Color("#EAC4B6"),83)
@@ -228,9 +228,9 @@ func _draw_board() -> void:
 		for x in range(8):
 			var tile: Vector2 = BOARD.position+Vector2(x,y)*CELL
 			var center: Vector2 = tile+Vector2(38,38)
-			# Low-contrast placement markers, NOT 64 dark holes.
-			draw_circle(center,34.0,Color("#CBC0F3",.055))
-			draw_circle(center,29.5,Color("#A9A4E1",.026))
+
+			# One individually designed soft-well asset per cell; no runtime circles.
+			draw_texture_rect(SOCKET,Rect2(center-Vector2(37,37),Vector2(74,74)),false)
 			if x==hovering:
 				draw_circle(center,32.0,Color("#82FFE6",0.20))
 				draw_arc(center,33.0,0.0,TAU,48,Color("#A5FFE8",0.66),3.0,true)
@@ -284,16 +284,11 @@ func _draw_board() -> void:
 
 func _draw_rock(center: Vector2, value: int) -> void:
 	var hp: int = clampi(value-Rules.ROCK_MIN+1,1,3)
-	draw_circle(center+Vector2(0,6),31,Color("#111A3E",.33))
-	draw_circle(center,31,Color("#8075AE"))
-	draw_circle(center+Vector2(-7,-9),24,Color("#C4B5E5"))
-	draw_arc(center,27,-PI*.85,-PI*.13,25,Color("#F6ECFF",.85),5.0,true)
-	if hp<=2:
-		draw_line(center+Vector2(-12,-16),center+Vector2(7,1),Color("#6B518D"),4.0,true)
-		draw_line(center+Vector2(7,1),center+Vector2(-2,19),Color("#6B518D"),3.0,true)
+	draw_texture_rect(ROCK_ART,Rect2(center-Vector2(36,36),Vector2(72,72)),false)
 	for i in range(3):
-		draw_circle(center+Vector2((i-1)*14,23),4.0,
-			GOLD if i<hp else Color("#5D568A"))
+		var art: Texture2D = ENERGY_ON if i<hp else ENERGY_OFF
+		var p: Vector2 = center+Vector2((i-1)*15,24)
+		draw_texture_rect(art,Rect2(p-Vector2(5,5),Vector2(10,10)),false)
 
 func _draw_fx() -> void:
 	for ring in game.rings:
@@ -317,12 +312,13 @@ func _draw_fx() -> void:
 
 func _draw_status() -> void:
 	var r: Rect2 = Rect2(30,872,660,47)
-	_round(r,Color("#292440",.65),23,Color("#AEA0CA",.15),1)
+	draw_texture_rect(STATUS_ART,r,false)
 	_label("%s %d" % [game.t("move"),game.moves+1],56,902,19,WHITE)
 	var count: int = mini(int(game.pending_group.get("count",0)),Rules.POP_THRESHOLD)
 	for i in range(Rules.POP_THRESHOLD):
 		var point: Vector2 = Vector2(252+i*33,894)
-		draw_circle(point,10,ORB_COLORS[clampi(int(game.pending_group.get("color",0)),0,2)] if i<count else Color("#69617F",.64))
+		var art: Texture2D = ENERGY_ON if i<count else ENERGY_OFF
+		draw_texture_rect(art,Rect2(point-Vector2(11,11),Vector2(22,22)),false)
 	_center("%d/%d" % [count,Rules.POP_THRESHOLD],455,902,20,Color("#D9CEED"),77)
 	var used: int = Rules.tallest_column(game.board)
 	_round(Rect2(536,891,108,8),Color("#635B7B"),4)
@@ -337,15 +333,10 @@ func _draw_shapes() -> void:
 	for i in range(game.pieces.size()):
 		var r: Rect2 = game._piece_card_rect(i)
 		var selected: bool = i==game.selected_piece
-		_round(_moved(r,Vector2(0,5)),Color("#0E0A22",.32),26)
-		if selected:
-			_round(r.grow(3),Color("#FF87B9",.25),30)
-		_round(r,Color("#473354",.95) if selected else Color("#302843",.92),
-			26,Color("#FF9DC2",.79) if selected else Color("#9E8FB5",.26),2 if selected else 1)
-		_round(Rect2(r.position+Vector2(26,7),Vector2(r.size.x-52,3)),
-			Color("#FFFFFF",.20) if selected else Color("#FFFFFF",.06),2)
+		var art: Texture2D = PIECE_ACTIVE if selected else PIECE_IDLE
+		draw_texture_rect(art,r.grow(4),false)
 		var indicator: Vector2 = r.position+Vector2(28,26)
-		draw_circle(indicator,14,PEACH if selected else Color("#635676"))
+		draw_texture_rect(UTILITY_ART,Rect2(indicator-Vector2(15,15),Vector2(30,30)),false)
 		_center(str(i+1),indicator.x,indicator.y+6,16,WHITE,26)
 		var piece: Array = game.pieces[i]
 		var span: Vector2i = game._piece_span(piece)
@@ -356,20 +347,15 @@ func _draw_shapes() -> void:
 		for bead in piece:
 			_orb(origin+Vector2(float(bead[0]),float(bead[1]))*step,radius,
 				int(bead[2]),0.45 if game.dragging_piece and selected else 1.0)
-		if selected:
-			draw_circle(r.position+Vector2(r.size.x-17,22),5.5,AQUA)
 
 func _draw_turns() -> void:
 	for i in range(2):
 		var left: bool = i==0
 		var r: Rect2 = Rect2(29,1086,317,86) if left else Rect2(374,1086,317,86)
 		var pressed: bool = game.tap_time>0 and r.has_point(game.tap_point)
-		var color: Color = Color("#F26F9B") if left else Color("#58D8CB")
-		_round(_moved(r,Vector2(0,8)),Color("#0C0B20",.37),31)
-		_round(_moved(r,Vector2(0,4 if pressed else 0)),color,30,Color("#FFFFFF",.45),2)
-		_round(Rect2(r.position+Vector2(30,8),Vector2(r.size.x-60,3)),Color("#FFFFFF",.26),2)
+		var art: Texture2D = TURN_PINK if left else TURN_TEAL
+		draw_texture_rect(art,Rect2(r.position+Vector2(0,4 if pressed else 0),r.size),false)
 		var icon_at: Vector2 = r.position+Vector2(49,41)
-		draw_circle(icon_at,32,Color("#FFFFFF",.21))
 		_icon("left" if left else "right",icon_at,51)
 		var label: String = ("OBRÓĆ " if game.language=="pl" else "ROTATE ") + (
 			game.t("left") if left else game.t("right"))
@@ -383,19 +369,19 @@ func _draw_turns() -> void:
 func _draw_boosters() -> void:
 	var names: Array = ["bomb","magic","reroll"]
 	var x_positions: Array = [27,254,481]
-	var fills: Array = [Color("#FFDAAF"),Color("#D0BEFD"),Color("#A1EDE4")]
 	for i in range(3):
 		var id: String = str(names[i])
 		var r: Rect2 = Rect2(x_positions[i],1192,211,66)
 		var active: bool = (id=="bomb" and game.bomb_aim) or (id=="magic" and game.magic_aim)
-		_round(_moved(r,Vector2(0,4)),Color("#0E0A24",.36),25)
-		_round(r,Color("#332B4D",.96),24,
-			Color("#7BF1D7",.92) if active else Color("#AD9DC4",.27),3 if active else 1)
-		draw_circle(r.position+Vector2(35,33),25,fills[i])
+		var art: Texture2D = BOOST_ART[i]
+		draw_texture_rect(art,r,false,Color(1,1,1,1.0 if game.shop.stock(id)>0 else .59))
+		if active:
+			draw_arc(r.get_center(),28,0,TAU,32,Color("#9EFFE7",.7),3,true)
 		_icon(id,r.position+Vector2(35,33),42,1.0 if game.shop.stock(id)>0 else .52)
 		_center(game.shop_t(id),r.position.x+130,r.position.y+39,18,WHITE,139)
-		draw_circle(r.position+Vector2(r.size.x-18,r.size.y-13),14,PEACH)
-		_center(str(game.shop.stock(id)),r.end.x-18,r.end.y-8,16,Color("#32223F"),28)
+		var badge_center: Vector2 = r.position+Vector2(r.size.x-18,r.size.y-13)
+		draw_texture_rect(UTILITY_ART,Rect2(badge_center-Vector2(15,15),Vector2(30,30)),false)
+		_center(str(game.shop.stock(id)),badge_center.x,badge_center.y+6,16,WHITE,28)
 
 func _draw_drag() -> void:
 	if not game.dragging_piece or game.phase!="drop" or game.pieces.is_empty():
