@@ -46,7 +46,8 @@ const COINS_OPEN := Rect2(415,18,173,57)
 const SHOP_OPEN := Rect2(414,88,71,66)
 const PROFILE_OPEN := Rect2(505,88,71,66)
 const SETTINGS_OPEN := Rect2(595,88,71,66)
-const LANG_RECT := Rect2(651,159,55,32)
+const LANG_RECT := Rect2(582,156,124,39)
+const SETTINGS_LANGUAGE := Rect2(120,822,480,57)
 const DOCK_STATUS := Rect2(58,880,596,48)
 const DOCK_SHAPES := Rect2(60,931,597,141)
 const DOCK_ACTIONS := Rect2(30,1084,653,134)
@@ -62,6 +63,15 @@ const TR := {
 	"de":{"life":"LEBEN","tap_short":"SPALTE TIPPEN","score":"PUNKTE","best":"REKORD","move":"ZUG","drop":"SPALTE ANTIPPEN ZUM FALLEN","turn":"DREHEN ODER WEITER","left":"LINKS","right":"RECHTS","skip":"WEITER","next":"FORM WÄHLEN","ready":"5 VERBUNDENE KUGELN = POP  •  KEINE ZÜGE = ENDE","over":"SPIEL VORBEI","again":"NOCHMAL SPIELEN","rescue":"TEST: +1 LEBEN","lost":"LEBEN VERLOREN","rotate_controls":"MIT DEN TASTEN UNTEN DREHEN","rotate_help":"DREHE FÜR MEHR PLATZ","charge":"GRUPPE","danger":"HÖHE","danger_soon":"ACHTUNG: OBERSTE REIHE!","overflow":"LEBEN VERLOREN!","hint":"Wähle eine Spalte zum Einwerfen"},
 	"fr":{"life":"VIES","tap_short":"TOUCHE COLONNE","score":"SCORE","best":"RECORD","move":"COUP","drop":"TOUCHE UNE COLONNE POUR LÂCHER","turn":"TOURNE OU CONTINUE","left":"GAUCHE","right":"DROITE","skip":"SUITE","next":"CHOISIS UNE FORME","ready":"5 BILLES CONNECTÉES = POP  •  AUCUN COUP = FIN","over":"PARTIE FINIE","again":"REJOUER","rescue":"TEST : +1 VIE","lost":"VIE PERDUE","rotate_controls":"TOURNE AVEC LES BOUTONS","rotate_help":"TOURNE POUR LIBÉRER DE LA PLACE","charge":"GROUPE","danger":"HAUTEUR","danger_soon":"ATTENTION AU SOMMET!","overflow":"VIE PERDUE!","hint":"Choisis une colonne pour les billes"},
 	"ru":{"life":"ЖИЗНИ","tap_short":"ВЫБЕРИ СТОЛБЕЦ","score":"ОЧКИ","best":"РЕКОРД","move":"ХОД","drop":"НАЖМИ СТОЛБЕЦ ДЛЯ СБРОСА","turn":"ПОВЕРНИ ИЛИ ПРОДОЛЖИ","left":"ВЛЕВО","right":"ВПРАВО","skip":"ДАЛЕЕ","next":"ВЫБЕРИ ФИГУРУ","ready":"5 СОЕДИНЁННЫХ ШАРОВ = POP  •  НЕТ ХОДОВ = КОНЕЦ","over":"ИГРА ОКОНЧЕНА","again":"ИГРАТЬ СНОВА","rescue":"ТЕСТ: +1 ЖИЗНЬ","lost":"МИНУС ЖИЗНЬ","rotate_controls":"ПОВОРОТ КНОПКАМИ ВНИЗУ","rotate_help":"ПОВЕРНИ, ЧТОБЫ ОСВОБОДИТЬ МЕСТО","charge":"ГРУППА","danger":"ВЫСОТА","danger_soon":"ВНИМАНИЕ: ВЕРХ!","overflow":"МИНУС ЖИЗНЬ!","hint":"Выбери столбец для шариков"}
+}
+const FX_TR := {
+	"pl":{"pop":"POP!","great":"ŚWIETNIE!","amazing":"NIESAMOWITE!","flow":"SERIA","surge":"NAWAŁNICA!"},
+	"en":{"pop":"POP!","great":"GREAT!","amazing":"AMAZING!","flow":"STREAK","surge":"SURGE!"},
+	"es":{"pop":"¡POP!","great":"¡GENIAL!","amazing":"¡INCREÍBLE!","flow":"RACHA","surge":"¡OLEADA!"},
+	"pt":{"pop":"POP!","great":"ÓTIMO!","amazing":"INCRÍVEL!","flow":"SÉRIE","surge":"ONDA!"},
+	"de":{"pop":"POP!","great":"SUPER!","amazing":"UNGLAUBLICH!","flow":"SERIE","surge":"WELLE!"},
+	"fr":{"pop":"POP !","great":"SUPER !","amazing":"INCROYABLE !","flow":"SÉRIE","surge":"VAGUE !"},
+	"ru":{"pop":"ПОП!","great":"ОТЛИЧНО!","amazing":"НЕВЕРОЯТНО!","flow":"СЕРИЯ","surge":"ВОЛНА!"}
 }
 const LEFT_RECT := Rect2(30,1085,160,127)
 const RIGHT_RECT := Rect2(522,1085,160,127)
@@ -128,6 +138,11 @@ var flash: Array = []
 var fx: Array = []
 var praise: String = ""
 var praise_timer: float = 0.0
+var pop_impact_time: float = 0.0
+var pop_impact_max: float = 0.52
+var pop_impact_at: Vector2 = Vector2(360,552)
+var pop_impact_power: float = 0.0
+var pop_impact_color: Color = Color.WHITE
 var hint_timer: float = 0.0
 var style_cache: Dictionary = {}
 var studio: Control = null
@@ -237,6 +252,20 @@ func _ready() -> void:
 
 func t(key: String) -> String:
 	return str(TR.get(language,TR["en"]).get(key,key))
+
+func fx_t(key: String) -> String:
+	return str(FX_TR.get(language,FX_TR["en"]).get(key,key))
+
+func language_button_text() -> String:
+	return ("JĘZYK" if language=="pl" else "LANG") + ": " + language.to_upper()
+
+func _cycle_language() -> void:
+	var index: int = LOCALES.find(language)
+	language = LOCALES[(index+1)%LOCALES.size()]
+	_save()
+	if feedback != null:
+		feedback.cue("tap")
+	queue_redraw()
 
 func profile_t(key: String) -> String:
 	return str(PROFILE_TR.get(language,PROFILE_TR["en"]).get(key,key))
@@ -373,7 +402,8 @@ func _use_bomb(target: Vector2i) -> void:
 			_burst(Vector2i(x,y),6)
 	_shock(BOARD.position+(Vector2(target)+Vector2(0.5,0.5))*CELL,3.7,Color("#ffc089"))
 	if feedback != null:
-		feedback.cue("cascade")
+		feedback.cue("bomb")
+	_begin_pop_impact(BOARD.position+(Vector2(target)+Vector2(0.5,0.5))*CELL,Color("#ffc089"),3.5)
 	telemetry.track("powerup_used",{"run_id":run_id,"item":"bomb",
 		"removed":int(blast["removed"]),"rocks_hit":int(blast["rocks_hit"])})
 	var fallen: Dictionary = Rules.settle(board)
@@ -484,6 +514,8 @@ func new_game() -> void:
 	motion.clear()
 	flash.clear()
 	fx.clear()
+	pop_impact_time = 0.0
+	pop_impact_power = 0.0
 	rings.clear()
 	floaters.clear()
 	praise = ""
@@ -562,6 +594,8 @@ func _restore_progress(data: Dictionary) -> void:
 	motion.clear()
 	flash.clear()
 	fx.clear()
+	pop_impact_time = 0.0
+	pop_impact_power = 0.0
 	rings.clear()
 	floaters.clear()
 	recent_shapes.clear()
@@ -639,6 +673,7 @@ func _process(delta: float) -> void:
 	shop_notice_time = maxf(0.0,shop_notice_time-delta)
 	level_fx_time = maxf(0.0,level_fx_time-delta)
 	tap_time = maxf(0.0,tap_time-delta)
+	pop_impact_time = maxf(0.0,pop_impact_time-delta)
 	# No countdown during interactions, modal screens, or animated cascades.
 	if phase == "drop" and not settings_open and not profile_open and not shop_open and not wave_queued:
 		var elapsed: float = minf(delta,0.15)
@@ -782,6 +817,8 @@ func _gui_input(event: InputEvent) -> void:
 			feedback.cue("tap")
 		elif SETTINGS_AD_PRIVACY.has_point(pt):
 			ads.show_privacy_options()
+		elif SETTINGS_LANGUAGE.has_point(pt):
+			_cycle_language()
 		queue_redraw()
 		return
 	if (SHOP_OPEN.has_point(pt) or COINS_OPEN.has_point(pt)) and phase != "anim":
@@ -832,10 +869,7 @@ func _gui_input(event: InputEvent) -> void:
 			_request_ad_reward("energy")
 		return
 	if LANG_RECT.has_point(pt):
-		var index: int = LOCALES.find(language)
-		language = LOCALES[(index+1)%LOCALES.size()]
-		_save()
-		queue_redraw()
+		_cycle_language()
 		return
 	if phase!="drop":
 		return
@@ -984,9 +1018,13 @@ func _trigger_pressure_wave() -> void:
 			board = rock.board
 			rock_added = true
 			_shock(BOARD.position+(Vector2(rock.cell)+Vector2(0.5,0.5))*CELL,1.2,Color("#ffe0a7"))
+			if feedback != null:
+				feedback.cue("rock")
 	if Rules.wave_is_surge(wave_number):
-		_praise("NAWAŁNICA!" if language=="pl" else "SURGE!",Color("#FFE7A2"),1.35)
+		_praise(fx_t("surge"),Color("#FFE7A2"),1.0)
 		_shock(BOARD.get_center(),2.0,Color("#ffb065"))
+		if feedback != null:
+			feedback.cue("surge")
 	telemetry.track("pressure_wave",{
 		"run_id":run_id,"wave":wave_number,"marbles":int(wave["added"]),
 		"rock_added":rock_added,"surge":Rules.wave_is_surge(wave_number),
@@ -1125,26 +1163,30 @@ func _resolve_cascades(fluid: bool=false, player_action: bool=true) -> void:
 			_register_flow_pop()
 			flow_registered = true
 		chain_depth += 1
-		if feedback != null:
-			feedback.cue("cascade" if chain_depth >= 2 else "pop",
-				1.0+float(flow_streak-1)*0.09 if player_action else 1.0)
+
 		var hits: Array = []
 		var largest: int = 0
 		for group in groups:
 			hits.append_array(group["cells"])
 			largest = maxi(largest,int(group["count"]))
 		flash = hits
+		var standout: bool = chain_depth>=2 or largest>=7 or (player_action and flow_streak>=3)
+		if feedback != null:
+			var cue_name: String = "big_pop" if standout else "pop"
+			if chain_depth>=3:
+				cue_name = "cascade"
+			feedback.cue(cue_name,1.0+float(maxi(0,flow_streak-1))*0.08 if player_action else 1.0)
 		# Faster later stages create an accelerating cascade instead of a pause.
 		pop_length = maxf(0.085,0.15-float(chain_depth-1)*0.018)
 		pop_time = pop_length
 		if player_action and flow_registered and flow_streak >= 3:
-			_praise("FLOW x%d!" % flow_streak,Color("#ffe58c"),0.85)
+			_praise("%s x%d!" % [fx_t("flow"),flow_streak],Color("#ffe58c"),0.83)
 		elif chain_depth >= 3 or largest >= 8:
-			_praise("AMAZING!",Color("#ffe58c"),0.85)
+			_praise(fx_t("amazing"),Color("#ffe58c"),0.83)
 		elif chain_depth >= 2 or largest >= 7 or groups.size() > 1:
-			_praise("GREAT!",Color("#92f2e2"),0.65)
+			_praise(fx_t("great"),Color("#92f2e2"),0.64)
 		else:
-			_praise("POP!",Color("#ffffff"),0.42)
+			_praise(fx_t("pop"),Color("#ffffff"),0.38)
 		await get_tree().create_timer(pop_length).timeout
 		var main_color: Color = COLORS[int(groups[0]["color"])]
 		# Score each actual connected group, not the total across unrelated colours.
@@ -1166,6 +1208,8 @@ func _resolve_cascades(fluid: bool=false, player_action: bool=true) -> void:
 			_float_score(group_center,shown_points,chain_depth)
 		centroid /= float(hits.size())
 		_shock(centroid,minf(4.5,1.15+float(chain_depth)*0.7+float(hits.size())*0.12),main_color)
+		if standout:
+			_begin_pop_impact(centroid,main_color,minf(4.0,1.0+float(hits.size())*0.18+float(chain_depth)*0.35))
 		var rocks: Dictionary = Rules.damage_rocks(board,hits)
 		board = Rules.erase_matches(rocks.board,hits)
 		for cracked_cell in rocks.cracked:
@@ -1199,6 +1243,24 @@ func _resolve_cascades(fluid: bool=false, player_action: bool=true) -> void:
 		if fluid:
 			var aftershock: Dictionary = Rules.spill_after_rotation(board,spin_clockwise)
 			await _animate_to(aftershock.board,aftershock.motions,0.24,"roll")
+
+func _begin_pop_impact(at: Vector2, tint: Color, power: float) -> void:
+	# A brief illustrated light/sparkle sweep reinforces rare, skilled clears.
+	pop_impact_at = at
+	pop_impact_color = tint
+	pop_impact_power = clampf(power,0.8,4.0)
+	pop_impact_time = pop_impact_max
+	# Deterministic count but varied angles. No large fullscreen overlay.
+	for j in range(18):
+		if fx.size() >= 220:
+			fx.pop_front()
+		var direction: float = TAU*float(j)/18.0 + rng.randf_range(-0.11,0.11)
+		var velocity: float = rng.randf_range(170.0,345.0)+power*24.0
+		var lifetime: float = rng.randf_range(0.28,0.58)
+		fx.append({"p":at+Vector2.from_angle(direction)*rng.randf_range(8.0,21.0),
+			"v":Vector2.from_angle(direction)*velocity,"life":lifetime,"max":lifetime,
+			"color":tint.lightened(rng.randf_range(0.35,0.85)),"r":rng.randf_range(3.0,6.4),
+			"streak":j%3 != 0})
 
 func _burst(cell: Vector2i, count: int) -> void:
 	var center: Vector2 = BOARD.position+(Vector2(cell)+Vector2(0.5,0.5))*CELL
