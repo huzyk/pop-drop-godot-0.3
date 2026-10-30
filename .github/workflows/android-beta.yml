@@ -45,12 +45,21 @@ jobs:
           echo "GODOT_ANDROID_KEYSTORE_DEBUG_PATH=$RUNNER_TEMP/popdrop-debug.keystore" >> "$GITHUB_ENV"
           echo "GODOT_ANDROID_KEYSTORE_DEBUG_USER=androiddebugkey" >> "$GITHUB_ENV"
           echo "GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD=android" >> "$GITHUB_ENV"
-      - name: Import resources and configure Android export
+      - name: Configure headless editor and import assets
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p "${HOME}/.config/godot"
+          # Godot editor CLI does not expose Android SDK flags. This user-local
+          # EditorSettings file is generated on each runner and not committed.
+          cat > "${HOME}/.config/godot/editor_settings-4.7.tres" <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/android_sdk_path = "${ANDROID_HOME}"
+          export/android/java_sdk_path = "${JAVA_HOME}"
+          EOF
           timeout 120s godot --headless --editor --path . --import --quit 2>&1 | tee /tmp/android-import.log
-          timeout 45s godot --headless --editor --path . --script res://tests/configure_android.gd 2>&1 | tee /tmp/android-editor.log
       - name: Export installable arm64 APK
         shell: bash
         run: |
