@@ -767,7 +767,7 @@ func _gui_input(event: InputEvent) -> void:
 		shop_tab = 0
 		shop_page = 0
 		bomb_aim = false
-			telemetry.track("shop_open",{"coins":shop.coins})
+		telemetry.track("shop_open",{"coins":shop.coins})
 		queue_redraw()
 		return
 	if SETTINGS_OPEN.has_point(pt) and phase != "anim":
