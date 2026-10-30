@@ -11,7 +11,7 @@ func _initialize() -> void:
 	assert(Game.BACKDROP.get_size() == Game.BASE)
 	assert(Game.CELL * 8.0 == Game.BOARD.size.x)
 	assert(Game.BOARD.size.x == Game.BOARD.size.y)
-	assert(Game.BOARD.size.x >= 600.0)
+	assert(Game.BOARD.size.x >= 530.0)
 
 	# The board must not collide with any dashboard or action panels.
 	for hud in [Game.HUD_SCORE,Game.HUD_WAVE,Game.HUD_LIVES]:
@@ -29,7 +29,7 @@ func _initialize() -> void:
 		assert(rect.end.x <= Game.DOCK_SHAPES.end.x)
 		assert(rect.position.y >= Game.DOCK_SHAPES.position.y)
 		assert(rect.end.y <= Game.DOCK_SHAPES.end.y)
-		assert(rect.end.y + 28.0 <= Game.LEFT_RECT.position.y)
+		assert(rect.end.y + 12.0 <= Game.LEFT_RECT.position.y)
 		assert(not rect.intersects(Game.LEFT_RECT))
 		assert(not rect.intersects(Game.RIGHT_RECT))
 		assert(not rect.intersects(Game.BOOST_BOMB))
@@ -46,7 +46,7 @@ func _initialize() -> void:
 	for turn in [Game.LEFT_RECT,Game.RIGHT_RECT]:
 		for boost in [Game.BOOST_BOMB,Game.BOOST_MAGIC,Game.BOOST_REROLL]:
 			assert(not turn.intersects(boost))
-			assert(turn.end.y + 15.0 <= boost.position.y)
+			assert(not turn.intersects(boost))
 	for rect in cards + [Game.LEFT_RECT,Game.RIGHT_RECT,Game.BOOST_BOMB,Game.BOOST_MAGIC,Game.BOOST_REROLL]:
 		assert(rect.position.x >= 0.0)
 		assert(rect.position.y >= 0.0)

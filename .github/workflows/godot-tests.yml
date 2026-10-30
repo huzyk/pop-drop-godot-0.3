@@ -55,7 +55,8 @@ jobs:
             test_gravity_icons \
             test_gravity_skin_art \
             test_gravity_layout \
-            test_gravity_feedback; do
+            test_gravity_feedback \
+            test_illustrated_art; do
             echo "::group::$test"
             log_file="/tmp/${test}.log"
             timeout 40s godot --headless --path . --script "res://tests/${test}.gd" 2>&1 | tee "$log_file"

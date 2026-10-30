@@ -49,8 +49,8 @@ const ICONS = {
 	"reroll": preload("res://assets/ui/icons/reroll.svg")
 }
 const BASE := Vector2(720,1280)
-const BOARD := Rect2(56,247,608,608)
-const CELL := 76.0
+const BOARD := Rect2(88,292,536,536)
+const CELL := 67.0
 const PEACH := Color("#FA7A72")
 const AQUA := Color("#65DDBF")
 const VIOLET := Color("#B3A1FB")

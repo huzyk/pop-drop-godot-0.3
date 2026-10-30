@@ -8,7 +8,7 @@ const Progression = preload("res://scripts/gravity_progression.gd")
 const Feedback = preload("res://scripts/gravity_feedback.gd")
 const Shop = preload("res://scripts/gravity_shop.gd")
 const SkinArt = preload("res://scripts/gravity_skin_art.gd")
-const Studio = preload("res://scripts/gravity_studio.gd")
+const Studio = preload("res://scripts/gravity_illustrated.gd")
 const BACKDROP = preload("res://assets/ui/arcade_backdrop.svg")
 const ICON_COIN = preload("res://assets/ui/icons/coin.svg")
 const ICON_SHOP = preload("res://assets/ui/icons/shop.svg")
@@ -38,19 +38,19 @@ const BASE := Vector2(720,1280)
 # 720x1280 reference layout. Visuals AND hit-testing share these rectangles.
 # HUD 0..224 / board 247..855 / status 874..918 / cards 952..1054
 # / rotation 1086..1172 / boosts 1193..1261.
-const BOARD := Rect2(56,247,608,608)
-const CELL := 76.0
-const HUD_SCORE := Rect2(23,133,228,90)
-const HUD_WAVE := Rect2(263,133,281,90)
-const HUD_LIVES := Rect2(556,133,141,90)
-const COINS_OPEN := Rect2(296,37,129,55)
-const SHOP_OPEN := Rect2(434,37,54,55)
-const PROFILE_OPEN := Rect2(500,37,55,55)
-const SETTINGS_OPEN := Rect2(565,37,55,55)
-const LANG_RECT := Rect2(630,37,58,55)
-const DOCK_STATUS := Rect2(27,874,666,44)
-const DOCK_SHAPES := Rect2(20,925,680,138)
-const DOCK_ACTIONS := Rect2(20,1078,680,188)
+const BOARD := Rect2(88,292,536,536)
+const CELL := 67.0
+const HUD_SCORE := Rect2(38,197,142,71)
+const HUD_WAVE := Rect2(181,197,285,71)
+const HUD_LIVES := Rect2(467,197,209,71)
+const COINS_OPEN := Rect2(415,18,173,57)
+const SHOP_OPEN := Rect2(414,88,71,66)
+const PROFILE_OPEN := Rect2(505,88,71,66)
+const SETTINGS_OPEN := Rect2(595,88,71,66)
+const LANG_RECT := Rect2(651,159,55,32)
+const DOCK_STATUS := Rect2(58,880,596,48)
+const DOCK_SHAPES := Rect2(60,931,597,141)
+const DOCK_ACTIONS := Rect2(30,1084,653,134)
 const COLORS := [Color("#ff7096"),Color("#55dcad"),Color("#62b5ff")]
 const SAVE_FILE := "user://pop_drop_gravity.json"
 const LOCALES := ["pl","en","es","pt","de","fr","ru"]
@@ -63,8 +63,8 @@ const TR := {
 	"fr":{"life":"VIES","tap_short":"TOUCHE COLONNE","score":"SCORE","best":"RECORD","move":"COUP","drop":"TOUCHE UNE COLONNE POUR LÂCHER","turn":"TOURNE OU CONTINUE","left":"GAUCHE","right":"DROITE","skip":"SUITE","next":"CHOISIS UNE FORME","ready":"5 BILLES CONNECTÉES = POP  •  HAUT = -1 VIE","over":"PARTIE FINIE","again":"REJOUER","rescue":"TEST : +1 VIE","lost":"VIE PERDUE","rotate_controls":"TOURNE AVEC LES BOUTONS","rotate_help":"TOURNE POUR LIBÉRER DE LA PLACE","charge":"GROUPE","danger":"HAUTEUR","danger_soon":"ATTENTION AU SOMMET!","overflow":"VIE PERDUE!","hint":"Choisis une colonne pour les billes"},
 	"ru":{"life":"ЖИЗНИ","tap_short":"ВЫБЕРИ СТОЛБЕЦ","score":"ОЧКИ","best":"РЕКОРД","move":"ХОД","drop":"НАЖМИ СТОЛБЕЦ ДЛЯ СБРОСА","turn":"ПОВЕРНИ ИЛИ ПРОДОЛЖИ","left":"ВЛЕВО","right":"ВПРАВО","skip":"ДАЛЕЕ","next":"ВЫБЕРИ ФИГУРУ","ready":"5 СОЕДИНЁННЫХ ШАРОВ = POP  •  ВЕРХ = -1 ЖИЗНЬ","over":"ИГРА ОКОНЧЕНА","again":"ИГРАТЬ СНОВА","rescue":"ТЕСТ: +1 ЖИЗНЬ","lost":"МИНУС ЖИЗНЬ","rotate_controls":"ПОВОРОТ КНОПКАМИ ВНИЗУ","rotate_help":"ПОВЕРНИ, ЧТОБЫ ОСВОБОДИТЬ МЕСТО","charge":"ГРУППА","danger":"ВЫСОТА","danger_soon":"ВНИМАНИЕ: ВЕРХ!","overflow":"МИНУС ЖИЗНЬ!","hint":"Выбери столбец для шариков"}
 }
-const LEFT_RECT := Rect2(29,1086,317,86)
-const RIGHT_RECT := Rect2(374,1086,317,86)
+const LEFT_RECT := Rect2(30,1085,160,127)
+const RIGHT_RECT := Rect2(522,1085,160,127)
 const RESTART_RECT := Rect2(104,722,512,84)
 const RESCUE_RECT := Rect2(104,821,244,79)
 const COIN_RESCUE_RECT := Rect2(372,821,244,79)
@@ -80,9 +80,9 @@ const PROFILE_CARD := Rect2(54,224,612,906)
 const SHOP_CLOSE := Rect2(514,266,120,54)
 const SHOP_TAB_BOOST := Rect2(94,410,251,57)
 const SHOP_TAB_SKINS := Rect2(375,410,251,57)
-const BOOST_BOMB := Rect2(27,1192,211,66)
-const BOOST_MAGIC := Rect2(254,1192,211,66)
-const BOOST_REROLL := Rect2(481,1192,211,66)
+const BOOST_BOMB := Rect2(209,1098,90,104)
+const BOOST_MAGIC := Rect2(313,1098,90,104)
+const BOOST_REROLL := Rect2(417,1098,90,104)
 const SHOP_PREV := Rect2(105,970,113,55)
 const SHOP_NEXT := Rect2(502,970,113,55)
 const PROFILE_DAILY_TAB := Rect2(92,526,248,51)
@@ -1365,7 +1365,7 @@ func _motion_position(item: Dictionary, progress: float) -> Vector2:
 
 
 func _piece_card_rect(index: int) -> Rect2:
-	return Rect2(29+index*229,953,205,101)
+	return Rect2(62+index*198,932,193,139)
 func _piece_span(piece: Array) -> Vector2i:
 	var largest: Vector2i = Vector2i.ZERO
 	for bead in piece:
