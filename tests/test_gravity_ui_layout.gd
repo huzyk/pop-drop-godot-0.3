@@ -70,6 +70,27 @@ func _initialize() -> void:
 		assert(rect.position.y >= 0.0)
 		assert(rect.end.x <= Game.BASE.x)
 		assert(rect.end.y <= Game.BASE.y)
+	# A purchasable collection uses a compact 2x2 touch-safe gallery.
+	var shop_view = Game.new()
+	shop_view.shop_tab = 1
+	assert(shop_view._shop_pages() == 6)
+	assert(shop_view._shop_items().size() == 4)
+	var store_cards: Array = []
+	for i in range(4):
+		var rect: Rect2 = shop_view._shop_card(i)
+		assert(rect.position.x >= 70 and rect.end.x <= 650)
+		assert(rect.position.y >= 480 and rect.end.y <= 955)
+		for previous in store_cards:
+			assert(not rect.intersects(previous))
+		store_cards.append(rect)
+	shop_view.shop_page = 5
+	assert(shop_view._shop_items().size() == 3)
+	shop_view.language = "pl"
+	assert(shop_view.analytics_erase_label() == "USUŃ DANE ANALITYKI")
+	shop_view.language = "en"
+	assert(shop_view.analytics_erase_label() == "CLEAR ANALYTICS DATA")
+	assert(Game.FREE_PLAY_BETA)
+	shop_view.free()
 	# Hit mapping still fits the new cell coordinate system.
 	assert(view._board_cell(Game.BOARD.position + Vector2(3.0,3.0)) == Vector2i(0,0))
 	assert(view._board_cell(Game.BOARD.end - Vector2(3.0,3.0)) == Vector2i(7,7))
