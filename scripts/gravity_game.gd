@@ -291,6 +291,7 @@ const SHOP_PL := {
 	"toucan":"TUKANY","parrot":"PAPUGI","frog":"ŻABKI","monkey":"MAŁPKI",
 	"jaguar":"JAGUARY","sloth":"LENIWCE","lion":"LWY","zebra":"ZEBRY",
 	"elephant":"SŁONIE","giraffe":"ŻYRAFY","fox":"LISKI","owl":"SOWY",
+	"dragon":"SMOKI","unicorn":"JEDNOROŻCE","phoenix":"FENIKSY","griffin":"GRYFY",
 	"buy":"KUP","owned":"KUPIONE","active":"AKTYWNE","equip":"WYBIERZ","stock":"POSIADASZ",
 	"poor":"ZA MAŁO MONET","bought":"ZAKUPIONE!","full":"LIMIT ZAPASU",
 	"aim":"DOTKNIJ POLA — BOMBA 3×3",
@@ -305,6 +306,8 @@ const SHOP_PL := {
 	"sloth_desc":"Leśne leniwce","lion_desc":"Królowie safari","zebra_desc":"Paski safari",
 	"elephant_desc":"Wielcy przyjaciele","giraffe_desc":"Żyrafie safari",
 	"fox_desc":"Baśniowy las","owl_desc":"Nocne sowy",
+	"dragon_desc":"Bajkowa kraina smoków","unicorn_desc":"Magiczny las jednorożców",
+	"phoenix_desc":"Ogniste feniksy","griffin_desc":"Legendarne gryfy",
 	"page":"STRONA","no_energy":"BRAK ENERGII","badges":"ODZNAKI"
 }
 const SHOP_EN := {
@@ -315,6 +318,7 @@ const SHOP_EN := {
 	"toucan":"TOUCANS","parrot":"PARROTS","frog":"FROGS","monkey":"MONKEYS",
 	"jaguar":"JAGUARS","sloth":"SLOTHS","lion":"LIONS","zebra":"ZEBRAS",
 	"elephant":"ELEPHANTS","giraffe":"GIRAFFES","fox":"FOXES","owl":"OWLS",
+	"dragon":"DRAGONS","unicorn":"UNICORNS","phoenix":"PHOENIXES","griffin":"GRIFFINS",
 	"buy":"BUY","owned":"OWNED","active":"ACTIVE","equip":"EQUIP","stock":"OWNED",
 	"poor":"NOT ENOUGH COINS","bought":"PURCHASED!","full":"INVENTORY FULL",
 	"aim":"TAP CELL — BOMB 3×3",
@@ -329,6 +333,8 @@ const SHOP_EN := {
 	"sloth_desc":"Sleepy jungle","lion_desc":"Royal safari","zebra_desc":"Safari stripes",
 	"elephant_desc":"Gentle giants","giraffe_desc":"Tall safari",
 	"fox_desc":"Storybook forest","owl_desc":"Night forest",
+	"dragon_desc":"Magical dragon realm","unicorn_desc":"Enchanted unicorns",
+	"phoenix_desc":"Firebirds of legend","griffin_desc":"Legendary winged guardians",
 	"page":"PAGE","no_energy":"NO ENERGY","badges":"BADGES"
 }
 
@@ -346,7 +352,8 @@ func _shop_catalog() -> Array:
 	return ["bomb","reroll"] if shop_tab==0 else [
 		"default","neon","gold","donut","capybara","crystal",
 		"toucan","parrot","frog","monkey","jaguar","sloth",
-		"lion","zebra","elephant","giraffe","fox","owl","star_capybara"]
+		"lion","zebra","elephant","giraffe","fox","owl",
+		"dragon","unicorn","phoenix","griffin","star_capybara"]
 
 func _shop_pages() -> int:
 	return int(ceil(float(_shop_catalog().size())/2.0))
