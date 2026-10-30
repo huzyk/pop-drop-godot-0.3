@@ -1111,7 +1111,7 @@ func _process(delta: float) -> void:
 	tap_time = maxf(0.0,tap_time-delta)
 	pop_impact_time = maxf(0.0,pop_impact_time-delta)
 	# No countdown during interactions, modal screens, or animated cascades.
-	if phase == "drop" and not settings_open and not profile_open and not shop_open and not wave_queued:
+	if phase == "drop" and not settings_open and not profile_open and not shop_open and not tutorial_open and not wave_queued:
 		var elapsed: float = minf(delta,0.15)
 		wave_time_left = maxf(0.0,wave_time_left-elapsed)
 		if flow_time_left > 0.0:
