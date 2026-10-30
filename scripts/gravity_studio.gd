@@ -578,9 +578,10 @@ func _draw_settings() -> void:
 	_round(Rect2(120,654,480,74),Color("#FFE2E9"),22)
 	_center(game.analytics_erase_label(),
 		360,703,23,Color("#AD3B68"),430)
-	_round(Rect2(120,748,480,37),Color("#E1E7F5"),15)
-	_center(game.ui_t("ad_privacy"),
-		360,774,18,INK,430)
+	var ad_privacy_available: bool = game.ads != null and game.ads.provider != null
+	_round(Rect2(120,748,480,37),Color("#E1E7F5") if ad_privacy_available else Color("#DDE1E8"),15)
+	_center(game.ui_t("ad_privacy") if ad_privacy_available else game.ui_t("ad_disabled"),
+		360,774,18,INK if ad_privacy_available else Color("#8794A4"),430)
 	# Language selection belongs in SETTINGS as well as the visible HUD.
 	# Old privacy helper text occupied this space and hid the language option.
 	var lang: Rect2 = game.SETTINGS_LANGUAGE
