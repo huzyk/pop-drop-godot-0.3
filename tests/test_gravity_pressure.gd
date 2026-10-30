@@ -46,6 +46,18 @@ func _initialize() -> void:
 		columns[int(motion["to"].x)] = true
 	assert(columns.size() == 4) # No wave stacks multiple balls in one column.
 
+	# A long run may never accumulate more than twelve indestructible obstacles.
+	var rock_wall: Array = Rules.empty_board()
+	for n in range(Rules.MAX_ACTIVE_ROCKS):
+		rock_wall[3+int(n/8)][n%8] = Rules.ROCK_MAX
+	assert(Rules.rock_count(rock_wall) == Rules.MAX_ACTIVE_ROCKS)
+	var capped: Dictionary = Rules.spawn_rock(rock_wall,rng)
+	assert(not capped.spawned)
+	assert(capped.board == rock_wall)
+	# Once rocks are damaged and cleared, new ones can enter again.
+	rock_wall[3][0] = Rules.EMPTY
+	assert(Rules.spawn_rock(rock_wall,rng).spawned)
+
 	# More varied shapes are offered, but the fallback must keep them playable.
 	rng.seed = 934
 	var wide: int = 0
