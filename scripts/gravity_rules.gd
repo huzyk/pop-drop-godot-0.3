@@ -537,18 +537,38 @@ static func next_piece(rng: RandomNumberGenerator, board: Array, avoid_shapes: A
 	return [[0,0,rng.randi_range(0,COLOR_COUNT-1)]]
 
 static func can_recover_by_rotating(board: Array, pieces: Array) -> bool:
-	# Rotations are free; calculate whether ANY of the four orientations
-	# can admit one of the offered pieces, including resulting POPs.
-	for clockwise in [false,true]:
-		var virtual: Array = copy_board(board)
-		for quarter in range(4):
-			virtual = rotate(virtual,clockwise).board
-			virtual = settle(virtual).board
-			virtual = spill_after_rotation(virtual,clockwise).board
-			virtual = resolve_preview(virtual,true,clockwise).board
+	# Free rotations include MIXED left/right sequences. A four-turn sweep in
+	# either single direction is not enough once spill is direction-dependent.
+	# Breadth-first exploration deduplicates physical board states and searches
+	# shorter solutions first. Avoid an unfair loss if the search budget is hit.
+	if pieces.is_empty():
+		return false
+	for piece in pieces:
+		if any_drop(board,piece):
+			return true
+	var frontier: Array = [copy_board(board)]
+	var visited: Dictionary = {JSON.stringify(board): true}
+	var index: int = 0
+	const MAX_RECOVERY_STATES := 160
+	while index < frontier.size():
+		if index >= MAX_RECOVERY_STATES:
+			# Inconclusive is NOT a proven defeat. Let the player keep rotating.
+			return true
+		var current: Array = frontier[index]
+		index += 1
+		for clockwise in [false,true]:
+			var rotated: Array = rotate(current,clockwise).board
+			rotated = settle(rotated).board
+			rotated = spill_after_rotation(rotated,clockwise).board
+			rotated = resolve_preview(rotated,true,clockwise).board
+			var signature: String = JSON.stringify(rotated)
+			if visited.has(signature):
+				continue
+			visited[signature] = true
 			for piece in pieces:
-				if any_drop(virtual,piece):
+				if any_drop(rotated,piece):
 					return true
+			frontier.append(rotated)
 	return false
 
 static func rescue_for_continue(board: Array) -> Array:
