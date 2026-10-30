@@ -89,3 +89,14 @@ Katalog `assets/atelier_v5/` zawiera niezależnie przygotowane SVG dla: świata,
 - SVG mają zdefiniowane rozdzielczości: world 720×1280, board 720×720, socket 256×256, elementy UI według dedykowanych wymiarów. Wszystkie testowane w `test_gravity_skin_art.gd`.
 - `SkinArt.PACKS` pozostaje jedynym katalogiem kupowanych skórek. Przyszłe skórki nie powinny kopiować wyglądu przycisków za pomocą przypadkowych zmian kolorów.
 - Ocena artystyczna wymaga klatek z działającego Godota na 450×800; same SVG i zielony pipeline nie potwierdzają, że kompozycja wizualna została zaakceptowana.
+
+## Atelier v6 — Candy Workshop (nowy kierunek, 30.10.2026)
+
+**Główna zmiana:** całkowicie nowy kierunek artystyczny zamiast fioletowego Midnight Jelly. Ciepłe, jasne tło, kremowa ceramika i turkusowy panel mechaniczny; pełny zestaw oryginalnych assetów w `assets/atelier_v6/`. Wymienione: tło, plansza, pojedynczy punkt siatki, HUD, pasek tury, monety, ikony, energia, 3 karty kształtów, 2 obroty, 3 moce, CTA, kamień, 3 kulki i materiał paneli.
+
+- Mechanika, siatka 8x8 i hitboxy bez zmian.
+- Brak 64 głębokich okrągłych otworów — mikropunkty zamiast powielanych pierścieni.
+- Podstawowe kulki w `gravity_skin_art.gd` to pełne niezależne grafiki, nie stare `visual_v2`.
+- Jasny ekran wymaga ciemnej typografii; na obrotach i w HUD wszystkie etykiety w odcieniu ciemnego atramentu.
+- Stare zasoby pozostają dla historii/porównania; aktywne assety zawsze wskazuje `gravity_studio.gd` i katalog `SkinArt.PACKS`.
+- Sprawdzamy na prawdziwym zrzucie 450x800 i w grze przed zatwierdzeniem stylu.

@@ -3,9 +3,9 @@ extends RefCounted
 ## Never fake an owned cosmetic with circles or a recolor of the base sprite.
 const PACKS = {
 	"default": [
-		preload("res://assets/visual_v2/orb_peach.svg"),
-		preload("res://assets/visual_v2/orb_aqua.svg"),
-		preload("res://assets/visual_v2/orb_violet.svg")
+		preload("res://assets/atelier_v6/orb_coral.svg"),
+		preload("res://assets/atelier_v6/orb_mint.svg"),
+		preload("res://assets/atelier_v6/orb_violet.svg")
 	],
 	"neon": [
 		preload("res://assets/skins/neon/coral.svg"),
