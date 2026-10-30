@@ -34,7 +34,7 @@ static func wave_is_surge(wave_number: int) -> bool:
 	return wave_number > 0 and wave_number % 5 == 0
 
 static func wave_total_marbles(wave_number: int) -> int:
-	return mini(SIZE,wave_marble_count(wave_number) + (2 if wave_is_surge(wave_number) else 0)
+	return mini(SIZE,wave_marble_count(wave_number) + (2 if wave_is_surge(wave_number) else 0))
 
 static func rock_count(board: Array) -> int:
 	var count: int = 0
