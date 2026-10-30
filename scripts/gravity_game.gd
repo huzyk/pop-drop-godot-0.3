@@ -181,6 +181,7 @@ var game_over_reported: bool = false
 var wave_number: int = 0
 var wave_time_left: float = 12.0
 var wave_queued: bool = false
+var coin_cap_notified: bool = false
 var loss_reason: String = "" # Exact reason displayed after the game ends
 
 func _ready() -> void:
@@ -460,6 +461,7 @@ func new_game() -> void:
 	wave_number = 0
 	wave_time_left = Rules.wave_interval(0)
 	wave_queued = false
+	coin_cap_notified = false
 	ad_note = ""
 	board = Rules.empty_board()
 	# Lively opening: a four-ball group is one ball away from a 5-POP.
@@ -541,6 +543,7 @@ func _restore_progress(data: Dictionary) -> void:
 	wave_number = maxi(0,int(data.get("wave_number",0)))
 	wave_time_left = minf(Rules.wave_interval(wave_number),clampf(float(data.get("wave_time_left",Rules.wave_interval(wave_number))),0.0,45.0))
 	wave_queued = false
+	coin_cap_notified = shop.pop_run_id == run_id and shop.pop_run_earned >= Shop.POP_RUN_CAP
 	bomb_aim = false
 	shop_open = false
 	best = maxi(best,score)
@@ -951,24 +954,28 @@ func _trigger_pressure_wave() -> void:
 	action_id = "action:%s:%d" % [run_id,action_serial]
 	wave_number += 1
 	wave_time_left = Rules.wave_interval(wave_number)
-	var beads: int = Rules.wave_marble_count(wave_number)
+	var beads: int = Rules.wave_total_marbles(wave_number)
 	var wave: Dictionary = Rules.drop_wave(board,rng,beads)
 	if feedback != null:
 		feedback.cue("drop")
 	if int(wave["added"]) > 0:
 		_shock(BOARD.get_center(),1.05,Color("#ffae83"))
 	await _animate_to(wave.board,wave.motions,0.31,"wave")
-	# Rocks are not artificially capped; spawn just one every third wave.
+	# A single rock every second wave: sustained pressure, not a sudden wall.
 	var rock_added: bool = false
-	if wave_number % 3 == 0:
+	if wave_number % 2 == 0:
 		var rock: Dictionary = Rules.spawn_rock(board,rng)
 		if bool(rock.get("spawned",false)):
 			board = rock.board
 			rock_added = true
 			_shock(BOARD.position+(Vector2(rock.cell)+Vector2(0.5,0.5))*CELL,1.2,Color("#ffe0a7"))
+	if Rules.wave_is_surge(wave_number):
+		_praise("NAWAŁNICA!" if language=="pl" else "SURGE!",Color("#FFE7A2"),1.35)
+		_shock(BOARD.get_center(),2.0,Color("#ffb065"))
 	telemetry.track("pressure_wave",{
 		"run_id":run_id,"wave":wave_number,"marbles":int(wave["added"]),
-		"rock_added":rock_added,"next_interval":wave_time_left
+		"rock_added":rock_added,"surge":Rules.wave_is_surge(wave_number),
+		"next_interval":wave_time_left
 	})
 	chain_depth = 0
 	await _resolve_cascades()
@@ -1133,10 +1140,15 @@ func _resolve_cascades(fluid: bool=false) -> void:
 				"destroyed":rocks.destroyed.size(),"wave":wave_number
 			})
 		score += payout
-		var earned_coins: int = shop.credit_pop(action_id+":coins:"+str(chain_depth),payout)
+		var earned_coins: int = shop.credit_pop(action_id+":coins:"+str(chain_depth),payout,run_id)
 		if earned_coins > 0:
 			shop_notice = "+%d ◉" % earned_coins
 			shop_notice_time = 1.4
+		if not coin_cap_notified and shop.pop_run_earned >= Shop.POP_RUN_CAP:
+			coin_cap_notified = true
+			mission_notice = ("LIMIT MONET Z POP: %d / RUNDĘ" if language=="pl"
+				else "POP COIN LIMIT: %d / RUN") % Shop.POP_RUN_CAP
+			mission_notice_time = 3.8
 		progression.record_pop(action_id+":pop:"+str(chain_depth),
 			groups.size(),hits.size(),payout,chain_depth)
 		telemetry.track("pop_triggered", {
