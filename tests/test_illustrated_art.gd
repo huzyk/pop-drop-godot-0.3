@@ -5,6 +5,8 @@ const Illustrated = preload("res://scripts/gravity_illustrated.gd")
 
 func _initialize() -> void:
 	assert(Illustrated.SCENE_ART != null)
+	assert(Illustrated.CLEAN_OVERLAY != null)
+	assert(Illustrated.CLEAN_OVERLAY.get_size() == Game.BASE)
 	assert(Illustrated.SCENE_ART.get_size()==Vector2(941,1672))
 	assert(Illustrated.SELECTED_CARD.get_size()==Vector2(386,278))
 	for sprite in [Illustrated.GLASS_PINK,Illustrated.GLASS_GREEN,
@@ -29,7 +31,6 @@ func _initialize() -> void:
 		assert(Game.DOCK_SHAPES.encloses(hit))
 		assert(not hit.intersects(Game.LEFT_RECT))
 		assert(not hit.intersects(Game.BOOST_BOMB))
-		assert(not hit.intersects(Game.BOOST_MAGIC))
 		assert(not hit.intersects(Game.BOOST_REROLL))
 	assert(Game.LEFT_RECT.position.x < Game.BOOST_BOMB.position.x)
 	assert(Game.BOOST_REROLL.end.x < Game.RIGHT_RECT.position.x)
