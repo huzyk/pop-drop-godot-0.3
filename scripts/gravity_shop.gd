@@ -186,7 +186,7 @@ func claim_daily(day_override: String = "") -> Dictionary:
 		gap = int((current-previous)/86400)
 	if gap <= 0:
 		return {}
-	daily_streak = mini(7,daily_streak+1) if gap == 1 else 1
+	daily_streak = (daily_streak % 7)+1 if gap == 1 else 1
 	daily_last_claim = today
 	var reward: int = DAILY_PRIZES[daily_streak-1]
 	var granted: int = _credit(reward)
