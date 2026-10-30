@@ -1,6 +1,8 @@
-# POP DROP Gravity 0.17 alpha — bez limitu monet za rozgrywkę
+# POP DROP Gravity 0.18 alpha — FLOW i szybsza rozgrywka
 
 **Brak linii śmierci, brak limitu skał, brak trzech serc.** Porażka następuje dopiero wtedy, gdy żaden z dostępnych kształtów nie może być położony — także po możliwych obrotach. Fale co 18/16/14 sekund wrzucają z góry po 3/4/5 kulek do wolnych kolumn. Co trzecia fala może dodać skałę. Jeden ratunek za monety albo reklamę zapewnia ponownie możliwy ruch. Zamiast życia w HUD jest licznik wolnych pól, a koniec rundy wyjaśnia powód porażki.
+
+**Nowe w 0.18:** Po każdym ręcznie uzyskanym POP-ie zaczyna się 8-sekundowy FLOW. Kolejne udane akcje dają mnożnik wyniku ×1,25 / ×1,5 / ×2; fale i bomby nie budują serii. Animacje obrotów, spadków i kaskad są szybsze, a zwykłe POP-y nie zasłaniają już planszy dużą kartą. Częstotliwość fal pozostaje bez zmian.
 
 Szczegóły i parametry: [docs/PRESSURE.md](docs/PRESSURE.md).
 
