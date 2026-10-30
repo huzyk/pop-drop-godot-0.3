@@ -15,7 +15,8 @@ const ICON_SETTINGS = preload("res://assets/ui/icons/settings.svg")
 const ICON_ROTATE_LEFT = preload("res://assets/ui/icons/rotate_left.svg")
 const ICON_ROTATE_RIGHT = preload("res://assets/ui/icons/rotate_right.svg")
 const ICON_BOMB = preload("res://assets/ui/icons/bomb.svg")
-const ICON_TIME = preload("res://assets/ui/icons/time.svg")
+const ICON_MAGIC = preload("res://assets/ui/icons/magic.svg")
+const ICON_REROLL = preload("res://assets/ui/icons/reroll.svg")
 const ICON_HEART = preload("res://assets/ui/icons/heart.svg")
 const ICON_GLOBE = preload("res://assets/ui/icons/globe.svg")
 const FONT = preload("res://fonts/ClearSans-Regular.ttf")
@@ -58,7 +59,9 @@ const TR := {
 const LEFT_RECT := Rect2(29,1086,317,86)
 const RIGHT_RECT := Rect2(374,1086,317,86)
 const RESTART_RECT := Rect2(104,722,512,84)
-const RESCUE_RECT := Rect2(104,821,512,79)
+const RESCUE_RECT := Rect2(104,821,244,79)
+const COIN_RESCUE_RECT := Rect2(372,821,244,79)
+const ENERGY_AD_RECT := Rect2(221,908,278,54)
 const SETTINGS_CLOSE := Rect2(476,384,118,54)
 const SETTINGS_TOGGLE := Rect2(120,550,480,80)
 const SETTINGS_ERASE := Rect2(120,654,480,74)
@@ -70,8 +73,15 @@ const PROFILE_CARD := Rect2(54,224,612,906)
 const SHOP_CLOSE := Rect2(514,266,120,54)
 const SHOP_TAB_BOOST := Rect2(94,410,251,57)
 const SHOP_TAB_SKINS := Rect2(375,410,251,57)
-const BOOST_BOMB := Rect2(101,1192,238,66)
-const BOOST_TIME := Rect2(381,1192,238,66)
+const BOOST_BOMB := Rect2(27,1192,211,66)
+const BOOST_MAGIC := Rect2(254,1192,211,66)
+const BOOST_REROLL := Rect2(481,1192,211,66)
+const SHOP_PREV := Rect2(105,970,113,55)
+const SHOP_NEXT := Rect2(502,970,113,55)
+const PROFILE_DAILY_TAB := Rect2(92,526,248,51)
+const PROFILE_BADGE_TAB := Rect2(380,526,248,51)
+const PROFILE_PREV := Rect2(104,911,116,46)
+const PROFILE_NEXT := Rect2(500,911,116,46)
 const PROFILE_TR := {
 	"pl":{"profile":"POSTĘP","level":"POZIOM","short":"POZ.","daily":"DZISIEJSZE MISJE","streak":"SERIA DNI","cosmetics":"WYGLĄD KULEK","drops":"ZRZUĆ KSZTAŁTY","pops":"WYWOŁAJ POP","points":"ZDOBĄDŹ PUNKTY","classic":"KLASYCZNE","aurora":"AURORA","starlight":"GWIEZDNE","locked":"POZ.","selected":"WYBRANE","close":"ZAMKNIJ","done":"UKOŃCZONA","autoclaim":"XP przyznaje się automatycznie"},
 	"en":{"profile":"PROGRESS","level":"LEVEL","short":"LVL","daily":"TODAY'S MISSIONS","streak":"DAY STREAK","cosmetics":"MARBLE SKINS","drops":"DROP PIECES","pops":"TRIGGER POPS","points":"EARN POINTS","classic":"CLASSIC","aurora":"AURORA","starlight":"STARLIGHT","locked":"LVL","selected":"SELECTED","close":"CLOSE","done":"COMPLETE","autoclaim":"XP is awarded automatically"},
@@ -139,6 +149,12 @@ var progression = null
 var shop = null
 var shop_open: bool = false
 var shop_tab: int = 0
+var shop_page: int = 0
+var profile_tab: int = 0
+var badge_page: int = 0
+var preview_skin: String = ""
+var magic_aim: bool = false
+var ad_reward_kind: String = ""
 var bomb_aim: bool = false
 var bomb_hover: Vector2i = Vector2i(-1,-1)
 var shop_notice: String = ""
@@ -186,8 +202,14 @@ func _ready() -> void:
 	progression.load_data()
 	progression.mission_completed.connect(_on_mission_completed)
 	progression.level_reached.connect(_on_level_reached)
+	progression.achievement_unlocked.connect(_on_achievement_unlocked)
 	shop = Shop.new()
 	shop.load_data()
+	# Recover a badge payout if the app was interrupted between separate save files.
+	for achievement in Progression.ACHIEVEMENTS:
+		var badge_id: String = str(achievement["id"])
+		if bool(progression.unlocked_achievements.get(badge_id,false)):
+			shop.credit_bonus("badge:"+badge_id,int(achievement["coins"]))
 	var previous: Dictionary = Session.read_progress()
 	if previous.is_empty():
 		new_game()
@@ -202,23 +224,37 @@ func profile_t(key: String) -> String:
 	return str(PROFILE_TR.get(language,PROFILE_TR["en"]).get(key,key))
 
 const SHOP_PL := {
-	"shop":"SKLEP","boosts":"POMOCE","skins":"WYGLĄDY","close":"ZAMKNIJ",
-	"coins":"MONETY","bomb":"BOMBA","time":"CZAS +10s",
-	"neon":"NEON","gold":"ZŁOTO","buy":"KUP","owned":"KUPIONE",
-	"active":"AKTYWNE","equip":"WYBIERZ","stock":"POSIADASZ",
+	"shop":"SKLEP","boosts":"MOCE","skins":"SKÓRKI","close":"ZAMKNIJ",
+	"coins":"MONETY","bomb":"BOMBA","magic":"MAGICZNY KOLOR","reroll":"NOWY ZESTAW",
+	"neon":"NEON","gold":"ZŁOTO","donut":"DONUTY","capybara":"KAPIBARY",
+	"crystal":"KRYSZTAŁY","cosmos":"KOSMOS","star_capybara":"GWIEZDNA KAPIBARA",
+	"buy":"KUP","owned":"KUPIONE","active":"AKTYWNE","equip":"WYBIERZ","stock":"POSIADASZ",
 	"poor":"ZA MAŁO MONET","bought":"ZAKUPIONE!","full":"LIMIT ZAPASU",
-	"aim":"DOTKNIJ POLA — BOMBA 3×3","tip":"Wynik rundy pozostaje bez zmian",
-	"bomb_desc":"Czyści 3×3, osłabia skały o 1","time_desc":"Opóźnia następną falę o 10 s",
-	"neon_desc":"Elektryczna poświata kulek","gold_desc":"Złote obwódki i refleksy"}
+	"aim":"DOTKNIJ POLA — BOMBA 3×3","magic_aim":"DOTKNIJ KULKI — ZMIANA KOLORU",
+	"tip":"Monety i wynik gry są niezależne","energy":"ENERGIA",
+	"bomb_desc":"Usuwa kulki w polu 3×3","magic_desc":"Zmienia kolor wybranej kulki",
+	"reroll_desc":"Losuje trzy nowe kształty",
+	"neon_desc":"Elektryczna poświata","gold_desc":"Złota oprawa",
+	"donut_desc":"Słodkie lukrowane kulki","capybara_desc":"Kapibary na planszy",
+	"crystal_desc":"Błyszczące kryształy","cosmos_desc":"Kosmiczne kulki",
+	"page":"STRONA","no_energy":"BRAK ENERGII","badges":"ODZNAKI"
+}
 const SHOP_EN := {
-	"shop":"SHOP","boosts":"BOOSTS","skins":"SKINS","close":"CLOSE",
-	"coins":"COINS","bomb":"BOMB","time":"TIME +10s",
-	"neon":"NEON","gold":"GOLD","buy":"BUY","owned":"OWNED",
-	"active":"ACTIVE","equip":"EQUIP","stock":"IN STOCK",
+	"shop":"SHOP","boosts":"POWERS","skins":"SKINS","close":"CLOSE",
+	"coins":"COINS","bomb":"BOMB","magic":"MAGIC COLOR","reroll":"NEW SET",
+	"neon":"NEON","gold":"GOLD","donut":"DONUTS","capybara":"CAPYBARAS",
+	"crystal":"CRYSTALS","cosmos":"COSMOS","star_capybara":"STAR CAPYBARA",
+	"buy":"BUY","owned":"OWNED","active":"ACTIVE","equip":"EQUIP","stock":"OWNED",
 	"poor":"NOT ENOUGH COINS","bought":"PURCHASED!","full":"INVENTORY FULL",
-	"aim":"TAP A CELL — 3×3 BOMB","tip":"Your round score does not change",
-	"bomb_desc":"Clear 3×3, damage rocks once","time_desc":"Delay the next wave by 10s",
-	"neon_desc":"Electric marble glow","gold_desc":"Golden rings and highlights"}
+	"aim":"TAP CELL — BOMB 3×3","magic_aim":"TAP A MARBLE TO RECOLOR",
+	"tip":"Coins never affect your score","energy":"ENERGY",
+	"bomb_desc":"Clear a 3×3 region","magic_desc":"Recolor a chosen marble",
+	"reroll_desc":"Roll three fresh shapes",
+	"neon_desc":"Electric glowing edges","gold_desc":"Gold outline",
+	"donut_desc":"Sweet glazed marbles","capybara_desc":"Capybaras on the board",
+	"crystal_desc":"Shimmering crystals","cosmos_desc":"Cosmic marbles",
+	"page":"PAGE","no_energy":"NO ENERGY","badges":"BADGES"
+}
 
 func shop_t(key: String) -> String:
 	return str((SHOP_PL if language=="pl" else SHOP_EN).get(key,key))
@@ -226,14 +262,23 @@ func shop_t(key: String) -> String:
 func _shop_card(index: int) -> Rect2:
 	return Rect2(91,498+index*231,538,213)
 
+func _shop_catalog() -> Array:
+	return ["bomb","magic","reroll"] if shop_tab==0 else [
+		"neon","gold","donut","capybara","crystal","cosmos","star_capybara"]
+
+func _shop_pages() -> int:
+	return int(ceil(float(_shop_catalog().size())/2.0))
+
 func _shop_items() -> Array:
-	return ["bomb","time"] if shop_tab==0 else ["neon","gold"]
+	var items: Array = _shop_catalog()
+	var first: int = shop_page*2
+	return items.slice(first,mini(first+2,items.size()))
 
 func _shop_activate(id: String) -> void:
 	var offer: Dictionary = Shop.item(id)
 	if offer.is_empty():
 		return
-	if str(offer["kind"])=="skin" and shop.owns_skin(id):
+	if (str(offer.get("kind",""))=="skin" or id==Shop.SPECIAL_SKIN) and shop.owns_skin(id):
 		shop.equip_skin(id)
 		shop_notice = shop_t("active")
 		telemetry.track("shop_skin_equip",{"skin":id})
@@ -249,20 +294,85 @@ func _shop_activate(id: String) -> void:
 	shop_notice_time = 2.0
 	queue_redraw()
 
-func _use_time_boost() -> void:
-	if phase!="drop":
+func _use_reroll() -> void:
+	if phase != "drop":
 		return
-	if not shop.use_boost("time"):
+	if not shop.use_boost("reroll"):
 		shop_open = true
 		shop_tab = 0
+		shop_page = 1
 		return
-	wave_time_left = minf(45.0,wave_time_left+10.0)
-	_praise("+10s",Color("#8af6e7"),1.1)
-	if feedback != null:
-		feedback.cue("mission")
-	telemetry.track("powerup_used",{"run_id":run_id,"item":"time"})
+	for i in range(3):
+		pieces[i] = Rules.next_piece(rng,board,recent_shapes)
+		_remember_shape(pieces[i])
+	selected_piece = 0
+	_refresh_targets()
+	_praise(shop_t("reroll"),Color("#91dbff"),1.2)
+	telemetry.track("powerup_used",{"run_id":run_id,"item":"reroll"})
+	_check_stuck()
+	if phase == "over":
+		_on_game_over()
 	_save_progress()
 	queue_redraw()
+
+func _use_magic(target: Vector2i) -> void:
+	if phase != "drop" or not magic_aim:
+		return
+	if target.x < 0 or target.y < 0 or target.x >= 8 or target.y >= 8:
+		return
+	var previous: int = int(board[target.y][target.x])
+	if previous < 0 or previous > 2:
+		shop_notice = shop_t("magic_aim")
+		shop_notice_time = 1.4
+		return
+	var best_color: int = (previous+1)%3
+	var best_value: int = -1
+	for color in range(3):
+		if color == previous:
+			continue
+		var candidate: Array = Rules.copy_board(board)
+		candidate[target.y][target.x] = color
+		var power: int = 0
+		for group in Rules.find_groups(candidate):
+			for cell in group["cells"]:
+				if cell == target:
+					power = maxi(power,int(group["count"])*10)
+					break
+		for direction in [Vector2i.LEFT,Vector2i.RIGHT,Vector2i.UP,Vector2i.DOWN]:
+			var pos: Vector2i = target+direction
+			if pos.x >= 0 and pos.x < 8 and pos.y >= 0 and pos.y < 8:
+				if int(candidate[pos.y][pos.x]) == color:
+					power += 1
+		if power > best_value:
+			best_value = power
+			best_color = color
+	if not shop.use_boost("magic"):
+		magic_aim = false
+		shop_open = true
+		shop_tab = 0
+		shop_page = 0
+		return
+	magic_aim = false
+	action_serial += 1
+	action_id = "action:%s:%d" % [run_id,action_serial]
+	board[target.y][target.x] = best_color
+	_burst(target,12)
+	_shock(BOARD.position+(Vector2(target)+Vector2(0.5,0.5))*CELL,2.3,Color("#c9a0ff"))
+	_praise(shop_t("magic"),Color("#e1b9ff"),1.3)
+	telemetry.track("powerup_used",{"run_id":run_id,"item":"magic"})
+	phase = "anim"
+	chain_depth = 0
+	await _resolve_cascades()
+	phase = "drop"
+	_check_ceiling()
+	if phase == "drop":
+		_refresh_targets()
+		_check_stuck()
+	if phase == "over":
+		_on_game_over()
+	_save_progress()
+	queue_redraw()
+
 
 func _use_bomb(target: Vector2i) -> void:
 	if phase!="drop" or not bomb_aim:
@@ -278,6 +388,7 @@ func _use_bomb(target: Vector2i) -> void:
 		shop_tab = 0
 		return
 	bomb_aim = false
+	magic_aim = false
 	bomb_hover = Vector2i(-1,-1)
 	phase = "anim"
 	action_serial += 1
@@ -306,6 +417,17 @@ func _use_bomb(target: Vector2i) -> void:
 	queue_redraw()
 
 
+func _on_achievement_unlocked(id: String, reward_coins: int) -> void:
+	var gained: int = shop.credit_bonus("badge:"+id,reward_coins)
+	if gained <= 0:
+		return
+	mission_notice = "★ %s  +%d ◉" % [id.replace("_"," ").to_upper(),gained]
+	mission_notice_time = 3.5
+	glow = 1.0
+	if feedback != null:
+		feedback.cue("level")
+	telemetry.track("achievement_unlocked",{"badge":id,"coins":gained})
+
 func _on_mission_completed(mission_id: String, bonus_xp: int) -> void:
 	mission_notice = "%s +%d XP" % [profile_t("done"),bonus_xp]
 	mission_notice_time = 2.6
@@ -333,6 +455,17 @@ func _save() -> void:
 		f.store_string(JSON.stringify({"best":best,"language":language,"rounds_played":rounds_played}))
 
 func new_game() -> void:
+	if not shop.spend_energy():
+		if board.is_empty():
+			board = Rules.empty_board()
+			pieces = []
+			score = 0
+			display_score = 0.0
+			lives = 0
+		phase = "over"
+		ad_note = shop_t("no_energy")
+		queue_redraw()
+		return
 	run_id = Crypto.new().generate_random_bytes(8).hex_encode()
 	best_at_round_start = best
 	game_over_reported = false
@@ -428,6 +561,7 @@ func _restore_progress(data: Dictionary) -> void:
 	wave_time_left = clampf(float(data.get("wave_time_left",Rules.wave_interval(wave_number))),0.0,45.0)
 	wave_queued = false
 	bomb_aim = false
+	magic_aim = false
 	shop_open = false
 	best = maxi(best,score)
 	display_score = float(score)
@@ -462,10 +596,9 @@ func _on_game_over() -> void:
 		"round_number":rounds_played
 	})
 
-func _on_ad_reward(_transaction: int) -> void:
-	# Only the SDK provider's reward-earned callback can reach this function.
-	if phase != "over" or revives >= 1:
-		return
+func _revive() -> bool:
+	if phase != "over" or revives >= 1 or pieces.is_empty():
+		return false
 	revives += 1
 	lives = 1
 	board = Rules.rescue(board)
@@ -474,14 +607,39 @@ func _on_ad_reward(_transaction: int) -> void:
 	selected_piece = 0
 	phase = "drop"
 	ad_note = ""
+	wave_time_left = Rules.wave_interval(wave_number)
 	_refresh_targets()
 	_praise("+1 ♥",Color("#ff9bb7"),1.2)
-	telemetry.track("ad_reward_earned", {"run_id":run_id,"reward":"revive"})
 	_save_progress()
 	queue_redraw()
+	return true
+
+func _request_ad_reward(kind: String) -> void:
+	if not ads.request_rewarded():
+		ad_reward_kind = ""
+		ad_note = "REKLAMA NIEDOSTĘPNA" if language=="pl" else "AD NOT AVAILABLE"
+	else:
+		ad_reward_kind = kind
+		ad_note = "ŁADOWANIE REKLAMY..." if language=="pl" else "LOADING AD..."
+	queue_redraw()
+
+func _on_ad_reward(_transaction: int) -> void:
+	# Reward is issued only by the real SDK's validated completion callback.
+	var kind: String = ad_reward_kind
+	ad_reward_kind = ""
+	if kind == "energy":
+		if shop.reward_energy():
+			ad_note = "+1 "+shop_t("energy")
+			telemetry.track("ad_reward_earned",{"reward":"energy"})
+		return
+	if kind == "revive" and _revive():
+		telemetry.track("ad_reward_earned",{"run_id":run_id,"reward":"revive"})
+
 
 func _process(delta: float) -> void:
 	clock += delta
+	if shop != null and int(clock) % 2 == 0:
+		shop.refresh_energy()
 	mission_notice_time = maxf(0.0,mission_notice_time-delta)
 	shop_notice_time = maxf(0.0,shop_notice_time-delta)
 	level_fx_time = maxf(0.0,level_fx_time-delta)
@@ -540,7 +698,7 @@ func _logical(screen: Vector2) -> Vector2:
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		var pointer: Vector2 = _logical(event.position)
-		if bomb_aim:
+		if bomb_aim or magic_aim:
 			bomb_hover = _board_cell(pointer)
 		if dragging_piece:
 			drag_point = pointer
@@ -572,17 +730,32 @@ func _gui_input(event: InputEvent) -> void:
 			shop_open = false
 		elif SHOP_TAB_BOOST.has_point(pt):
 			shop_tab = 0
+			shop_page = 0
 		elif SHOP_TAB_SKINS.has_point(pt):
 			shop_tab = 1
+			shop_page = 0
+		elif SHOP_PREV.has_point(pt):
+			shop_page = maxi(0,shop_page-1)
+		elif SHOP_NEXT.has_point(pt):
+			shop_page = mini(_shop_pages()-1,shop_page+1)
 		else:
-			for i in range(2):
+			var shown: Array = _shop_items()
+			for i in range(shown.size()):
 				if _shop_card(i).has_point(pt):
-					_shop_activate(str(_shop_items()[i]))
+					_shop_activate(str(shown[i]))
 		queue_redraw()
 		return
 	if profile_open:
 		if PROFILE_CLOSE.has_point(pt):
 			profile_open = false
+		elif PROFILE_DAILY_TAB.has_point(pt):
+			profile_tab = 0
+		elif PROFILE_BADGE_TAB.has_point(pt):
+			profile_tab = 1
+		elif profile_tab==1 and PROFILE_PREV.has_point(pt):
+			badge_page = maxi(0,badge_page-1)
+		elif profile_tab==1 and PROFILE_NEXT.has_point(pt):
+			badge_page = mini(1,badge_page+1)
 		else:
 			for index in range(Progression.SKINS.size()):
 				if Rect2(90+index*181,975,164,75).has_point(pt):
@@ -613,7 +786,9 @@ func _gui_input(event: InputEvent) -> void:
 	if (SHOP_OPEN.has_point(pt) or COINS_OPEN.has_point(pt)) and phase != "anim":
 		shop_open = true
 		shop_tab = 0
+		shop_page = 0
 		bomb_aim = false
+		magic_aim = false
 		telemetry.track("shop_open",{"coins":shop.coins})
 		queue_redraw()
 		return
@@ -644,11 +819,17 @@ func _gui_input(event: InputEvent) -> void:
 			if should_interstitial:
 				ads.request_interstitial()
 		elif RESCUE_RECT.has_point(pt) and revives < 1:
-			if not ads.request_rewarded():
-				ad_note = "ADS UNAVAILABLE" if language != "pl" else "REKLAMA NIEDOSTĘPNA"
+			_request_ad_reward("revive")
+		elif COIN_RESCUE_RECT.has_point(pt) and revives < 1:
+			if shop.coins >= Shop.RESCUE_PRICE and not pieces.is_empty():
+				if shop.spend_coins(Shop.RESCUE_PRICE):
+					_revive()
+					telemetry.track("coin_revive",{"run_id":run_id,"cost":Shop.RESCUE_PRICE})
 			else:
-				ad_note = "LOADING AD..." if language != "pl" else "ŁADOWANIE REKLAMY..."
+				ad_note = shop_t("poor")
 			queue_redraw()
+		elif ENERGY_AD_RECT.has_point(pt) and shop.energy < Shop.MAX_ENERGY:
+			_request_ad_reward("energy")
 		return
 	if LANG_RECT.has_point(pt):
 		var index: int = LOCALES.find(language)
@@ -659,21 +840,46 @@ func _gui_input(event: InputEvent) -> void:
 	if phase!="drop":
 		return
 	if BOOST_BOMB.has_point(pt):
+		magic_aim = false
 		if bomb_aim:
 			bomb_aim = false
-		elif shop.stock("bomb") > 0:
+		elif shop.stock("bomb")>0:
 			bomb_aim = true
 			bomb_hover = Vector2i(-1,-1)
 		else:
 			shop_open = true
 			shop_tab = 0
+			shop_page = 0
 		queue_redraw()
 		return
-	if BOOST_TIME.has_point(pt):
+	if BOOST_MAGIC.has_point(pt):
 		bomb_aim = false
-		_use_time_boost()
+		if magic_aim:
+			magic_aim = false
+		elif shop.stock("magic")>0:
+			magic_aim = true
+			bomb_hover = Vector2i(-1,-1)
+		else:
+			shop_open = true
+			shop_tab = 0
+			shop_page = 0
+		queue_redraw()
 		return
-	if bomb_aim and BOARD.has_point(pt):
+	if BOOST_REROLL.has_point(pt):
+		bomb_aim = false
+		magic_aim = false
+		_use_reroll()
+		return
+	if magic_aim and BOARD.has_point(pt):
+		_use_magic(_board_cell(pt))
+		return
+	if magic_aim:
+		magic_aim = false
+		queue_redraw()
+		return
+	
+
+if bomb_aim and BOARD.has_point(pt):
 		var chosen: Vector2i = _board_cell(pt)
 		if chosen.x>=0:
 			_use_bomb(chosen)
@@ -716,6 +922,13 @@ func _play_drop(column: int) -> void:
 	action_serial += 1
 	action_id = "action:%s:%d" % [run_id,action_serial]
 	progression.record_drop(action_id+":drop")
+	var daily_bonus: Dictionary = shop.claim_daily()
+	if not daily_bonus.is_empty():
+		mission_notice = ("DZIEŃ" if language=="pl" else "DAY")+" %d · +%d ◉" % [
+			int(daily_bonus["day"]),int(daily_bonus["coins"])]
+		if not str(daily_bonus["skin"]).is_empty():
+			mission_notice += " ★ "+shop_t("star_capybara")
+		mission_notice_time = 3.2
 	telemetry.track("piece_drop", {
 		"run_id":run_id, "column":column, "shape_size":pieces[used_index].size(),
 		"move":moves+1, "board_filled":Rules.filled(board),
