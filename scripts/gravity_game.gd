@@ -276,9 +276,18 @@ func _shop_items() -> Array:
 
 func _shop_activate(id: String) -> void:
 	var offer: Dictionary = Shop.item(id)
+	if id == Shop.SPECIAL_SKIN:
+		if shop.owns_skin(id):
+			shop.equip_skin(id)
+			shop_notice = shop_t("active")
+		else:
+			shop_notice = "7 DNI GRY" if language=="pl" else "PLAY 7 DAYS"
+		shop_notice_time = 2.0
+		queue_redraw()
+		return
 	if offer.is_empty():
 		return
-	if (str(offer.get("kind",""))=="skin" or id==Shop.SPECIAL_SKIN) and shop.owns_skin(id):
+	if str(offer.get("kind",""))=="skin" and shop.owns_skin(id):
 		shop.equip_skin(id)
 		shop_notice = shop_t("active")
 		telemetry.track("shop_skin_equip",{"skin":id})
@@ -1464,6 +1473,7 @@ func _draw_header() -> void:
 	_draw_icon(ICON_GLOBE,Vector2(LANG_RECT.get_center().x,LANG_RECT.position.y+20),24)
 	_fit_center(language.to_upper(),LANG_RECT.get_center().x,LANG_RECT.position.y+46,
 		14,LANG_RECT.size.x-8,Color("#f2f4ff"))
+	_fit_center("⚡ %d/%d" % [shop.energy,Shop.MAX_ENERGY],253,110,15,90,Color("#ffdf98"))
 func _draw_hud() -> void:
 	# The information hierarchy: score / upcoming wave / lives.
 	_neon_panel(HUD_SCORE,Color("#da7dab"))
@@ -1515,7 +1525,7 @@ func _draw() -> void:
 	_draw_boost_controls()
 	_draw_drag_overlay()
 	_draw_tap_ripple()
-	if bomb_aim and phase == "drop":
+	if (bomb_aim or magic_aim) and phase == "drop":
 		_draw_bomb_target()
 	if glow > 0.0:
 		draw_rect(Rect2(0,0,720,1280),Color(0.8,0.94,1.0,0.055*glow))
@@ -1972,10 +1982,9 @@ func _draw_game_over() -> void:
 		var a: float = float(i)*TAU/16.0+clock*0.14
 		var where: Vector2 = center+Vector2.from_angle(a)*(304.0+9.0*sin(clock+float(i)))
 		_spark(where,5.0+float(i%4),Color("#ffdfac"),0.32+0.10*sin(clock*2.0+float(i)))
-	_neon_panel(Rect2(64,375,592,593),Color("#bd95ff"),true)
-	_box(Rect2(78,389,564,565),Color("#211b3d"),26,Color("#7161a4"),1)
-	draw_arc(Vector2(360,484),62,PI*0.1,PI*1.9,60,
-		Color("#e4b7ff",0.62),3.0,true)
+	_neon_panel(Rect2(64,375,592,640),Color("#bd95ff"),true)
+	_box(Rect2(78,389,564,615),Color("#211b3d"),26,Color("#7161a4"),1)
+	draw_arc(Vector2(360,484),62,PI*0.1,PI*1.9,60,Color("#e4b7ff",0.62),3.0,true)
 	for i in range(3):
 		var angle: float = clock*0.34+TAU*float(i)/3.0
 		_ball(Vector2(360,480)+Vector2.from_angle(angle)*54.0,18.0,i)
@@ -1984,18 +1993,31 @@ func _draw_game_over() -> void:
 	_fit_center(str(score),360,681,83,490,Color("#ffe5a9"))
 	_fit_center(t("best")+"  "+str(best),360,718,23,460,Color("#ddc9ff"))
 	_box(Rect2(RESTART_RECT.position+Vector2(0,7),RESTART_RECT.size),Color("#04091a"),25)
-	_box(RESTART_RECT,Color("#50e6c9"),25,Color("#b8fff0"),3)
-	_box(Rect2(RESTART_RECT.position+Vector2(7,7),Vector2(RESTART_RECT.size.x-14,26)),
-		Color("#c1fff2",0.32),16)
-	_fit_center(t("again"),360,777,30,462,Color("#102846"))
-	_box(RESCUE_RECT,Color("#34365e"),24,Color("#8881bf"),2)
-	_fit_center(("REKLAMA: +1 ŻYCIE" if language == "pl" else "WATCH AD: +1 LIFE")
-		if ads != null and ads.rewarded_ready() and revives < 1
-		else ("BRAK REKLAMY" if language == "pl" else "AD NOT AVAILABLE"),
-		360,870,25,468,Color("#f3eaff") if ads != null and ads.rewarded_ready() and revives < 1 else Color("#9992b8"))
-	_center(ad_note if not ad_note.is_empty() else
-		("MAX 1 RATUNEK NA RUNDĘ" if language == "pl" else "MAX 1 REVIVE PER ROUND"),
-		360,941,15,Color("#c0b5d8"))
+	_box(RESTART_RECT,Color("#50e6c9") if shop.energy>0 else Color("#60677c"),
+		25,Color("#b8fff0") if shop.energy>0 else Color("#798ca5"),3)
+	_fit_center(t("again") if shop.energy>0 else shop_t("no_energy"),360,777,27,462,
+		Color("#102846") if shop.energy>0 else Color.WHITE)
+	var ad_ready: bool = ads != null and ads.rewarded_ready()
+	var can_revive: bool = revives<1 and not pieces.is_empty()
+	_box(RESCUE_RECT,Color("#334c69"),21,Color("#85bdf5"),2)
+	_fit_center(("REKLAMA" if language=="pl" else "WATCH AD")
+		if ad_ready and can_revive else ("BRAK REKLAMY" if language=="pl" else "NO AD"),
+		RESCUE_RECT.get_center().x,RESCUE_RECT.position.y+48,19,222,
+		Color.WHITE if ad_ready and can_revive else Color("#9ca8be"))
+	_box(COIN_RESCUE_RECT,Color("#55405e") if shop.coins>=Shop.RESCUE_PRICE and can_revive
+		else Color("#32314c"),21,Color("#efc17d") if can_revive else Color("#756b8a"),2)
+	_fit_center("220 ◉  "+("GRAJ DALEJ" if language=="pl" else "CONTINUE"),
+		COIN_RESCUE_RECT.get_center().x,COIN_RESCUE_RECT.position.y+48,
+		19,222,Color.WHITE if shop.coins>=Shop.RESCUE_PRICE and can_revive else Color("#9490ab"))
+	_box(ENERGY_AD_RECT,Color("#233d58"),14,Color("#608cab"),1)
+	var sec: int = shop.energy_seconds_remaining()
+	var min_left: int = int(ceil(float(sec)/60.0))
+	_fit_center("⚡ %d/5  •  +1 / %d MIN" % [shop.energy,min_left] if shop.energy < Shop.MAX_ENERGY
+		else "⚡ 5/5  •  MAX",360,944,16,255,Color("#d6e8ff"))
+	_fit_center(ad_note if not ad_note.is_empty() else (
+		"RATUNEK: RAZ NA RUNDĘ • REKLAMA = +1 ENERGII"
+		if language=="pl" else "ONE CONTINUE PER RUN • AD = +1 ENERGY"),
+		360,993,15,520,Color("#c0b5d8"))
 
 func _draw_settings() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#030618",0.94))
@@ -2105,44 +2127,46 @@ func _draw_shop_notice() -> void:
 	_fit_center(shop_notice,360,774,23,303,Color(1,0.93,0.72,alpha))
 
 func _draw_boost_controls() -> void:
-	# Consumables have their own 20px-separated secondary toolbar.
 	if phase=="over":
 		return
-	var active: bool = phase=="drop"
-	for i in range(2):
-		var bomb: bool = i==0
-		var rect: Rect2 = BOOST_BOMB if bomb else BOOST_TIME
-		var stock: int = shop.stock("bomb" if bomb else "time")
-		var accent: Color = Color("#f9c276") if bomb else Color("#79c8fa")
-		var usable: bool = active and stock>0
-		var selected: bool = bomb and bomb_aim
-		_box(Rect2(rect.position+Vector2(0,5),rect.size),Color("#060a1a",0.78),19)
-		_box(rect,Color("#624443") if selected else Color("#433246") if bomb else Color("#1f3a61"),
-			19,accent if usable or selected else Color("#5a6a87"),2)
-		_box(Rect2(rect.position+Vector2(7,7),Vector2(rect.size.x-14,22)),
-			Color(1,1,1,0.075),11)
-		var at: Vector2 = rect.position+Vector2(39,32)
-		draw_circle(at,28,Color(accent.r,accent.g,accent.b,0.10))
-		_draw_icon(ICON_BOMB if bomb else ICON_TIME,at,55,
-			1.0 if usable or selected else 0.47)
-		var text_center: float = rect.position.x+140
-		_fit_center(shop_t("bomb") if bomb else shop_t("time"),
-			text_center,rect.position.y+41,21,145,
-			Color("#fff4e2") if bomb else Color("#e4f5ff"))
-		draw_circle(rect.position+Vector2(rect.size.x-20,rect.size.y-17),16,Color("#09162b"))
-		_center(str(stock),rect.position.x+rect.size.x-20,
-			rect.position.y+rect.size.y-10,17,
+	var powers: Array = ["bomb","magic","reroll"]
+	var boxes: Array = [BOOST_BOMB,BOOST_MAGIC,BOOST_REROLL]
+	var icons: Array = [ICON_BOMB,ICON_MAGIC,ICON_REROLL]
+	for i in range(3):
+		var id: String = str(powers[i])
+		var rect: Rect2 = boxes[i]
+		var stock: int = shop.stock(id)
+		var accent: Color = Color("#f9c276") if i==0 else (
+			Color("#d5a4ff") if i==1 else Color("#79c8fa"))
+		var usable: bool = phase=="drop" and stock>0
+		var selected: bool = (i==0 and bomb_aim) or (i==1 and magic_aim)
+		_box(Rect2(rect.position+Vector2(0,5),rect.size),Color("#060a1a",0.78),18)
+		_box(rect,Color("#624443") if selected else Color("#2c345c"),
+			18,accent if usable or selected else Color("#5a6a87"),2)
+		_box(Rect2(rect.position+Vector2(6,6),Vector2(rect.size.x-12,22)),Color(1,1,1,0.085),11)
+		var at: Vector2 = rect.position+Vector2(34,33)
+		draw_circle(at,26,Color(accent.r,accent.g,accent.b,0.10))
+		_draw_icon(icons[i],at,50,1.0 if usable or selected else 0.48)
+		_fit_center(shop_t(id),rect.position.x+121,rect.position.y+40,18,136,Color.WHITE)
+		draw_circle(rect.position+Vector2(rect.size.x-17,rect.size.y-14),15,Color("#09162b"))
+		_center(str(stock),rect.position.x+rect.size.x-17,rect.position.y+rect.size.y-8,16,
 			Color("#ffe5bc") if stock>0 else Color("#8294aa"))
+
 func _draw_bomb_target() -> void:
 	if bomb_hover.x >= 0:
-		for y in range(maxi(0,bomb_hover.y-1),mini(8,bomb_hover.y+2)):
-			for x in range(maxi(0,bomb_hover.x-1),mini(8,bomb_hover.x+2)):
-				var rect: Rect2 = Rect2(BOARD.position+Vector2(x,y)*CELL,Vector2(CELL,CELL))
-				draw_rect(rect,Color("#ffa777",0.25+0.11*sin(clock*9.0)))
-				draw_rect(rect,Color("#ffd1a4",0.68),false,2.3)
-	# Visible instruction lives in the dedicated status strip, not over the shape cards.
+		if magic_aim:
+			var rect: Rect2 = Rect2(BOARD.position+Vector2(bomb_hover)*CELL,Vector2(CELL,CELL))
+			draw_rect(rect,Color("#c9a2ff",0.25+0.11*sin(clock*9.0)))
+			draw_rect(rect,Color("#e3caff",0.9),false,2.8)
+		else:
+			for y in range(maxi(0,bomb_hover.y-1),mini(8,bomb_hover.y+2)):
+				for x in range(maxi(0,bomb_hover.x-1),mini(8,bomb_hover.x+2)):
+					var rect: Rect2 = Rect2(BOARD.position+Vector2(x,y)*CELL,Vector2(CELL,CELL))
+					draw_rect(rect,Color("#ffa777",0.25+0.11*sin(clock*9.0)))
+					draw_rect(rect,Color("#ffd1a4",0.68),false,2.3)
 	_box(Rect2(147,828,426,51),Color("#624152",0.97),16,Color("#ffc18f"),2)
-	_fit_center(shop_t("aim"),360,862,19,407,Color("#fff2d9"))
+	_fit_center(shop_t("magic_aim") if magic_aim else shop_t("aim"),360,862,18,407,Color("#fff2d9"))
+
 func _draw_shop() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#050819",0.96))
 	_neon_panel(Rect2(54,225,612,863),Color("#f1cb91"),true)
@@ -2161,11 +2185,12 @@ func _draw_shop() -> void:
 		_box(rect,Color("#266259") if selected else Color("#262b4d"),
 			19,Color("#86f0d8") if selected else Color("#6475a6"),2)
 		_fit_center(shop_t("boosts") if tab==0 else shop_t("skins"),
-			rect.get_center().x,447,22,225,
-			Color.WHITE if selected else Color("#bac4d9"))
-	for i in range(2):
-		var id: String = str(_shop_items()[i])
-		var product: Dictionary = Shop.item(id)
+			rect.get_center().x,447,22,225,Color.WHITE if selected else Color("#bac4d9"))
+	var shown: Array = _shop_items()
+	for i in range(shown.size()):
+		var id: String = str(shown[i])
+		var special: bool = id==Shop.SPECIAL_SKIN
+		var product: Dictionary = {"kind":"skin","price":0} if special else Shop.item(id)
 		var is_skin: bool = str(product["kind"])=="skin"
 		var is_owned: bool = shop.owns_skin(id) if is_skin else false
 		var is_active: bool = is_skin and shop.equipped_skin==id
@@ -2174,28 +2199,38 @@ func _draw_shop() -> void:
 		var accent: Color = Color("#ffcc91") if i==0 else Color("#91e5ed")
 		_box(rect,Color("#252d49"),22,Color("#82efd5") if is_active else Color("#687397"),2)
 		var at: Vector2 = rect.position+Vector2(80,86)
-		draw_circle(at,54,Color(accent.r,accent.g,accent.b,0.10))
-		if id=="bomb" or id=="time":
-			_draw_icon(ICON_BOMB if id=="bomb" else ICON_TIME,at,98)
+		draw_circle(at,54,Color(accent.r,accent.g,accent.b,0.1))
+		if not is_skin:
+			_draw_icon(ICON_BOMB if id=="bomb" else ICON_MAGIC if id=="magic"
+				else ICON_REROLL,at,92)
 		else:
-			_ball(at,29,0)
-			draw_arc(at,37,0,TAU,43,Color("#ffe3a2") if id=="gold" else Color("#65f6fa"),3.8,true)
-		_fit_center(shop_t(id),rect.position.x+339,rect.position.y+58,29,354,Color.WHITE)
-		_fit_center(shop_t(id+"_desc"),rect.position.x+333,rect.position.y+99,
-			16,385,Color("#cbd3e8"))
+			preview_skin = id
+			_ball(at,38,0)
+			preview_skin = ""
+		_fit_center(shop_t(id),rect.position.x+339,rect.position.y+58,26,346,Color.WHITE)
+		_fit_center(shop_t(id+"_desc") if not special else (
+			"NAGRODA ZA 7 DNI GRY" if language=="pl" else "PLAY 7 DAYS TO UNLOCK"),
+			rect.position.x+333,rect.position.y+99,16,381,Color("#cbd3e8"))
 		var label: String = shop_t("active") if is_active else (
-			shop_t("equip") if is_owned else shop_t("buy")+"  "+str(product["price"]))
+			shop_t("equip") if is_owned else ("7 DNI" if language=="pl" else "DAY 7") if special
+			else shop_t("buy")+"  "+str(product["price"]))
+		var available: bool = purchasable or is_owned
 		_box(Rect2(rect.position+Vector2(199,131),Vector2(311,60)),
-			Color("#296157") if purchasable or is_owned else Color("#46445d"),
-			17,Color("#8bf3d8") if purchasable or is_owned else Color("#74708b"),2)
-		if not is_owned:
-			_draw_icon(ICON_COIN,rect.position+Vector2(232,162),25,
-				1.0 if purchasable else 0.45)
+			Color("#296157") if available else Color("#46445d"),
+			17,Color("#8bf3d8") if available else Color("#74708b"),2)
+		if not is_owned and not special:
+			_draw_icon(ICON_COIN,rect.position+Vector2(232,162),25,1.0 if purchasable else 0.45)
 		_fit_center(label,rect.position.x+370,rect.position.y+172,21,256,
-			Color.WHITE if purchasable or is_owned else Color("#b6b5c8"))
+			Color.WHITE if available else Color("#b6b5c8"))
 		if not is_skin:
 			_fit_center(shop_t("stock")+": "+str(shop.stock(id)),
 				rect.position.x+85,rect.position.y+175,15,166,Color("#d7d9e9"))
-	_fit_center(shop_t("tip"),360,1005,18,522,Color("#b9c7e0"))
+	_box(SHOP_PREV,Color("#2d375c"),14)
+	_box(SHOP_NEXT,Color("#2d375c"),14)
+	_fit_center("◀",SHOP_PREV.get_center().x,1007,23,100,Color.WHITE)
+	_fit_center("▶",SHOP_NEXT.get_center().x,1007,23,100,Color.WHITE)
+	_fit_center("%s %d / %d" % [shop_t("page"),shop_page+1,_shop_pages()],
+		360,1007,17,230,Color("#dfe3ff"))
+	_fit_center(shop_t("tip"),360,1046,17,522,Color("#b9c7e0"))
 	if shop_notice_time>0:
-		_fit_center(shop_notice,360,1043,22,526,Color("#ffe6b5"))
+		_fit_center(shop_notice,360,1075,18,526,Color("#ffe6b5"))
