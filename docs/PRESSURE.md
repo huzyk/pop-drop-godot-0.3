@@ -1,4 +1,16 @@
-# POP DROP Gravity 0.19 — lokalizacja, efekty POP i dźwięki
+# POP DROP Gravity 0.20 — pełne światy zwierząt i Bajkowa Kraina
+
+## Światy, zwierzęta i zakupy (v0.20)
+
+W pełni narysowane **3 warianty kolorystyczne każdej zwierzęcej kulki** (kolor całego ciała, nie tylko dodatku); każde zwierzę ma charakterystyczne uszy, dziób, grzywę, rogi, skrzydła, trąbę czy sierść. Motywy: **Dżungla:** tukan, małpka, jaguar, leniwiec; **Ptasia Kraina:** papuga; **Mokradła:** żabka; **Safari:** lew, zebra, słoń, żyrafa; **Las:** lis, sowa, niedźwiedź; **Bajkowa Kraina:** smok, jednorożec, feniks, gryf.
+
+Po wybraniu skórki zmieniają się jednocześnie wygląd kulek, **całe tło planszy**, dodatkowa dekoracja świata oraz **muzyka otoczenia**. Silnik gry i zasady nie zmieniają się. Zakup i wyposażenie zapisują się w lokalnym portfelu.
+
+Stary skin id `capybara` zachowuje tożsamość w zapisie (dzięki czemu zakup nie znika), ale ma nazwę **Misie / Bears** i nową grafikę. Skin id `star_capybara` pozostaje siedmiodniową nagrodą, ale wyświetla się jako **Gwiezdne Misie**. Kosmos wycofano z katalogu i przeniesiono dawne zakupy na 5200 monet podczas jednorazowej migracji portfela v4→v5.
+
+Muzyka to 7 osobnych, autorskich zapętlanych krótkich instrumentali tworzonych przez kod (klasyczna + 6 światów) z oddzielnym przełącznikiem i trzema poziomami głośności. Ustawienia muzyki są niezależne od SFX oraz wibracji.
+
+Zwykła skała ma 3 punkty życia, a **około 1/6 nowych skał jest złota**, z ciepłym pulsującym blaskiem. Złota skała ma 3 punkty życia, zachowuje typ podczas pękania i daje **5–10 monet** po całkowitym rozbiciu. Eksplozja bomby także może rozbić złotą skałę. Nagrodę przyznaje idempotentny portfel (jedna premia na zdarzenie), bez limitu monet per rundę.
 
 ## Efekty audiowizualne i lokalizacja (v0.19)
 
