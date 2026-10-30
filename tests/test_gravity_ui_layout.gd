@@ -42,8 +42,9 @@ func _initialize() -> void:
 	assert(not Game.LEFT_RECT.intersects(Game.RIGHT_RECT))
 	assert(not Game.BOOST_BOMB.intersects(Game.BOOST_REROLL))
 	for turn in [Game.LEFT_RECT,Game.RIGHT_RECT]:
+		for boost in [Game.BOOST_BOMB,Game.BOOST_REROLL]:
 			assert(not turn.intersects(boost))
-			assert(not turn.intersects(boost))
+	for rect in cards + [Game.LEFT_RECT,Game.RIGHT_RECT,Game.BOOST_BOMB,Game.BOOST_REROLL]:
 		assert(rect.position.x >= 0.0)
 		assert(rect.position.y >= 0.0)
 		assert(rect.end.x <= Game.BASE.x)
