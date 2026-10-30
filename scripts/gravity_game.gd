@@ -1755,16 +1755,17 @@ func _draw_board() -> void:
 				draw_arc(center,34.0,0.0,TAU,32,
 					Color(tint.r,tint.g,tint.b,shimmer),2.0,true)
 			var deform: Vector2 = Vector2.ONE
-			if motion_kind=="roll":
-				# The final contact squashes like a soft marble, then springs back.
-				var contact: float = clampf((raw-0.77)/0.23,0.0,1.0)
-				var squash: float = 0.13*sin(contact*PI)
-				deform = Vector2(1.0+squash,1.0-squash*0.75)
+			var landing_kind: bool = motion_kind=="roll" or motion_kind=="drop"
+			if landing_kind:
+				# Every landed jelly compresses and recovers; never a rigid sticker.
+				var contact: float = clampf((raw-0.76)/0.24,0.0,1.0)
+				var squash: float = 0.12*sin(contact*PI)
+				deform = Vector2(1.0+squash,1.0-squash*0.78)
 			_ball(center,CELL*0.42*(1.0+bounce),int(m["color"]),1.0,deform)
-			if motion_kind=="roll" and raw>0.82:
+			if landing_kind and raw>0.82:
 				var landing: float = (raw-0.82)/0.18
-				draw_arc(center,31.0+landing*9.0,0.0,TAU,32,
-					Color(1,1,1,0.27*(1.0-landing)),2.0,true)
+				draw_arc(center,32.0+landing*10.0,0.0,TAU,32,
+					Color("#DFFFF4",0.25*(1.0-landing)),2.1,true)
 	elif phase=="drop" and hover_column>=0 and not pieces.is_empty():
 		var option: Array = pieces[clampi(selected_piece,0,pieces.size()-1)]
 		var preview: Dictionary = Rules.drop(board,option,hover_column)
