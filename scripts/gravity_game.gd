@@ -65,13 +65,13 @@ const TR := {
 	"ru":{"life":"ЖИЗНИ","tap_short":"ВЫБЕРИ СТОЛБЕЦ","score":"ОЧКИ","best":"РЕКОРД","move":"ХОД","drop":"НАЖМИ СТОЛБЕЦ ДЛЯ СБРОСА","turn":"ПОВЕРНИ ИЛИ ПРОДОЛЖИ","left":"ВЛЕВО","right":"ВПРАВО","skip":"ДАЛЕЕ","next":"ВЫБЕРИ ФИГУРУ","ready":"5 СОЕДИНЁННЫХ ШАРОВ = POP  •  НЕТ ХОДОВ = КОНЕЦ","over":"ИГРА ОКОНЧЕНА","again":"ИГРАТЬ СНОВА","rescue":"ТЕСТ: +1 ЖИЗНЬ","lost":"МИНУС ЖИЗНЬ","rotate_controls":"ПОВОРОТ КНОПКАМИ ВНИЗУ","rotate_help":"ПОВЕРНИ, ЧТОБЫ ОСВОБОДИТЬ МЕСТО","charge":"ГРУППА","danger":"ВЫСОТА","danger_soon":"ВНИМАНИЕ: ВЕРХ!","overflow":"МИНУС ЖИЗНЬ!","hint":"Выбери столбец для шариков"}
 }
 const FX_TR := {
-	"pl":{"pop":"POP!","great":"ŚWIETNIE!","amazing":"NIESAMOWITE!","flow":"SERIA","surge":"NAWAŁNICA!"},
-	"en":{"pop":"POP!","great":"GREAT!","amazing":"AMAZING!","flow":"STREAK","surge":"SURGE!"},
-	"es":{"pop":"¡POP!","great":"¡GENIAL!","amazing":"¡INCREÍBLE!","flow":"RACHA","surge":"¡OLEADA!"},
-	"pt":{"pop":"POP!","great":"ÓTIMO!","amazing":"INCRÍVEL!","flow":"SÉRIE","surge":"ONDA!"},
-	"de":{"pop":"POP!","great":"SUPER!","amazing":"UNGLAUBLICH!","flow":"SERIE","surge":"WELLE!"},
-	"fr":{"pop":"POP !","great":"SUPER !","amazing":"INCROYABLE !","flow":"SÉRIE","surge":"VAGUE !"},
-	"ru":{"pop":"ПОП!","great":"ОТЛИЧНО!","amazing":"НЕВЕРОЯТНО!","flow":"СЕРИЯ","surge":"ВОЛНА!"}
+	"pl":{"pop":"POP!","great":"ŚWIETNIE!","amazing":"NIESAMOWITE!","flow":"SERIA","surge":"NAWAŁNICA!","rescue":"WRACASZ DO GRY!"},
+	"en":{"pop":"POP!","great":"GREAT!","amazing":"AMAZING!","flow":"STREAK","surge":"SURGE!","rescue":"BACK IN THE GAME!"},
+	"es":{"pop":"¡POP!","great":"¡GENIAL!","amazing":"¡INCREÍBLE!","flow":"RACHA","surge":"¡OLEADA!","rescue":"¡SIGUE JUGANDO!"},
+	"pt":{"pop":"POP!","great":"ÓTIMO!","amazing":"INCRÍVEL!","flow":"SÉRIE","surge":"ONDA!","rescue":"DE VOLTA AO JOGO!"},
+	"de":{"pop":"POP!","great":"SUPER!","amazing":"UNGLAUBLICH!","flow":"SERIE","surge":"WELLE!","rescue":"WEITER GEHT'S!"},
+	"fr":{"pop":"POP !","great":"SUPER !","amazing":"INCROYABLE !","flow":"SÉRIE","surge":"VAGUE !","rescue":"DE RETOUR EN JEU !"},
+	"ru":{"pop":"ПОП!","great":"ОТЛИЧНО!","amazing":"НЕВЕРОЯТНО!","flow":"СЕРИЯ","surge":"ВОЛНА!","rescue":"СНОВА В ИГРЕ!"}
 }
 const LEFT_RECT := Rect2(30,1085,160,127)
 const RIGHT_RECT := Rect2(522,1085,160,127)
@@ -259,6 +259,11 @@ func fx_t(key: String) -> String:
 func language_button_text() -> String:
 	return ("JĘZYK" if language=="pl" else "LANG") + ": " + language.to_upper()
 
+func language_name() -> String:
+	return str({"pl":"POLSKI","en":"ENGLISH","es":"ESPAÑOL",
+		"pt":"PORTUGUÊS","de":"DEUTSCH","fr":"FRANÇAIS",
+		"ru":"РУССКИЙ"}.get(language,"ENGLISH"))
+
 func _cycle_language() -> void:
 	var index: int = LOCALES.find(language)
 	language = LOCALES[(index+1)%LOCALES.size()]
@@ -396,10 +401,15 @@ func _use_bomb(target: Vector2i) -> void:
 	phase = "anim"
 	action_serial += 1
 	action_id = "action:%s:%d" % [run_id,action_serial]
+	var before_blast: Array = Rules.copy_board(board)
 	board = Rules.copy_board(blast.board)
 	for y in range(maxi(0,target.y-1),mini(8,target.y+2)):
 		for x in range(maxi(0,target.x-1),mini(8,target.x+2)):
 			_burst(Vector2i(x,y),6)
+	for y in range(maxi(0,target.y-1),mini(8,target.y+2)):
+		for x in range(maxi(0,target.x-1),mini(8,target.x+2)):
+			if Rules.is_rock(int(before_blast[y][x])):
+				_rock_impact(Vector2i(x,y),not Rules.is_rock(int(board[y][x])))
 	_shock(BOARD.position+(Vector2(target)+Vector2(0.5,0.5))*CELL,3.7,Color("#ffc089"))
 	if feedback != null:
 		feedback.cue("bomb")
@@ -638,7 +648,7 @@ func _revive() -> bool:
 	flow_time_left = 0.0
 	wave_time_left = Rules.wave_interval(wave_number)
 	_refresh_targets()
-	_praise("+1 ♥",Color("#ff9bb7"),1.2)
+	_praise(fx_t("rescue"),Color("#ff9bb7"),0.85)
 	_save_progress()
 	queue_redraw()
 	return true
@@ -1019,7 +1029,7 @@ func _trigger_pressure_wave() -> void:
 			rock_added = true
 			_shock(BOARD.position+(Vector2(rock.cell)+Vector2(0.5,0.5))*CELL,1.2,Color("#ffe0a7"))
 			if feedback != null:
-				feedback.cue("rock")
+				feedback.cue("rock_hit",0.86)
 	if Rules.wave_is_surge(wave_number):
 		_praise(fx_t("surge"),Color("#FFE7A2"),1.0)
 		_shock(BOARD.get_center(),2.0,Color("#ffb065"))
@@ -1213,9 +1223,11 @@ func _resolve_cascades(fluid: bool=false, player_action: bool=true) -> void:
 		var rocks: Dictionary = Rules.damage_rocks(board,hits)
 		board = Rules.erase_matches(rocks.board,hits)
 		for cracked_cell in rocks.cracked:
-			_burst(cracked_cell,8)
-			_shock(BOARD.position+(Vector2(cracked_cell)+Vector2(0.5,0.5))*CELL,
-				0.7,Color("#fcdbaa"))
+			var broke: bool = cracked_cell in rocks.destroyed
+			_rock_impact(cracked_cell,broke)
+		if not rocks.cracked.is_empty() and feedback != null:
+			feedback.cue("rock_break" if not rocks.destroyed.is_empty() else "rock_hit",
+				1.02 if not rocks.destroyed.is_empty() else 0.94)
 		if not rocks.cracked.is_empty():
 			telemetry.track("rock_cracked",{
 				"run_id":run_id,"hit_count":rocks.cracked.size(),
@@ -1243,6 +1255,24 @@ func _resolve_cascades(fluid: bool=false, player_action: bool=true) -> void:
 		if fluid:
 			var aftershock: Dictionary = Rules.spill_after_rotation(board,spin_clockwise)
 			await _animate_to(aftershock.board,aftershock.motions,0.24,"roll")
+
+func _rock_impact(cell: Vector2i, destroyed: bool) -> void:
+	var at: Vector2 = BOARD.position+(Vector2(cell)+Vector2(0.5,0.5))*CELL
+	var count: int = 23 if destroyed else 9
+	for i in range(count):
+		if fx.size() >= 220:
+			fx.pop_front()
+		var angle: float = TAU*float(i)/float(count)+rng.randf_range(-0.19,0.19)
+		var speed: float = rng.randf_range(105.0,265.0) if destroyed else rng.randf_range(40.0,130.0)
+		var life: float = rng.randf_range(0.40,0.80) if destroyed else rng.randf_range(0.17,0.34)
+		var stone_tint: Color = Color("#A87959") if i%3==0 else Color("#E4CDA5")
+		fx.append({"p":at+Vector2.from_angle(angle)*rng.randf_range(5.0,18.0),
+			"v":Vector2.from_angle(angle)*speed,"life":life,"max":life,
+			"color":stone_tint,"r":rng.randf_range(3.0,8.0) if destroyed else rng.randf_range(1.8,3.8),
+			"streak":false,"shard":true,"angle":angle})
+	_shock(at,2.4 if destroyed else 0.8,Color("#FFF1D1"))
+	if destroyed:
+		_begin_pop_impact(at,Color("#F8DCA3"),2.3)
 
 func _begin_pop_impact(at: Vector2, tint: Color, power: float) -> void:
 	# A brief illustrated light/sparkle sweep reinforces rare, skilled clears.
