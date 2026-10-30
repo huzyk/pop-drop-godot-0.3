@@ -424,3 +424,212 @@ func _draw_feedback() -> void:
 		_card(Rect2(127,389,466,210),Color("#F7F1FF"),31,9)
 		_center("NOWY POZIOM!" if game.language=="pl" else "LEVEL UP!",360,449,32,PEACH,430)
 		_center(str(game.level_fx_number),360,557,91,INK,300)
+
+func _overlay() -> void:
+	draw_rect(Rect2(Vector2.ZERO,BASE),Color("#071128",.84))
+
+func _window(rect: Rect2, title: String, title_y: float, close: Rect2) -> void:
+	_overlay()
+	_round(rect.translated(Vector2(0,12)),Color("#070F29",.57),36)
+	_round(rect,Color("#F4F5FF"),34)
+	_round(Rect2(rect.position+Vector2(17,15),Vector2(rect.size.x-34,5)),Color("#FFFFFF",.86),3)
+	_center(title,300,title_y,42,INK,364)
+	_round(close,Color("#DBE2F4"),17)
+	_center("X",close.get_center().x,close.position.y+35,26,INK,90)
+
+func _draw_game_over() -> void:
+	_overlay()
+	var rect: Rect2 = Rect2(61,370,598,653)
+	_card(rect,Color("#F7F6FF"),36,12)
+	for i in range(3):
+		_orb(Vector2(268+i*91,486+10*sin(game.clock*2+i)),28,i)
+	_center(game.t("over"),360,570,49,INK,520)
+	_center(game.t("score"),360,607,20,Color("#667697"),420)
+	_center(str(game.score),360,687,82,PEACH,495)
+	_center("%s  %d" % [game.t("best"),game.best],360,723,23,Color("#617394"),465)
+	var restart: Rect2 = Rect2(104,722,512,84)
+	_button(restart,AQUA if game.shop.energy>0 else Color("#B4BFCD"),Color("#188A87"))
+	_center(game.t("again") if game.shop.energy>0 else game.shop_t("no_energy"),
+		360,773,27,INK,450)
+	var ad_ok: bool = game.ads!=null and game.ads.rewarded_ready()
+	var allowed: bool = game.revives<1 and not game.pieces.is_empty()
+	var ad: Rect2 = Rect2(104,821,244,79)
+	var coins: Rect2 = Rect2(372,821,244,79)
+	_round(ad,Color("#DCE8F9"),22)
+	_round(coins,Color("#FFE1AE") if game.shop.coins>=Shop.RESCUE_PRICE and allowed else Color("#DFE4F0"),22)
+	_center("REKLAMA" if game.language=="pl" else "WATCH AD",ad.get_center().x,868,
+		21,INK if ad_ok and allowed else Color("#9DAAC0"),217)
+	_center("%d • %s" % [Shop.RESCUE_PRICE,"DALEJ" if game.language=="pl" else "CONTINUE"],
+		coins.get_center().x,868,20,INK if allowed else Color("#9DAAC0"),222)
+	_round(Rect2(221,908,278,54),Color("#DFE8F5"),19)
+	var seconds: int = game.shop.energy_seconds_remaining()
+	_center("ENERGIA %d/5 • %d MIN" % [game.shop.energy,int(ceil(float(seconds)/60.0))] if game.language=="pl"
+		else "ENERGY %d/5 • %d MIN" % [game.shop.energy,int(ceil(float(seconds)/60.0))],
+		360,942,18,INK,264)
+	_center(game.ad_note if not game.ad_note.is_empty() else
+		("JEDEN RATUNEK NA RUNDĘ" if game.language=="pl" else "ONE CONTINUE PER ROUND"),
+		360,998,16,Color("#70809D"),520)
+
+func _draw_settings() -> void:
+	_window(Rect2(72,342,576,735),
+		"USTAWIENIA" if game.language=="pl" else "SETTINGS",415,
+		Rect2(476,384,118,54))
+	_center("ANALITYKA GRY" if game.language=="pl" else "GAME ANALYTICS",
+		360,514,23,Color("#6A7797"),440)
+	var opts: Array = [
+		[Rect2(120,550,480,80),game.telemetry.opted_in,
+			"ANALITYKA: WŁ." if game.language=="pl" else "ANALYTICS: ON",
+			"ANALITYKA: WYŁ." if game.language=="pl" else "ANALYTICS: OFF"],
+		[Rect2(120,886,480,67),game.feedback.sound_enabled,
+			"DŹWIĘKI: WŁ." if game.language=="pl" else "SOUND: ON",
+			"DŹWIĘKI: WYŁ." if game.language=="pl" else "SOUND: OFF"],
+		[Rect2(120,975,480,67),game.feedback.haptics_enabled,
+			"WIBRACJE: WŁ." if game.language=="pl" else "HAPTICS: ON",
+			"WIBRACJE: WYŁ." if game.language=="pl" else "HAPTICS: OFF"]
+	]
+	for row in opts:
+		var r: Rect2 = row[0]
+		var checked: bool = row[1]
+		_round(r,AQUA if checked else Color("#D8DEEB"),22)
+		_center(str(row[2]) if checked else str(row[3]),r.get_center().x,
+			r.position.y+r.size.y*.62,24,INK,440)
+	_round(Rect2(120,654,480,74),Color("#FFE2E9"),22)
+	_center("USUŃ DANE LOKALNE" if game.language=="pl" else "CLEAR LOCAL DATA",
+		360,703,23,Color("#AD3B68"),430)
+	_round(Rect2(120,748,480,68),Color("#E1E7F5"),22)
+	_center("PRYWATNOŚĆ REKLAM" if game.language=="pl" else "AD PRIVACY",
+		360,791,23,INK,430)
+	_center("Analityka jest opcjonalna. Reklamy wymagają osobnej zgody."
+		if game.language=="pl" else "Analytics is optional. Ads require separate consent.",
+		360,854,17,Color("#7582A1"),520)
+
+func _draw_profile() -> void:
+	_window(Rect2(54,224,612,906),game.profile_t("profile"),305,
+		Rect2(512,265,120,54))
+	_center("%s %d" % [game.profile_t("level"),game.progression.level()],
+		360,378,43,PEACH,490)
+	_center(game.progression.level_xp_text(),360,413,19,Color("#7886A0"),410)
+	_round(Rect2(100,429,520,15),Color("#CBD5EA"),8)
+	_round(Rect2(100,429,maxf(4,520.0*game.progression.level_fraction()),15),AQUA,8)
+	_center("%s %d • %d/%d" % [game.profile_t("streak"),game.progression.streak,
+		game.shop.energy,Shop.MAX_ENERGY],360,485,21,INK,530)
+	var tabs: Array = [Rect2(92,526,248,51),Rect2(380,526,248,51)]
+	for i in range(2):
+		var selected: bool = i==game.profile_tab
+		_round(tabs[i],PEACH if selected else Color("#DFE6F5"),17)
+		var name: String = game.profile_t("daily") if i==0 else game.shop_t("badges")
+		_center(name,tabs[i].get_center().x,559,21,WHITE if selected else INK,228)
+	if game.profile_tab==0:
+		for i in range(Progression.MISSIONS.size()):
+			var mission: Dictionary = Progression.MISSIONS[i]
+			var id: String = str(mission["id"])
+			var y: float = 599+float(i)*102
+			var claimed: bool = bool(game.progression.claimed.get(id,false))
+			_round(Rect2(89,y,542,92),Color("#D6F7F0") if claimed else Color("#E5EBF7"),19)
+			_label(game.profile_t(id),110,y+34,23,INK)
+			var value: int = mini(int(game.progression.daily.get(id,0)),int(mission["target"]))
+			_center("%d / %d" % [value,int(mission["target"])],530,y+32,20,
+				Color("#1B858A"),154)
+			_round(Rect2(111,y+59,497,12),Color("#C2D0E4"),7)
+			_round(Rect2(111,y+59,maxf(3,497.0*game.progression.mission_ratio(id)),12),
+				AQUA if claimed else PEACH,7)
+	else:
+		for i in range(6):
+			var badge: Dictionary = Progression.ACHIEVEMENTS[game.badge_page*6+i]
+			var id: String = str(badge["id"])
+			var got: bool = bool(game.progression.unlocked_achievements.get(id,false))
+			var col: int = i%2
+			var row: int = int(i/2)
+			var rect: Rect2 = Rect2(89+col*278,599+row*101,263,91)
+			_round(rect,Color("#FFF0CB") if got else Color("#E4EAF5"),19)
+			draw_circle(rect.position+Vector2(34,45),21,GOLD if got else Color("#B9C3D5"))
+			_center("★" if got else "✦",rect.position.x+34,rect.position.y+52,
+				23,INK,37)
+			var names: Dictionary = game.BADGE_NAMES_PL if game.language=="pl" else game.BADGE_NAMES_EN
+			_center(str(names.get(id,id)),rect.position.x+162,rect.position.y+36,17,INK,184)
+			_center("%d/%d • +%d" % [mini(game.progression.achievement_progress(id),
+				int(badge["target"])),int(badge["target"]),int(badge["coins"])],
+				rect.position.x+162,rect.position.y+67,17,Color("#687B98"),190)
+		_round(Rect2(104,911,116,46),Color("#DCE4F2"),15)
+		_round(Rect2(500,911,116,46),Color("#DCE4F2"),15)
+		_center("<",162,942,26,INK,70)
+		_center(">",558,942,26,INK,70)
+		_center("%d / 2" % [game.badge_page+1],360,942,19,INK,110)
+	_center(game.profile_t("cosmetics"),360,965,23,INK,490)
+	for i in range(Progression.SKINS.size()):
+		var item: Dictionary = Progression.SKINS[i]
+		var id: String = str(item["id"])
+		var unlocked: bool = game.progression.level()>=int(item["level"])
+		var selected: bool = game.progression.skin==id
+		var x: float = 90+float(i)*181
+		_round(Rect2(x,975,164,75),Color("#D3F8EF") if selected else Color("#E3E9F6"),
+			18,AQUA if selected else Color("#CED8E9"),2)
+		_center(game.profile_t(id),x+82,1005,20,INK if unlocked else Color("#99A8BF"),146)
+		_center(game.profile_t("selected") if selected else
+			("POZ. %d" % [int(item["level"])] if not unlocked else "✓"),
+			x+82,1032,16,Color("#198C8A") if selected else Color("#7788A5"),140)
+	_center(game.profile_t("autoclaim"),360,1092,16,Color("#8390A8"),530)
+
+func _draw_shop() -> void:
+	_window(Rect2(54,225,612,863),game.shop_t("shop"),309,
+		Rect2(514,266,120,54))
+	draw_circle(Vector2(126,288),27,AQUA)
+	_icon("shop",Vector2(126,288),47)
+	_round(Rect2(98,338,522,51),Color("#FFF1D2"),20)
+	_icon("coins",Vector2(372,363),36)
+	_center(game.shop_t("coins"),249,372,21,INK,195)
+	_center(str(game.shop.coins),489,372,27,INK,180)
+	for i in range(2):
+		var rect: Rect2 = Rect2(94,410,251,57) if i==0 else Rect2(375,410,251,57)
+		var selected: bool = i==game.shop_tab
+		_round(rect,PEACH if selected else Color("#E0E7F4"),19)
+		_center(game.shop_t("boosts") if i==0 else game.shop_t("skins"),
+			rect.get_center().x,447,22,WHITE if selected else INK,222)
+	var items: Array = game._shop_items()
+	for i in range(items.size()):
+		var id: String = str(items[i])
+		var rect: Rect2 = game._shop_card(i)
+		var special: bool = id==Shop.SPECIAL_SKIN
+		var offer: Dictionary = {"kind":"skin","price":0} if id=="default" or special else Shop.item(id)
+		var is_skin: bool = str(offer.get("kind",""))=="skin"
+		var owned: bool = (id=="default" or game.shop.owns_skin(id)) if is_skin else false
+		var equipped: bool = is_skin and game.shop.equipped_skin==id
+		var can_buy: bool = game.shop.can_purchase(id)
+		_card(rect,Color("#E9EEFA") if i==0 else Color("#F8EAF2"),24,6)
+		var orb_place: Vector2 = rect.position+Vector2(82,85)
+		draw_circle(orb_place,61,WHITE)
+		if is_skin:
+			game.preview_skin=id
+			_orb(orb_place,39,0)
+			game.preview_skin=""
+		else:
+			_icon(id,orb_place,95)
+		_center("JUICY ORBS" if id=="default" else game.shop_t(id),
+			rect.position.x+331,rect.position.y+57,27,INK,345)
+		var description: String = game.shop_t(id+"_desc")
+		if id=="default":
+			description = "BAZOWA • GRATIS" if game.language=="pl" else "BASE • FREE"
+		elif special:
+			description = "NAGRODA ZA 7 DNI" if game.language=="pl" else "PLAY 7 DAYS TO UNLOCK"
+		_center(description,rect.position.x+333,rect.position.y+99,17,Color("#687992"),374)
+		var enabled: bool = can_buy or owned
+		var action: Rect2 = Rect2(rect.position+Vector2(199,134),Vector2(311,61))
+		_button(action,AQUA if enabled else Color("#C7D2E2"),Color("#368E95"))
+		var wording: String = game.shop_t("active") if equipped else (
+			game.shop_t("equip") if owned else
+			("7 DNI" if game.language=="pl" else "DAY 7") if special else
+			"%s  %d" % [game.shop_t("buy"),int(offer["price"])])
+		_center(wording,action.get_center().x,action.position.y+41,22,
+			INK if enabled else Color("#65748B"),284)
+		if not is_skin:
+			_center(game.shop_t("stock")+": "+str(game.shop.stock(id)),
+				rect.position.x+82,rect.position.y+180,18,INK,172)
+	_round(Rect2(105,970,113,55),Color("#DFE7F5"),16)
+	_round(Rect2(502,970,113,55),Color("#DFE7F5"),16)
+	_center("<",162,1007,27,INK,85)
+	_center(">",558,1007,27,INK,85)
+	_center("%s %d / %d" % [game.shop_t("page"),game.shop_page+1,game._shop_pages()],
+		360,1007,19,INK,224)
+	_center(game.shop_t("tip"),360,1048,18,Color("#677A98"),515)
+	if game.shop_notice_time>0:
+		_center(game.shop_notice,360,1074,20,PEACH,500)
