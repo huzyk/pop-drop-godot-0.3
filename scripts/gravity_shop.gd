@@ -3,7 +3,7 @@ extends RefCounted
 ## All rewards are idempotent locally; real ad rewards require the SDK callback.
 const PATH := "user://gravity_shop_v1.json"
 const TEMP := "user://gravity_shop_v1.tmp"
-const VERSION := 2
+const VERSION := 3
 const MAX_COINS := 100000000
 const MAX_BOOST_STOCK := 20
 const MAX_EVENT_HISTORY := 256
@@ -13,7 +13,6 @@ const RESCUE_PRICE := 220
 const DAILY_PRIZES := [20,30,50,70,90,120,150]
 const ITEMS := [
 	{"id":"bomb","kind":"boost","price":160},
-	{"id":"magic","kind":"boost","price":220},
 	{"id":"reroll","kind":"boost","price":140},
 	{"id":"neon","kind":"skin","price":500},
 	{"id":"gold","kind":"skin","price":1200},
@@ -28,7 +27,7 @@ var persist_enabled: bool = true
 var coins: int = 0
 var total_earned: int = 0
 var total_spent: int = 0
-var inventory: Dictionary = {"bomb":0,"magic":0,"reroll":0}
+var inventory: Dictionary = {"bomb":0,"reroll":0}
 var owned_skins: Dictionary = {"neon":false,"gold":false,"donut":false,
 	"capybara":false,"crystal":false,"cosmos":false,"star_capybara":false}
 var equipped_skin: String = "default"
@@ -200,15 +199,19 @@ func load_data() -> void:
 	if not FileAccess.file_exists(PATH):
 		return
 	var value: Variant = JSON.parse_string(FileAccess.get_file_as_string(PATH))
-	if not (value is Dictionary) or int(value.get("version",0)) not in [1,VERSION]:
+	if not (value is Dictionary) or int(value.get("version",0)) not in [1,2,VERSION]:
 		return
 	coins = clampi(int(value.get("coins",0)),0,MAX_COINS)
 	total_earned = clampi(int(value.get("total_earned",0)),0,MAX_COINS)
 	total_spent = clampi(int(value.get("total_spent",0)),0,MAX_COINS)
 	var stored_inventory: Variant = value.get("inventory",{})
+	var refund_magic: int = 0
 	if stored_inventory is Dictionary:
 		for boost_id in inventory.keys():
 			inventory[boost_id] = clampi(int(stored_inventory.get(boost_id,0)),0,MAX_BOOST_STOCK)
+		# Deprecated color charges are refunded exactly once during migration.
+		if int(value.get("version",0)) < VERSION:
+			refund_magic = clampi(int(stored_inventory.get("magic",0)),0,MAX_BOOST_STOCK)*220
 		# Preserve previously purchased +10s stock as the new reroll power.
 		if int(value.get("version",0)) == 1:
 			inventory["reroll"] = mini(MAX_BOOST_STOCK,stock("reroll")+maxi(0,int(stored_inventory.get("time",0))))
@@ -230,6 +233,9 @@ func load_data() -> void:
 	energy_anchor = maxi(0,int(value.get("energy_anchor",0)))
 	daily_last_claim = str(value.get("daily_last_claim",""))
 	daily_streak = clampi(int(value.get("daily_streak",0)),0,7)
+	if int(value.get("version",0)) < VERSION:
+		_credit(refund_magic)
+		_save() # Persist v3 so the refund cannot repeat.
 	refresh_energy()
 
 func _save() -> bool:
