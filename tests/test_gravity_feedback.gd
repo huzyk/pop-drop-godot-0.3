@@ -10,8 +10,8 @@ func _initialize() -> void:
 	feedback.persist_enabled = false
 	# Avoid invoking AudioServer playback in a headless test.
 	# The main-scene CI smoke test covers lifecycle initialization.
-	assert(feedback.CUES.size() == 13)
-	for cue in ["pop","big_pop","cascade","rock_hit","rock_break","bomb","surge"]:
+	assert(feedback.CUES.size() == 14)
+	for cue in ["pop","big_pop","cascade","rock_hit","rock_break","bomb","surge","coin"]:
 		assert(feedback.CUES.has(cue))
 		assert(feedback.VIBRATIONS.has(cue))
 	for key in feedback.CUES.keys():
