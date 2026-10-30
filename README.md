@@ -1,4 +1,4 @@
-# POP DROP Gravity 0.16 alpha — nawałnice i nowa ekonomia
+# POP DROP Gravity 0.17 alpha — bez limitu monet za rozgrywkę
 
 **Brak linii śmierci, brak limitu skał, brak trzech serc.** Porażka następuje dopiero wtedy, gdy żaden z dostępnych kształtów nie może być położony — także po możliwych obrotach. Fale co 18/16/14 sekund wrzucają z góry po 3/4/5 kulek do wolnych kolumn. Co trzecia fala może dodać skałę. Jeden ratunek za monety albo reklamę zapewnia ponownie możliwy ruch. Zamiast życia w HUD jest licznik wolnych pól, a koniec rundy wyjaśnia powód porażki.
 
