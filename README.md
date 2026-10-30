@@ -1,3 +1,9 @@
+# POP DROP Gravity 0.12 alpha — ostra ikonografia
+
+Dziesięć nowych autorskich ikon **SVG 256×256** zamiast pikselowanych łuków i linii rysowanych bezpośrednio w GDScript: moneta, sklep, profil, ustawienia, język, serce/życia, obrót lewo/prawo, bomba i stoper. Wymienione w HUD, dolnych przyciskach oraz sklepie. Wszystkie ikony korzystają z tego samego środka optycznego, rozmiarów 24–59 jednostek i liniowego filtrowania tekstur; ich import sprawdza `tests/test_gravity_icons.gd`. Nie zmienia to mechaniki gry ani hitboxów.
+
+---
+
 # POP DROP Gravity 0.11 alpha — nowa warstwa graficzna
 
 Wersja 0.10 porządkowała **geometrię**, ale wyglądała znacznie bardziej płasko niż makieta graficzna. W 0.11 dodana została rzeczywista, importowana przez Godot scena wektorowa `assets/ui/arcade_backdrop.svg` (planeta, mgławice, niebo, góry, gwiazdy), dopracowane wielowarstwowe panele „glass”, mocniejsze poświaty kulek, odświeżony pasek marki i wyraźniej podświetlone karty kształtów.
