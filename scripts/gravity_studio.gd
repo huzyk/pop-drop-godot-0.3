@@ -295,13 +295,39 @@ func _draw_board() -> void:
 			_round(Rect2(BOARD.position+Vector2(hovering*CELL,0),Vector2(CELL,BOARD.size.y)),
 				Color("#FF668F",.18),15)
 
+func _rock_crack(points: PackedVector2Array) -> void:
+	draw_polyline(points,Color("#3F2F2A",0.83),4.0,true)
+	draw_polyline(points,Color("#FFF4D9",0.78),1.7,true)
+
+func _draw_rock_damage(center: Vector2, hp: int) -> void:
+	# Three distinct readable states. Hand-authored fracture paths rather than
+	# miniature text inside the stone sprite.
+	if hp <= 2:
+		_rock_crack(PackedVector2Array([
+			center+Vector2(-17,-24),center+Vector2(-9,-15),
+			center+Vector2(-12,-6),center+Vector2(0,1),
+			center+Vector2(5,16)]))
+		_rock_crack(PackedVector2Array([
+			center+Vector2(-12,-6),center+Vector2(-21,1),
+			center+Vector2(-19,11)]))
+	if hp == 1:
+		_rock_crack(PackedVector2Array([
+			center+Vector2(22,-19),center+Vector2(10,-9),
+			center+Vector2(15,1),center+Vector2(2,10),
+			center+Vector2(-3,22)]))
+		_rock_crack(PackedVector2Array([
+			center+Vector2(15,1),center+Vector2(24,8),
+			center+Vector2(27,18)]))
+	var badge: Vector2 = center+Vector2(23,20)
+	draw_circle(badge,19.0,Color("#163D4A",0.96))
+	draw_circle(badge,16.2,Color("#2C6670"))
+	draw_arc(badge,17.0,0,TAU,48,Color("#FFF0C8",0.88),2.3,true)
+	_center(str(hp),badge.x,badge.y+8,27,Color("#FFF8E9"),36)
+
 func _draw_rock(center: Vector2, value: int) -> void:
 	var hp: int = clampi(value-Rules.ROCK_MIN+1,1,3)
 	draw_texture_rect(ROCK_ART,Rect2(center-Vector2(36,36),Vector2(72,72)),false)
-	for i in range(3):
-		var art: Texture2D = ENERGY_ON if i<hp else ENERGY_OFF
-		var p: Vector2 = center+Vector2((i-1)*15,24)
-		draw_texture_rect(art,Rect2(p-Vector2(5,5),Vector2(10,10)),false)
+	_draw_rock_damage(center,hp)
 
 func _draw_fx() -> void:
 	for ring in game.rings:
@@ -312,7 +338,17 @@ func _draw_fx() -> void:
 	for particle in game.fx:
 		var fade: float = clampf(float(particle.life)/maxf(.001,float(particle.max)),0,1)
 		var tint: Color = particle.color
-		if bool(particle.streak):
+		if bool(particle.get("shard",false)):
+			var turn: float = float(particle.angle)+game.clock*3.8
+			var size_hint: float = float(particle.r)*fade
+			var forward: Vector2 = Vector2.from_angle(turn)
+			var side: Vector2 = forward.rotated(PI*.5)
+			var polygon: PackedVector2Array = PackedVector2Array([
+				particle.p+forward*size_hint*1.6,
+				particle.p-side*size_hint*.75-forward*size_hint*.5,
+				particle.p+side*size_hint*.75-forward*size_hint*.5])
+			draw_colored_polygon(polygon,Color(tint.r,tint.g,tint.b,fade))
+		elif bool(particle.streak):
 			var velocity: Vector2 = particle.v.normalized()
 			draw_line(particle.p-velocity*16,particle.p+velocity*3,
 				Color(tint.r,tint.g,tint.b,fade),4,true)
@@ -424,7 +460,7 @@ func _draw_aim() -> void:
 func _draw_feedback() -> void:
 	if game.praise_timer>0 and game.phase!="over":
 		var opacity: float = minf(1.0,game.praise_timer*5.0)
-		var big: bool = game.chain_depth >= 2 or game.praise.begins_with("FLOW") or game.praise in ["AMAZING!","NAWAŁNICA!","SURGE!"]
+		var big: bool = game.chain_depth >= 2 or game.flow_streak >= 3 or game.praise_length>=0.80
 		if big:
 			var progress: float = clampf((game.praise_length-game.praise_timer)/.25,0,1)
 			for i in range(16):
@@ -524,9 +560,13 @@ func _draw_settings() -> void:
 	_round(Rect2(120,748,480,68),Color("#E1E7F5"),22)
 	_center("PRYWATNOŚĆ REKLAM" if game.language=="pl" else "AD PRIVACY",
 		360,791,23,INK,430)
-	_center("Analityka jest opcjonalna. Reklamy wymagają osobnej zgody."
-		if game.language=="pl" else "Analytics is optional. Ads require separate consent.",
-		360,854,17,Color("#7582A1"),520)
+	# Language selection belongs in SETTINGS as well as the visible HUD.
+	# Old privacy helper text occupied this space and hid the language option.
+	var lang: Rect2 = game.SETTINGS_LANGUAGE
+	_round(lang,Color("#E7F1F8"),20,Color("#A3D7DC"),2)
+	_center(("JĘZYK" if game.language=="pl" else "LANGUAGE")
+		+"  ‹  "+game.language_name()+"  ›",
+		lang.get_center().x,lang.position.y+37,23,INK,453)
 
 func _draw_profile() -> void:
 	_window(Rect2(54,224,612,906),game.profile_t("profile"),305,
