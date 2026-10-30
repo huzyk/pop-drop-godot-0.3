@@ -176,7 +176,15 @@ func _initialize() -> void:
 	assert(separate_groups.size() == 2)
 	assert(Rules.score_groups(separate_groups) == 640)
 	assert(Rules.find_matches(separate).size() == 10)
-	checks += 3
+	# FLOW is a score reward for sequential manual POP actions, never a tax.
+	assert(Rules.flow_multiplier_percent(0) == 100)
+	assert(Rules.flow_multiplier_percent(1) == 100)
+	assert(Rules.flow_multiplier_percent(2) == 125)
+	assert(Rules.flow_multiplier_percent(3) == 150)
+	assert(Rules.flow_multiplier_percent(4) == 200)
+	assert(Rules.flow_multiplier_percent(99) == 200)
+	assert(Rules.flow_multiplier_percent(-3) == 100)
+	checks += 10
 
 	# A full column is NOT a death line; other columns remain playable.
 	var tower: Array = Rules.empty_board()
