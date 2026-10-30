@@ -15,6 +15,7 @@ const CUES := {
 	"rock_break": 0.570,
 	"bomb": 0.510,
 	"surge": 0.480,
+	"coin": 0.390,
 	"mission": 0.565,
 	"level": 0.880,
 	"fail": 0.360
@@ -30,6 +31,7 @@ const VIBRATIONS := {
 	"rock_break": [65,0.85],
 	"bomb": [70,0.90],
 	"surge": [32,0.57],
+	"coin": [22,0.45],
 	"mission": [30,0.48],
 	"level": [50,0.72],
 	"fail": [48,0.50]
@@ -147,6 +149,11 @@ func _render_cue(name: String) -> AudioStreamWAV:
 				pitch = lerpf(310.0,730.0,u)
 				amplitude = 0.23
 				sample = .49*sin(TAU*pitch*t)+.30*sin(TAU*(pitch*1.53)*t)+noise*.22*sin(PI*u)
+			"coin":
+				var notes: Array = [783.99,1046.50,1318.51]
+				pitch = float(notes[mini(2,int(u*3.0))])
+				amplitude = 0.20
+				sample = .75*sin(TAU*pitch*t)+.17*sin(TAU*pitch*2.02*t)+.12*sin(TAU*pitch*3.04*t)
 			"mission":
 				var notes: Array = [523.25,659.25,783.99]
 				pitch = float(notes[mini(2,int(u*3.0))])
