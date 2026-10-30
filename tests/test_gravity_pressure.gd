@@ -93,6 +93,21 @@ func _initialize() -> void:
 	assert(Rules.any_drop(continuation,single))
 	assert(Rules.rock_count(continuation) == 62)
 
+	# Golden rocks use the same three hits, and preserve their identity while cracking.
+	assert(Rules.is_gold_rock(Rules.GOLD_ROCK_MAX))
+	assert(Rules.is_rock(Rules.GOLD_ROCK_MIN))
+	assert(Rules.rock_health(Rules.GOLD_ROCK_MAX) == 3)
+	assert(Rules.rock_health(Rules.GOLD_ROCK_MIN) == 1)
+	assert(Rules.rock_damage_value(Rules.GOLD_ROCK_MAX) == Rules.GOLD_ROCK_MAX-1)
+	assert(Rules.rock_damage_value(Rules.GOLD_ROCK_MIN) == Rules.EMPTY)
+	assert(not Rules.is_gold_rock(Rules.ROCK_MAX))
+	var gold_board: Array = Rules.empty_board()
+	gold_board[4][4] = Rules.GOLD_ROCK_MAX
+	for state in [Rules.GOLD_ROCK_MAX-1,Rules.GOLD_ROCK_MIN,Rules.EMPTY]:
+		var impact: Dictionary = Rules.damage_rocks(gold_board,[Vector2i(4,3)])
+		assert(impact.board[4][4] == state)
+		gold_board = impact.board
+	assert(Rules.is_gold_rock(Rules.GOLD_ROCK_MAX))
 	# A rock is still destroyed by three SEPARATE adjacent POP stages.
 	board = Rules.empty_board()
 	board[5][3] = Rules.ROCK_MAX
