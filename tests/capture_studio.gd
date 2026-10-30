@@ -1,27 +1,54 @@
 extends SceneTree
-## Capture real Godot-rendered frame at the reference phone resolution.
-## Run under xvfb with compatibility renderer, not --headless.
+## Real screenshots from Godot's viewport. Regressions must be inspected visually.
 func _initialize() -> void:
 	call_deferred("_capture")
 
-func _capture() -> void:
-	var scene: PackedScene = load("res://scenes/gravity.tscn")
-	var playable: Control = scene.instantiate()
-	root.add_child(playable)
-	playable.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	for i in range(14):
+func _save_frame(scene: Control, filename: String) -> bool:
+	scene.queue_redraw()
+	if scene.studio != null:
+		scene.studio.queue_redraw()
+	for _index in range(3):
 		await process_frame
 	await RenderingServer.frame_post_draw
 	var image: Image = root.get_viewport().get_texture().get_image()
 	if image == null or image.is_empty():
-		push_error("No rendered screenshot could be captured")
+		push_error("No real frame for: "+filename)
+		return false
+	var result: Error = image.save_png("res://artifacts/"+filename)
+	if result != OK:
+		push_error("Screenshot not saved: "+filename)
+		return false
+	print("PASS: rendered %s at %dx%d" % [filename,image.get_width(),image.get_height()])
+	return true
+
+func _capture() -> void:
+	var scene: PackedScene = load("res://scenes/gravity.tscn")
+	var game: Control = scene.instantiate()
+	root.add_child(game)
+	game.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for _index in range(10):
+		await process_frame
+	if not await _save_frame(game,"preview-phone.png"):
 		quit(1)
 		return
-	var save_to: String = "res://artifacts/preview-phone.png"
-	var code: Error = image.save_png(save_to)
-	if code != OK:
-		push_error("Failed saving preview: %d" % code)
+	game.shop_open = true
+	game.shop_tab = 1
+	if not await _save_frame(game,"preview-shop.png"):
 		quit(1)
 		return
-	print("PASS: saved actual Godot-rendered preview at %dx%d" % [image.get_width(),image.get_height()])
+	game.shop_open = false
+	game.profile_open = true
+	if not await _save_frame(game,"preview-profile.png"):
+		quit(1)
+		return
+	game.profile_open = false
+	game.settings_open = true
+	if not await _save_frame(game,"preview-settings.png"):
+		quit(1)
+		return
+	game.settings_open = false
+	game.phase = "over"
+	if not await _save_frame(game,"preview-over.png"):
+		quit(1)
+		return
 	quit()
