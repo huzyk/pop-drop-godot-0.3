@@ -1647,30 +1647,29 @@ func _motion_position(item: Dictionary, progress: float) -> Vector2:
 	return source.lerp(destination,progress)
 
 func _draw_rock(center: Vector2, stone: int, alpha: float = 1.0) -> void:
+	# Soft lavender pebble blocker with visible remaining durability.
 	var hp: int = clampi(stone-Rules.ROCK_MIN+1,1,3)
-	var rim: Color = Color("#e2b879") if hp == 1 else Color("#a8a5bc")
-	draw_circle(center,38.0,Color(0.03,0.06,0.14,0.6*alpha))
-	_box(Rect2(center-Vector2(32,32),Vector2(64,64)),
-		Color(0.16,0.18,0.26,alpha),13,Color(rim.r,rim.g,rim.b,alpha),3)
+	draw_circle(center+Vector2(0,5),33.0,Color("#65719E",0.17*alpha))
+	draw_circle(center,32.0,Color("#8D83BF",alpha))
+	draw_circle(center+Vector2(-6,-9),24.0,Color("#B7AADF",alpha))
 	draw_colored_polygon(PackedVector2Array([
-		center+Vector2(-24,-22),center+Vector2(15,-27),
-		center+Vector2(27,-11),center+Vector2(11,14),
-		center+Vector2(-21,19),center+Vector2(-28,2)
-	]),Color(0.35,0.38,0.47,0.65*alpha))
-	draw_line(center+Vector2(-22,-13),center+Vector2(10,-21),
-		Color(0.78,0.81,0.91,0.68*alpha),2.4,true)
-	if hp <= 2:
-		draw_line(center+Vector2(-8,-17),center+Vector2(9,1),
-			Color(0.04,0.07,0.14,0.94*alpha),3.6,true)
-		draw_line(center+Vector2(9,1),center+Vector2(-3,23),
-			Color(0.04,0.07,0.14,0.94*alpha),3.4,true)
-	if hp == 1:
-		draw_line(center+Vector2(9,1),center+Vector2(24,-8),
-			Color(0.04,0.07,0.14,0.94*alpha),3.6,true)
+		center+Vector2(-19,-18),center+Vector2(14,-22),
+		center+Vector2(24,-8),center+Vector2(8,14),
+		center+Vector2(-22,17),center+Vector2(-26,2)
+	]),Color("#C6B8E6",0.74*alpha))
+	draw_line(center+Vector2(-18,-17),center+Vector2(9,-19),
+		Color("#FFFFFF",0.78*alpha),3.2,true)
+	if hp<=2:
+		draw_line(center+Vector2(-7,-14),center+Vector2(9,0),
+			Color("#705D99",0.88*alpha),3.6,true)
+		draw_line(center+Vector2(9,0),center+Vector2(-2,20),
+			Color("#705D99",0.88*alpha),3.3,true)
+	if hp==1:
+		draw_line(center+Vector2(9,0),center+Vector2(22,-9),
+			Color("#705D99",0.88*alpha),3.3,true)
 	for n in range(3):
-		var pos: Vector2 = center+Vector2(-16+float(n)*16,25)
-		draw_circle(pos,4.3,Color("#ffdc94",alpha) if n < hp else Color(0.05,0.07,0.14,0.86*alpha))
-
+		var pos: Vector2 = center+Vector2(-16+float(n)*16,26)
+		draw_circle(pos,4.5,Color("#FFDB80",alpha) if n<hp else Color("#756A9E",0.58*alpha))
 func _draw_board() -> void:
 	# White toy-tray frame; soft lavender cells, no intimidating black wells.
 	var frame: Rect2 = BOARD.grow(14)
@@ -1894,7 +1893,7 @@ func _draw_drag_overlay() -> void:
 	if drag_column>=0:
 		tint = Color("#9fffe9") if allowed else Color("#ff9cb8")
 	var halo_rect: Rect2 = Rect2(origin-Vector2(12,12),Vector2(width+24,height+24))
-	_box(halo_rect,Color("#080c22",0.48),26,Color(tint.r,tint.g,tint.b,0.22),2)
+	_box(halo_rect,Color("#FFFFFF",0.76),26,Color(tint.r,tint.g,tint.b,0.48),2)
 	# Gentle links between touching beads preserve the selected silhouette.
 	for bead in item:
 		var a: Vector2 = origin+(Vector2(float(bead[0]),float(bead[1]))+Vector2(0.5,0.5))*CELL
