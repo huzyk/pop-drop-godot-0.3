@@ -27,6 +27,12 @@ func _initialize() -> void:
 			var metrics: Vector2 = Illustrated.preview_metrics(span)
 			assert(float(height-1)*metrics.x+2.0*metrics.y <= 83.0)
 			assert(float(width-1)*metrics.x+2.0*metrics.y <= 145.0)
+	# Rocks have three visible health states and their own destruction effect.
+	var stone_test = Illustrated.new()
+	assert(stone_test.has_method("_draw_rock_damage"))
+	assert(stone_test.has_method("_rock_crack"))
+	assert(stone_test.has_method("_draw_fx"))
+	stone_test.free()
 	assert(Game.BOARD==Illustrated.BOARD)
 	assert(Game.CELL==Illustrated.CELL)
 	assert(Game.BOARD.position==Vector2(88,292))
