@@ -35,6 +35,20 @@ func _initialize() -> void:
 	assert(int(loaded["score"]) == 320)
 	assert(int(loaded["lives"]) == 2)
 	assert(int(loaded["board"][7][1]) == 0)
+	# New optional FLOW fields round-trip without invalidating old saves.
+	var flow_state: Dictionary = original.duplicate(true)
+	flow_state["flow_streak"] = 3
+	flow_state["flow_time_left"] = 5.5
+	assert(Session.valid(flow_state))
+	assert(Session.write_progress(flow_state))
+	loaded = Session.read_progress()
+	assert(int(loaded["flow_streak"]) == 3)
+	assert(is_equal_approx(float(loaded["flow_time_left"]),5.5))
+	flow_state["flow_streak"] = 5
+	assert(not Session.valid(flow_state))
+	flow_state["flow_streak"] = 3
+	flow_state["flow_time_left"] = 11.0
+	assert(not Session.valid(flow_state))
 	if existed:
 		var file: FileAccess = FileAccess.open(Session.PATH,FileAccess.WRITE)
 		assert(file != null)
