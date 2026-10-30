@@ -113,15 +113,27 @@ func _draw_status() -> void:
 	var collected: int = mini(int(game.pending_group.get("count",0)),Rules.POP_THRESHOLD)
 	var free_cells: int = Rules.SIZE*Rules.SIZE-Rules.filled(game.board)
 	var surge_next: bool = Rules.wave_is_surge(game.wave_number+1)
-	if surge_next and game.phase == "drop":
+	var flow_active: bool = game.flow_streak > 0 and game.flow_time_left > 0.0
+	if flow_active:
+		# A compact illuminated timer tells players how long they have
+		# to extend their chain without covering the board.
+		_center("FLOW x%d" % game.flow_streak,174,910,22,Color("#FFE89D"),192)
+		_round(Rect2(99,919,150,5),Color("#134B58"),3)
+		_round(Rect2(99,919,maxf(2.0,150.0*game.flow_time_left/game.FLOW_WINDOW),5),
+			Color("#79F4C6") if game.flow_streak<3 else Color("#FFCF78"),3)
+	elif surge_next and game.phase == "drop":
 		var secs: int = maxi(0,int(ceil(game.wave_time_left)))
 		_center(("NAWAŁNICA %ds" if game.language=="pl" else "SURGE IN %ds") % secs,
 			174,916,19,Color("#FFE39A"),192)
 	else:
 		_center("GRUPA %d/%d" % [collected,Rules.POP_THRESHOLD] if game.language=="pl" else
 			"GROUP %d/%d" % [collected,Rules.POP_THRESHOLD],174,916,20,CREAM,192)
-	_center("RUCH %d" % [game.moves+1] if game.language=="pl" else
-		"MOVE %d" % [game.moves+1],366,916,20,CREAM,178)
+	if surge_next and flow_active:
+		_center("NAWAŁNICA!" if game.language=="pl" else "SURGE NEXT!",
+			366,916,16,Color("#FFE39A"),178)
+	else:
+		_center("RUCH %d" % [game.moves+1] if game.language=="pl" else
+			"MOVE %d" % [game.moves+1],366,916,20,CREAM,178)
 	_center("WOLNE %d" % free_cells if game.language=="pl" else
 		"FREE %d" % free_cells,558,916,19,CREAM,176)
 
