@@ -1,4 +1,4 @@
-# POP DROP Gravity — Studio v3 / organic production art direction
+# POP DROP Gravity — Studio v4 / Midnight Jelly art direction
 
 ## Fundament (od 30 października 2026)
 Studio jest **jedynym rendererem produkcyjnym**. Gameplay i input należą do `gravity_game.gd`, 
@@ -59,3 +59,21 @@ Jedynymi grafikami pod UI v3 są źródła z `assets/visual_v3/`, preładowane p
 Wszelkie nowe ekrany utrzymują regułę: **pełna forma > granica prostokąta, materiał > płaski kolor, oddech > zagęszczenie, czytelność > ozdobnik**.
 
 CI wykonuje zrzuty **pięciu rzeczywistych ekranów**: gameplay, sklep, profil, ustawienia, koniec rundy. Sprawdzamy je wizualnie przed zatwierdzeniem pracy, oprócz testów mechaniki i importu grafik.
+
+## Studio v4 — Midnight Jelly (aktualny standard)
+
+**Zasada nadrzędna:** ekran musi wyglądać jak jedna dopracowana gra, a nie kolekcja widżetów. Nie dodajemy kolejnych gradientów i ramek, jeżeli da się poprawić sylwetkę, hierarchię lub rozkład przestrzeni.
+
+- **Tło:** ciemny, matowy fiolet (`assets/visual_v4/world.svg`), miękkie rozproszone światło tylko na obrzeżach ekranu; brak dekoracyjnego szumu pod planszą.
+- **Plansza:** `assets/visual_v4/board.svg`, cienka fioletowa rama; 8×8 dyskretnych miejsc na kulki o kontraście nieodciągającym uwagi. **Zakaz powrotu do 64 głębokich, tłoczonych otworów**, osobnych „metalowych” kafli albo siatki z ostrymi liniami.
+- **Kulki:** główny nośnik nasyconych kolorów i ekspresji. Wszystkie przyszłe skórki: trzy pełne, czytelne stany kolorystyczne, źródło min. 512×512, twarz/sylwetka widoczna w docelowym rozmiarze ~45px, bez cienkich pikselowych krawędzi. Siatka nie może być bardziej kontrastowa niż kulki.
+- **Elementy interfejsu:** jeden materiał dla małych ciemnych kontenerów. Wybrane kształty oznaczamy dyskretnym różowym obrysem, a nie kolejnym białym panelem. Brak wielkiego tła panelu wyboru.
+- **Akcje główne:** tylko dwa duże akcenty nawigujące (koralowy i miętowy), identyczne promienie i optyczna hierarchia. Magia/bomba/przetasowanie są wtórne.
+- **Typografia:** tylko trzy stopnie — wyraźne liczby i nazwy przycisków, czytelne etykiety, marginalne mikrodetale. Nie mieszamy kilku stylów liter, zbędnego tekstu, przycisków zawierających trzy konkurujące etykiety.
+- **Ekrany modalne:** mleczna lawenda na ciemnym przygaszonym tle, te same odstępy i odcienie akcentów. Hitboxy wejścia pozostają takie same jak w `gravity_game.gd`.
+- **Test jakości:** generujemy z prawdziwego Godota pięć screenshotów (gra, sklep, profil, ustawienia, koniec gry). Patrzymy na render 450×800, nie tylko na SVG otwarty w przeglądarce. Nie publikujemy zmian interfejsu bez przejścia kontroli kompilacji, mechaniki i tych zrzutów.
+
+### Kontrola przed dodaniem następnej skórki
+
+Pytania kontrolne: czy wzór jest rozpoznawalny przy 42–46 px? Czy zachowuje sylwetkę i wyraz przy ruchu i obrocie? Czy każdy z trzech kolorów nadal różni się wyraźnie? Czy motyw jest obecny w kulce, nie wymusza przemalowania mechaniki? Czy teksturę eksportujemy bez białej obwódki na przezroczystym tle?
+
