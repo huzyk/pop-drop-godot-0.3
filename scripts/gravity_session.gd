@@ -51,7 +51,7 @@ static func valid(s: Dictionary) -> bool:
 		for bead in row:
 			if typeof(bead) != TYPE_FLOAT and typeof(bead) != TYPE_INT:
 				return false
-			if int(bead) < -1 or int(bead) > 5 or float(bead) != float(int(bead)):
+			if int(bead) < -1 or int(bead) > 8 or float(bead) != float(int(bead)):
 				return false
 	if not (tray is Array) or tray.size() != 3:
 		return false
