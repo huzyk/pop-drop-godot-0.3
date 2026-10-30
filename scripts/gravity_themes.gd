@@ -6,28 +6,32 @@ const BOARD = {
 	"safari":preload("res://assets/themes/safari.svg"),
 	"forest":preload("res://assets/themes/forest.svg"),
 	"wetlands":preload("res://assets/themes/wetlands.svg"),
-	"aviary":preload("res://assets/themes/aviary.svg")
+	"aviary":preload("res://assets/themes/aviary.svg"),
+	"fantasy":preload("res://assets/themes/fantasy.svg")
 }
 const FRAME = {
 	"jungle":preload("res://assets/themes/jungle_frame.svg"),
 	"safari":preload("res://assets/themes/safari_frame.svg"),
 	"forest":preload("res://assets/themes/forest_frame.svg"),
 	"wetlands":preload("res://assets/themes/wetlands_frame.svg"),
-	"aviary":preload("res://assets/themes/aviary_frame.svg")
+	"aviary":preload("res://assets/themes/aviary_frame.svg"),
+	"fantasy":preload("res://assets/themes/fantasy_frame.svg")
 }
 const SKIN_THEME = {
 	"capybara":"forest","star_capybara":"forest","bear":"forest","star_bear":"forest",
 	"toucan":"jungle","monkey":"jungle","jaguar":"jungle","sloth":"jungle",
 	"parrot":"aviary","frog":"wetlands",
 	"lion":"safari","zebra":"safari","elephant":"safari","giraffe":"safari",
-	"fox":"forest","owl":"forest"
+	"fox":"forest","owl":"forest",
+	"dragon":"fantasy","unicorn":"fantasy","phoenix":"fantasy","griffin":"fantasy"
 }
 const THEME_LABELS = {
 	"jungle":{"pl":"DŻUNGLA","en":"JUNGLE"},
 	"safari":{"pl":"SAFARI","en":"SAFARI"},
 	"forest":{"pl":"LAS","en":"FOREST"},
 	"wetlands":{"pl":"MOKRADŁA","en":"WETLANDS"},
-	"aviary":{"pl":"PTASIA KRAINA","en":"BIRDLAND"}
+	"aviary":{"pl":"PTASIA KRAINA","en":"BIRDLAND"},
+	"fantasy":{"pl":"BAJKOWA KRAINA","en":"FANTASY REALM"}
 }
 
 static func for_skin(skin_id: String) -> String:
