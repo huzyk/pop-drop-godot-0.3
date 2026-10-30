@@ -7,7 +7,7 @@ const POP_THRESHOLD := 5
 # Rock durability encoded as cells: 5=3 hits, 4=2 hits, 3=1 hit.
 const ROCK_MIN := 3
 const ROCK_MAX := 5
-const MAX_ROCKS := 3
+const MAX_ROCKS := 8
 
 static func is_rock(cell: int) -> bool:
 	return cell >= ROCK_MIN and cell <= ROCK_MAX
@@ -16,13 +16,13 @@ static func is_marble(cell: int) -> bool:
 	return cell >= 0 and cell < COLOR_COUNT
 
 static func wave_interval(waves_completed: int) -> float:
-	# Waves get farther apart, while each successive row is more dangerous.
-	return float(mini(39, 15 + maxi(0, waves_completed) * 4))
+	# Wave 1: 12s, then 11/10/9s, and from wave 5 onward 8s.
+	return float(maxi(8,12-maxi(0,waves_completed)))
 
 static func wave_marble_count(wave_number: int) -> int:
-	if wave_number < 4:
+	if wave_number < 3:
 		return 6
-	if wave_number < 8:
+	if wave_number < 6:
 		return 7
 	return 8
 
