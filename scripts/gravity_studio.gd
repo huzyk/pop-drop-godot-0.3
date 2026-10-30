@@ -521,9 +521,7 @@ func _draw_game_over() -> void:
 	for i in range(3):
 		_orb(Vector2(268+i*91,486+10*sin(game.clock*2+i)),28,i)
 	_center(game.t("over"),360,548,49,INK,520)
-	var why: String = ("BRAK DOSTĘPNYCH RUCHÓW" if game.language=="pl"
-		else "NO MOVES LEFT") if game.loss_reason=="no_moves" else (
-		"RUNDĘ ZAKOŃCZONO" if game.language=="pl" else "ROUND FINISHED")
+	var why: String = game.ui_t("no_moves") if game.loss_reason=="no_moves" else game.ui_t("round_finished")
 	_center(why,360,605,24,Color("#B3486A"),510)
 	_center(str(game.score),360,682,75,PEACH,495)
 	_center("%s  %d" % [game.t("best"),game.best],360,705,23,Color("#617394"),465)
@@ -537,13 +535,13 @@ func _draw_game_over() -> void:
 	var coins: Rect2 = Rect2(372,821,244,79)
 	_round(ad,Color("#DCE8F9"),22)
 	_round(coins,Color("#FFE1AE") if game.shop.coins>=Shop.RESCUE_PRICE and allowed else Color("#DFE4F0"),22)
-	_center("REKLAMA" if game.language=="pl" else "WATCH AD",ad.get_center().x,868,
+	_center(game.ui_t("watch_ad"),ad.get_center().x,868,
 		21,INK if ad_ok and allowed else Color("#9DAAC0"),217)
-	_center("%d • %s" % [Shop.RESCUE_PRICE,"DALEJ" if game.language=="pl" else "CONTINUE"],
+	_center("%d • %s" % [Shop.RESCUE_PRICE,game.ui_t("continue")],
 		coins.get_center().x,868,20,INK if allowed else Color("#9DAAC0"),222)
 	_round(Rect2(221,908,278,54),Color("#DFE8F5"),19)
 	if game.FREE_PLAY_BETA:
-		_center("BETA • GRA BEZ LIMITU" if game.language=="pl" else "BETA • UNLIMITED PLAY",
+		_center(game.ui_t("beta"),
 			360,942,18,INK,264)
 	else:
 		var seconds: int = game.shop.energy_seconds_remaining()
@@ -551,25 +549,22 @@ func _draw_game_over() -> void:
 			else "ENERGY %d/5 • %d MIN" % [game.shop.energy,int(ceil(float(seconds)/60.0))],
 			360,942,18,INK,264)
 	_center(game.ad_note if not game.ad_note.is_empty() else
-		("JEDEN RATUNEK NA RUNDĘ" if game.language=="pl" else "ONE CONTINUE PER ROUND"),
+		game.ui_t("one_continue"),
 		360,998,16,Color("#70809D"),520)
 
 func _draw_settings() -> void:
 	_window(Rect2(72,342,576,735),
-		"USTAWIENIA" if game.language=="pl" else "SETTINGS",415,
+		game.ui_t("settings"),415,
 		Rect2(476,384,118,54))
-	_center("ANALITYKA GRY" if game.language=="pl" else "GAME ANALYTICS",
+	_center(game.ui_t("analytics_heading"),
 		360,514,23,Color("#6A7797"),440)
 	var opts: Array = [
 		[Rect2(120,550,480,80),game.telemetry.opted_in,
-			"ANALITYKA: WŁ." if game.language=="pl" else "ANALYTICS: ON",
-			"ANALITYKA: WYŁ." if game.language=="pl" else "ANALYTICS: OFF"],
+			game.ui_t("analytics_on"),game.ui_t("analytics_off")],
 		[game.SETTINGS_SOUND,game.feedback.sound_enabled,
-			"DŹWIĘKI: WŁ." if game.language=="pl" else "SOUND: ON",
-			"DŹWIĘKI: WYŁ." if game.language=="pl" else "SOUND: OFF"],
+			game.ui_t("sound_on"),game.ui_t("sound_off")],
 		[game.SETTINGS_HAPTICS,game.feedback.haptics_enabled,
-			"WIBRACJE: WŁ." if game.language=="pl" else "HAPTICS: ON",
-			"WIBRACJE: WYŁ." if game.language=="pl" else "HAPTICS: OFF"]
+			game.ui_t("haptics_on"),game.ui_t("haptics_off")]
 	]
 	for row in opts:
 		var r: Rect2 = row[0]
@@ -581,13 +576,13 @@ func _draw_settings() -> void:
 	_center(game.analytics_erase_label(),
 		360,703,23,Color("#AD3B68"),430)
 	_round(Rect2(120,748,480,37),Color("#E1E7F5"),15)
-	_center("PRYWATNOŚĆ REKLAM" if game.language=="pl" else "AD PRIVACY",
+	_center(game.ui_t("ad_privacy"),
 		360,774,18,INK,430)
 	# Language selection belongs in SETTINGS as well as the visible HUD.
 	# Old privacy helper text occupied this space and hid the language option.
 	var lang: Rect2 = game.SETTINGS_LANGUAGE
 	_round(lang,Color("#E7F1F8"),20,Color("#A3D7DC"),2)
-	_center(("JĘZYK" if game.language=="pl" else "LANGUAGE")
+	_center(game.ui_t("language")
 		+"  ‹  "+game.language_name()+"  ›",
 		lang.get_center().x,lang.position.y+33,22,INK,453)
 	# Separate music and volume controls: SFX remain independently switchable.
@@ -595,8 +590,7 @@ func _draw_settings() -> void:
 	var volume_rect: Rect2 = game.SETTINGS_MUSIC_VOLUME
 	_round(music_rect,AQUA if game.music.music_enabled else Color("#D8DEEB"),17)
 	_round(volume_rect,Color("#E6F0FA"),17)
-	_center(("MUZYKA: WŁ." if game.music.music_enabled else "MUZYKA: WYŁ.")
-		if game.language=="pl" else ("MUSIC: ON" if game.music.music_enabled else "MUSIC: OFF"),
+	_center(game.ui_t("music_on" if game.music.music_enabled else "music_off"),
 		music_rect.get_center().x,music_rect.position.y+39,19,INK,275)
 	_center(game.music.volume_label() if game.language=="pl" else
 		["LOW","MED","HIGH"][game.music.volume_step],
