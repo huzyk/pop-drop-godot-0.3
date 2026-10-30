@@ -34,6 +34,11 @@ const CTA_MINT = preload("res://assets/atelier_v6/cta_mint.svg")
 const CTA_MUTED = preload("res://assets/atelier_v6/cta_muted.svg")
 const ROCK_ART = preload("res://assets/atelier_v6/rock.svg")
 const PANEL_ART = preload("res://assets/atelier_v6/panel.svg")
+# Curated, vector-illustrated premium overlay surfaces shared by all UI states.
+const MODAL_SHOP = preload("res://assets/ui/modals/shop.svg")
+const MODAL_PROFILE = preload("res://assets/ui/modals/profile.svg")
+const MODAL_SETTINGS = preload("res://assets/ui/modals/settings.svg")
+const MODAL_OVER = preload("res://assets/ui/modals/over.svg")
 const FONT = preload("res://fonts/ClearSans-Regular.ttf")
 const BOLD = preload("res://fonts/ClearSans-Bold.ttf")
 const ICONS = {
@@ -47,7 +52,10 @@ const ICONS = {
 	"heart": preload("res://assets/ui/icons/heart.svg"),
 	"bomb": preload("res://assets/ui/icons/bomb.svg"),
 	"magic": preload("res://assets/ui/icons/magic.svg"),
-	"reroll": preload("res://assets/ui/icons/reroll.svg")
+	"reroll": preload("res://assets/ui/icons/reroll.svg"),
+	"close": preload("res://assets/ui/icons/close.svg"),
+	"chevron_left": preload("res://assets/ui/icons/chevron_left.svg"),
+	"chevron_right": preload("res://assets/ui/icons/chevron_right.svg")
 }
 const BASE := Vector2(720,1280)
 const BOARD := Rect2(88,292,536,536)
@@ -499,17 +507,17 @@ func _draw_feedback() -> void:
 func _overlay() -> void:
 	draw_rect(Rect2(Vector2.ZERO,BASE),Color("#071128",.84))
 
-func _window(rect: Rect2, title: String, title_y: float, close: Rect2) -> void:
-	_overlay()
-	_nine_panel(rect,Color("#F4F3FE"),44.0)
-	_center(title,300,title_y,42,INK,364)
-	_round(close,Color("#DBE2F4"),17)
-	_center("X",close.get_center().x,close.position.y+35,26,INK,90)
+func _window(_rect: Rect2, title: String, title_y: float, close: Rect2) -> void:
+	# Full-resolution authored SVG: backdrop, glow, dimensional shell and title band
+	# are a single consistent illustration. Only content and click targets stay live.
+	var art: Texture2D = MODAL_SHOP if game.shop_open else (
+		MODAL_PROFILE if game.profile_open else MODAL_SETTINGS)
+	draw_texture_rect(art,Rect2(Vector2.ZERO,BASE),false)
+	_center(title,300,title_y,41,WHITE,364)
+	_icon("close",close.get_center(),57)
 
 func _draw_game_over() -> void:
-	_overlay()
-	var rect: Rect2 = Rect2(61,370,598,653)
-	_card(rect,Color("#F7F6FF"),36,12)
+	draw_texture_rect(MODAL_OVER,Rect2(Vector2.ZERO,BASE),false)
 	for i in range(3):
 		_orb(Vector2(268+i*91,486+10*sin(game.clock*2+i)),28,i)
 	_center(game.t("over"),360,548,49,INK,520)
@@ -643,10 +651,8 @@ func _draw_profile() -> void:
 			_center("%d/%d • +%d" % [mini(game.progression.achievement_progress(id),
 				int(badge["target"])),int(badge["target"]),int(badge["coins"])],
 				rect.position.x+162,rect.position.y+67,17,Color("#687B98"),190)
-		_round(Rect2(104,911,116,46),Color("#DCE4F2"),15)
-		_round(Rect2(500,911,116,46),Color("#DCE4F2"),15)
-		_center("<",162,942,26,INK,70)
-		_center(">",558,942,26,INK,70)
+		_icon("chevron_left",Vector2(162,934),52,1.0 if game.badge_page>0 else .4)
+		_icon("chevron_right",Vector2(558,934),52,1.0 if game.badge_page<1 else .4)
 		_center("%d / 2" % [game.badge_page+1],360,942,19,INK,110)
 	_center(game.profile_t("cosmetics"),360,965,23,INK,490)
 	for i in range(Progression.SKINS.size()):
@@ -718,10 +724,8 @@ func _draw_shop() -> void:
 			"%s  %d" % [game.shop_t("buy"),int(offer["price"])])
 		_center(wording,action.get_center().x,action.position.y+29,18,
 			INK if enabled else Color("#65748B"),action.size.x-15)
-	_round(Rect2(105,970,113,55),Color("#DFE7F5"),16)
-	_round(Rect2(502,970,113,55),Color("#DFE7F5"),16)
-	_center("<",162,1007,27,INK,85)
-	_center(">",558,1007,27,INK,85)
+	_icon("chevron_left",Vector2(162,997),60,1.0 if game.shop_page>0 else .4)
+	_icon("chevron_right",Vector2(558,997),60,1.0 if game.shop_page<game._shop_pages()-1 else .4)
 	_center("%s %d / %d" % [game.shop_t("page"),game.shop_page+1,game._shop_pages()],
 		360,1007,19,INK,224)
 	_center(game.shop_t("tip"),360,1048,18,Color("#677A98"),515)
