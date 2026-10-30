@@ -581,8 +581,9 @@ func _revive() -> bool:
 		return false
 	revives += 1
 	lives = 1
-	board = Rules.rescue(board)
-	pieces[0] = Rules.next_piece(rng,board,recent_shapes)
+	board = Rules.rescue_for_continue(board)
+	# Guaranteed first move after a continue, even if all other pieces are wide.
+	pieces[0] = [[0,0,rng.randi_range(0,Rules.COLOR_COUNT-1)]]
 	_remember_shape(pieces[0])
 	selected_piece = 0
 	phase = "drop"
@@ -1021,17 +1022,7 @@ func _advance_piece(used_index: int) -> void:
 	selected_piece = 0
 
 func _could_recover_by_rotating() -> bool:
-	# A blocked shape is not a loss when either of the other two can fit.
-	for clockwise in [false,true]:
-		var virtual: Array = Rules.copy_board(board)
-		for quarter in range(4):
-			virtual = Rules.rotate(virtual,clockwise).board
-			virtual = Rules.settle(virtual).board
-			virtual = Rules.spill_after_rotation(virtual,clockwise).board
-			virtual = Rules.resolve_preview(virtual,true,clockwise).board
-			if _any_piece_can_drop(virtual):
-				return true
-	return false
+	return Rules.can_recover_by_rotating(board,pieces)
 func _any_piece_can_drop(on_board: Array) -> bool:
 	for piece in pieces:
 		if Rules.any_drop(on_board,piece):
