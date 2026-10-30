@@ -5,6 +5,7 @@ extends Control
 const Rules = preload("res://scripts/gravity_rules.gd")
 const Shop = preload("res://scripts/gravity_shop.gd")
 const SkinArt = preload("res://scripts/gravity_skin_art.gd")
+const Themes = preload("res://scripts/gravity_themes.gd")
 const Progression = preload("res://scripts/gravity_progression.gd")
 const WORLD = preload("res://assets/atelier_v6/world.svg")
 const TURN_PINK = preload("res://assets/atelier_v6/turn_left.svg")
@@ -234,6 +235,9 @@ func _draw_board() -> void:
 	# A jewel box rather than a spreadsheet: soft inlaid wells and 3D tokens.
 	# Freeform, molded frame aligned with the 608px gameplay grid.
 	draw_texture_rect(BOARD_SHELL,BOARD.grow(24),false)
+	var skinned_board: Texture2D = Themes.board_for_skin(game.shop.equipped_skin)
+	if skinned_board != null:
+		draw_texture_rect(skinned_board,BOARD,false)
 	var hidden: Dictionary = {}
 	if game.animating:
 		for movement in game.motion:
@@ -327,6 +331,12 @@ func _draw_rock_damage(center: Vector2, hp: int) -> void:
 func _draw_rock(center: Vector2, value: int) -> void:
 	var hp: int = clampi(value-Rules.ROCK_MIN+1,1,3)
 	draw_texture_rect(ROCK_ART,Rect2(center-Vector2(36,36),Vector2(72,72)),false)
+	if Rules.is_gold_rock(value):
+		var breath: float = 0.55+0.45*sin(game.clock*3.4+center.x*.018+center.y*.013)
+		draw_circle(center,34.0,Color("#FFD54F",.13+breath*.12))
+		draw_arc(center,35.0,0,TAU,48,Color("#FFF4B9",.53+breath*.37),2.4,true)
+		draw_circle(center+Vector2(-18,-19),4+breath*2.5,Color("#FFF4CE",.72))
+		draw_circle(center+Vector2(20,-7),3+breath*1.5,Color("#FFE18B",.61))
 	_draw_rock_damage(center,hp)
 
 func _draw_fx() -> void:
@@ -357,7 +367,8 @@ func _draw_fx() -> void:
 	for floater in game.floaters:
 		var fade: float = clampf(float(floater.life)/maxf(.001,float(floater.max)),0,1)
 		var at: Vector2 = floater.p-Vector2(0,60*(1-fade))
-		_center(str(floater.text),at.x,at.y,35,Color("#FFF4CE",fade),166)
+		_center(str(floater.text),at.x,at.y,35,
+			Color("#FFE075",fade) if bool(floater.get("gold",false)) else Color("#FFF4CE",fade),166)
 
 func _draw_status() -> void:
 	var r: Rect2 = Rect2(30,872,660,47)
@@ -541,10 +552,10 @@ func _draw_settings() -> void:
 		[Rect2(120,550,480,80),game.telemetry.opted_in,
 			"ANALITYKA: WŁ." if game.language=="pl" else "ANALYTICS: ON",
 			"ANALITYKA: WYŁ." if game.language=="pl" else "ANALYTICS: OFF"],
-		[Rect2(120,886,480,67),game.feedback.sound_enabled,
+		[game.SETTINGS_SOUND,game.feedback.sound_enabled,
 			"DŹWIĘKI: WŁ." if game.language=="pl" else "SOUND: ON",
 			"DŹWIĘKI: WYŁ." if game.language=="pl" else "SOUND: OFF"],
-		[Rect2(120,975,480,67),game.feedback.haptics_enabled,
+		[game.SETTINGS_HAPTICS,game.feedback.haptics_enabled,
 			"WIBRACJE: WŁ." if game.language=="pl" else "HAPTICS: ON",
 			"WIBRACJE: WYŁ." if game.language=="pl" else "HAPTICS: OFF"]
 	]
@@ -553,20 +564,31 @@ func _draw_settings() -> void:
 		var checked: bool = row[1]
 		_round(r,AQUA if checked else Color("#D8DEEB"),22)
 		_center(str(row[2]) if checked else str(row[3]),r.get_center().x,
-			r.position.y+r.size.y*.62,24,INK,440)
+			r.position.y+r.size.y*.65,22,INK,440)
 	_round(Rect2(120,654,480,74),Color("#FFE2E9"),22)
 	_center("USUŃ DANE LOKALNE" if game.language=="pl" else "CLEAR LOCAL DATA",
 		360,703,23,Color("#AD3B68"),430)
-	_round(Rect2(120,748,480,68),Color("#E1E7F5"),22)
+	_round(Rect2(120,748,480,37),Color("#E1E7F5"),15)
 	_center("PRYWATNOŚĆ REKLAM" if game.language=="pl" else "AD PRIVACY",
-		360,791,23,INK,430)
+		360,774,18,INK,430)
 	# Language selection belongs in SETTINGS as well as the visible HUD.
 	# Old privacy helper text occupied this space and hid the language option.
 	var lang: Rect2 = game.SETTINGS_LANGUAGE
 	_round(lang,Color("#E7F1F8"),20,Color("#A3D7DC"),2)
 	_center(("JĘZYK" if game.language=="pl" else "LANGUAGE")
 		+"  ‹  "+game.language_name()+"  ›",
-		lang.get_center().x,lang.position.y+37,23,INK,453)
+		lang.get_center().x,lang.position.y+33,22,INK,453)
+	# Separate music and volume controls: SFX remain independently switchable.
+	var music_rect: Rect2 = game.SETTINGS_MUSIC
+	var volume_rect: Rect2 = game.SETTINGS_MUSIC_VOLUME
+	_round(music_rect,AQUA if game.music.music_enabled else Color("#D8DEEB"),17)
+	_round(volume_rect,Color("#E6F0FA"),17)
+	_center(("MUZYKA: WŁ." if game.music.music_enabled else "MUZYKA: WYŁ.")
+		if game.language=="pl" else ("MUSIC: ON" if game.music.music_enabled else "MUSIC: OFF"),
+		music_rect.get_center().x,music_rect.position.y+39,19,INK,275)
+	_center(game.music.volume_label() if game.language=="pl" else
+		["LOW","MED","HIGH"][game.music.volume_step],
+		volume_rect.get_center().x,volume_rect.position.y+39,17,INK,168)
 
 func _draw_profile() -> void:
 	_window(Rect2(54,224,612,906),game.profile_t("profile"),305,
