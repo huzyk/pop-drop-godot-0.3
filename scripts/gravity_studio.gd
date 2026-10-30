@@ -423,16 +423,21 @@ func _draw_aim() -> void:
 
 func _draw_feedback() -> void:
 	if game.praise_timer>0 and game.phase!="over":
-		var opacity: float = minf(1,game.praise_timer*3)
-		var progress: float = clampf((game.praise_length-game.praise_timer)/.28,0,1)
-		for i in range(16):
-			var a: float = float(i)*TAU/16.0
-			var center: Vector2 = Vector2(360,552)+Vector2.from_angle(a)*(135+progress*121)
-			draw_circle(center,4+i%3,Color(ORB_COLORS[i%3],opacity*(1-progress*.5)))
-		_card(Rect2(129,502,462,116),Color("#F9F4FF",opacity),34,10)
-		_center(game.praise,360,566,51,Color("#CB417F",opacity),420)
-		if game.chain_depth>1:
-			_center("COMBO x%d" % game.chain_depth,360,597,22,Color("#238B96",opacity),280)
+		var opacity: float = minf(1.0,game.praise_timer*5.0)
+		var big: bool = game.chain_depth >= 2 or game.praise.begins_with("FLOW") or game.praise in ["AMAZING!","NAWAŁNICA!","SURGE!"]
+		if big:
+			var progress: float = clampf((game.praise_length-game.praise_timer)/.25,0,1)
+			for i in range(16):
+				var a: float = float(i)*TAU/16.0
+				var center: Vector2 = Vector2(360,548)+Vector2.from_angle(a)*(115+progress*123)
+				draw_circle(center,4+i%3,Color(ORB_COLORS[i%3],opacity*(1-progress*.5)))
+			_card(Rect2(155,498,410,102),Color("#F9F4FF",opacity),28,8)
+			_center(game.praise,360,555,43,Color("#CB417F",opacity),380)
+			if game.chain_depth>1:
+				_center("COMBO x%d" % game.chain_depth,360,585,20,Color("#238B96",opacity),250)
+		else:
+			# Ordinary POPs are quick, lightweight flashes, not giant blocking cards.
+			_center(game.praise,360,484,34,Color("#FFF4C7",opacity),290)
 	if game.shop_notice_time>0 and not game.shop_open and not game.profile_open:
 		_card(Rect2(163,748,394,59),Color("#FCF5F8"),24,6)
 		_center(game.shop_notice,360,785,24,Color("#B43A78"),372)
