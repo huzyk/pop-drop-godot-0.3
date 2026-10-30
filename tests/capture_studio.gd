@@ -28,6 +28,8 @@ func _capture() -> void:
 	game.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for _index in range(10):
 		await process_frame
+	# Hide first-run tutorial only for the main game screenshot; render it explicitly.
+	game.tutorial_open = false
 	if not await _save_frame(game,"preview-phone.png"):
 		quit(1)
 		return
@@ -58,6 +60,11 @@ func _capture() -> void:
 	game.settings_open = false
 	game.phase = "over"
 	if not await _save_frame(game,"preview-over.png"):
+		quit(1)
+		return
+	game.phase = "drop"
+	game.tutorial_open = true
+	if not await _save_frame(game,"preview-tutorial.png"):
 		quit(1)
 		return
 	quit()
