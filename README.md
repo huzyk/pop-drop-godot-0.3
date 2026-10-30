@@ -1,3 +1,17 @@
+# POP DROP Gravity 0.21 — beta-prep fixes (30.10.2026)
+
+**Wdrożone do main:** poprawa przedwczesnego końca gry (BFS po mieszanych obrotach lewo/prawo; przy niepełnym przeszukaniu nie ogłaszamy porażki), darmowe rundy w okresie testów beta, sklep skórek w układzie 2×2 (maksymalnie cztery na stronę), doprecyzowanie „USUŃ DANE ANALITYKI” oraz ujednolicenie numeru wersji.
+
+- Porażka: gra kończy się tylko po rzeczywistym braku ruchu w sprawdzonym grafie rotacji. Dla bardzo rozbudowanego grafu bezpieczeństwo jest ważniejsze od automatycznego końca gry.
+- Energia: portfel nadal przechowuje stan energii do przyszłego eksperymentu, ale `Game.FREE_PLAY_BETA=true` nie ogranicza nowych rund w becie. Żadnych fałszywych reklam.
+- Sklep: 23 wyglądy (w tym darmowy oraz nagroda) w sześciu stronach; cztery pozycje na stronie, bez nakładania pól dotyku.
+- Ustawienia: funkcja usuwania danych nadal usuwa *wyłącznie lokalną analitykę* — nie kasuje konta, portfela ani wyników.
+- Testy: `test_gravity_pressure.gd` zawiera układ ratowany sekwencją L-R-L-R, a `test_gravity_ui_layout.gd` sprawdza układ sklepu, nazewnictwo i tryb beta.
+
+**To wciąż alfa przechodząca do beta.** AdMob i PostHog nie są aktywne produkcyjnie. Pełny redesign ekranów pomocniczych, lokalizacja siedmiu języków, Android QA i automatyczne symulacje balansu pozostają do dopracowania.
+
+---
+
 # POP DROP Gravity 0.20 alpha — zwierzęta, Bajkowa Kraina i złote skały
 
 **Brak linii śmierci, brak limitu skał, brak trzech serc.** Porażka następuje dopiero wtedy, gdy żaden z dostępnych kształtów nie może być położony — także po możliwych obrotach. Fale co 18/16/14 sekund wrzucają z góry po 3/4/5 kulek do wolnych kolumn. Co trzecia fala może dodać skałę. Jeden ratunek za monety albo reklamę zapewnia ponownie możliwy ruch. Zamiast życia w HUD jest licznik wolnych pól, a koniec rundy wyjaśnia powód porażki.
