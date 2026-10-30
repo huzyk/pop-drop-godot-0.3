@@ -1,7 +1,7 @@
 # POP DROP — system wizualny i standard skórek (v1.0)
 
 ## Cel
-POP DROP ma wyglądać jak dopracowana gra casual na telefon, nie jak neonowy panel debugowy. Pierwszą skórką jest **Jelly Pals** — miękkie, radosne żelki o dużych czytelnych twarzach. Skórki zmieniają wygląd kulek, a nie reguły gry, hitboksy, tempo czy informacje o dostępnych ruchach.
+POP DROP ma wyglądać jak dopracowana, pogodna, dotykowa gra casual na telefon, nie jak neonowy panel debugowy. Obowiązuje kierunek **Candy Playground**: jasne niebo w kolorach brzoskwini, lawendy i mięty; kremowe karty; jasnofioletowa plansza; trójwymiarowe, nasycone żelki. Pierwszą skórką jest **Jelly Pals** — miękkie, radosne żelki o dużych czytelnych twarzach. Skórki zmieniają wygląd kulek, a nie reguły gry, hitboksy, tempo czy informacje o dostępnych ruchach.
 
 ## Nienegocjowalne zasady
 1. **Sylwetka pierwsza.** Kulka musi być rozpoznawalna po zmniejszeniu do 38–50 px oraz na jasnym i ciemnym tle. Zero cienkich ozdobników i gęstych tekstur.
@@ -28,8 +28,8 @@ POP DROP ma wyglądać jak dopracowana gra casual na telefon, nie jak neonowy pa
 5. Dla nieznanego ID zachować dotychczasowy fallback sklepu / logiki zapisu. Wprowadzanie nowych skórek **nie może** resetować zakupionych skórek ani monet.
 
 ## Warstwy grafiki na planszy
-1. Spokojne tło z jedną dominantą i ograniczonym kontrastem.
-2. Płyta planszy i subtelna siatka. Unikać czarnych dołków pod każdą kulką.
+1. Tło **jasne, ilustracyjne**, bez rozpraszających elementów w środkowej strefie gry; gradient brzoskwinia → jasny błękit → lawenda. Dodatkowe bąbelki wyłącznie na marginesach.
+2. Plansza jako biała tacka z miękkim cieniem. Kratki w spokojnych odcieniach jasnej lawendy, bez czarnych dołków i grubych ramek.
 3. Cień kontaktowy *pod* kulką, nie wielokrotny neon.
 4. Sprit kulki w całości.
 5. Efekt gameplayowy: krótki squish na lądowaniu, bąbelkowe cząstki po POP, subtelny pierścień combo, światło podczas wyboru.
@@ -46,8 +46,23 @@ POP DROP ma wyglądać jak dopracowana gra casual na telefon, nie jak neonowy pa
 - Coral: `#FF687C` — energetyczna, ciepła
 - Mint: `#53DCAF` — świeża, spokojna
 - Blue: `#6DAFF5` — miękka, chłodna
-- Tło: granat i atrament, bez zlewania z sylwetkami.
-- UI: ciemne jednolite panele, biały tekst, akcent tylko dla aktualnej akcji.
+- Tło Candy Playground: `#FFEDE3` → `#E8F1FD` → `#EBE5FA`.
+- Plansza: tacka `#FFFFFF`, pola `#E6E9F6` / `#DDE2F1`.
+- Typografia: granat `#27364E`; etykiety `#607A94`, nigdy jasny tekst na białych kartach.
+- Sterowanie: lewo `#FF6388`, prawo `#32B8BB`, biały tekst.
+- Panele: `#FFFFFF`, subtelny cień `#7193AE` na 10–18% krycia.
+- Sklep / profil / ustawienia: należą do tej samej rodziny jasnych paneli, nie wracamy do neonowego trybu.
+- Akcenty tylko tam, gdzie stan gry lub decyzja gracza tego potrzebują.
+
+
+## Reguły interfejsu Candy Playground (od 30.10.2026)
+- **Jedno mocne centrum**: plansza, a po niej wybrane kształty i dwa przyciski obrotu.
+- **Nawigacja drugorzędna**: ikony na białych kartach, bez ozdobnych ramek.
+- **Czytelność w 450×800**: najważniejszy tekst co najmniej 20 jednostek w referencyjnym układzie 720×1280; etykiety 16–19, pojedyncze niekrytyczne szczegóły nie mogą zasłaniać mechaniki.
+- **Dotyk**: grafika ma odpowiadać hitboksowi, a większe przyciski otrzymują widoczną dolną krawędź wskazującą fizyczne wciśnięcie.
+- **Żadnych czarnych dziur** na pustej planszy, świecących obręczy na każdej kulce, metalicznych ikonek mieszanych z kreskówką ani powielanych ozdobnych linii.
+- **VFX mają być zdarzeniowe**: bąbelki i pop-konfetti po udanej akcji, żelkowy squash na lądowaniu, czytelny floater punktów, mocniejsze celebracje wyłącznie przy prawdziwym sukcesie.
+- Przed uznaniem zmian za zatwierdzone obowiązkowy **screenshot z uruchomionego Godota** w 450×800 i test na telefonie. Statyczny projekt koncepcyjny nie jest dowodem poprawnego renderowania w silniku.
 
 ## QA przed publikacją nowej skórki
 - [ ] Czy każdy z trzech wariantów jest czytelny w rozmiarze 32 px?
