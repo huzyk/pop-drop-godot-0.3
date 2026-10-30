@@ -818,7 +818,7 @@ func _gui_input(event: InputEvent) -> void:
 	if phase!="drop":
 		return
 	if BOOST_BOMB.has_point(pt):
-			if bomb_aim:
+		if bomb_aim:
 			bomb_aim = false
 		elif shop.stock("bomb")>0:
 			bomb_aim = true
@@ -831,7 +831,7 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	if BOOST_REROLL.has_point(pt):
 		bomb_aim = false
-			_use_reroll()
+		_use_reroll()
 		return
 	if bomb_aim and BOARD.has_point(pt):
 		var chosen: Vector2i = _board_cell(pt)
