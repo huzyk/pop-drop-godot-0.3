@@ -6,10 +6,10 @@ const RATE := 22050
 const VOICE_COUNT := 5
 const CUES := {
 	"tap": 0.060,
-	"drop": 0.145,
-	"rotate": 0.235,
-	"pop": 0.260,
-	"cascade": 0.350,
+	"drop": 0.120,
+	"rotate": 0.165,
+	"pop": 0.195,
+	"cascade": 0.255,
 	"mission": 0.565,
 	"level": 0.880,
 	"fail": 0.320
@@ -53,7 +53,7 @@ func set_haptics_enabled(value: bool) -> void:
 	haptics_enabled = value
 	_save_preferences()
 
-func cue(name: String) -> void:
+func cue(name: String, pitch_multiplier: float = 1.0) -> void:
 	if not CUES.has(name):
 		return
 	if not sound_enabled and not haptics_enabled:
@@ -68,6 +68,8 @@ func cue(name: String) -> void:
 		cursor = (cursor+1) % voices.size()
 		player.stop()
 		player.stream = streams[name]
+		# Ascending pitch makes consecutive successful POP actions feel faster.
+		player.pitch_scale = clampf(pitch_multiplier,0.8,1.4)
 		player.play()
 	if haptics_enabled and (OS.get_name() == "Android" or OS.get_name() == "iOS"):
 		var spec: Array = VIBRATIONS[name]
