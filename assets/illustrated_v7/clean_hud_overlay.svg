@@ -29,4 +29,12 @@
 <rect x="365" y="1094" width="148" height="119" rx="27" fill="url(#btn2)" stroke="#FFFFFF" stroke-width="3"/>
 <path d="M221 1119 Q272 1096 340 1118 M378 1119 Q426 1096 498 1118" fill="none" stroke="#FFFFFF" stroke-opacity=".85" stroke-width="6" stroke-linecap="round"/>
 <path d="M227 1203 Q274 1212 337 1203 M382 1203 Q429 1212 493 1203" fill="none" stroke="#A98B73" stroke-opacity=".18" stroke-width="3"/>
+<!-- Restore the rightmost HUD stat as an inset tile INSIDE the existing frame.
+     Fully covers the painted-in ŻYCIA heading and hearts; unlike a floating
+     pill it never projects beyond the right edge of the artwork. -->
+<rect x="554" y="206" width="118" height="70" rx="17" fill="#075D69"/>
+<rect x="556" y="207" width="114" height="66" rx="16" fill="#126D7A" stroke="#46B2AD" stroke-opacity=".46" stroke-width="1.5"/>
+<rect x="558" y="210" width="110" height="60" rx="14" fill="#0A6371"/>
+<path d="M571 212 Q609 206 651 212" stroke="#A6EFE0" stroke-opacity=".22" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<path d="M570 268 Q610 273 655 268" stroke="#002F43" stroke-opacity=".20" stroke-width="2" fill="none"/>
 </svg>
