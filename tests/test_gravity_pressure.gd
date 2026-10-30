@@ -130,6 +130,36 @@ func _initialize() -> void:
 	assert(Rules.rock_count(Rules.rotate(board,true).board) == 12)
 	assert(Rules.rock_count(Rules.settle(board).board) == 12)
 
+	# Regression: left-right-left-right can rescue an apparently full board.
+	# Four rotations in only one direction miss this legal continuation.
+	var mixed_turn_board: Array = [
+		[3,2,0,1,-1,2,3,5],
+		[3,1,3,4,0,4,2,4],
+		[2,2,3,5,2,-1,4,-1],
+		[-1,1,5,-1,4,-1,2,5],
+		[1,3,3,1,3,3,1,3],
+		[2,3,4,3,2,1,1,-1],
+		[5,2,2,4,0,1,2,0],
+		[3,5,1,3,-1,4,3,3]
+	]
+	var long_piece: Array = [[0,0,0],[1,0,1],[2,0,2]]
+	assert(not Rules.any_drop(mixed_turn_board,long_piece))
+	var mixed_turns: Array = [false,true,false,true]
+	var candidate: Array = Rules.copy_board(mixed_turn_board)
+	for clockwise in mixed_turns:
+		candidate = Rules.rotate(candidate,clockwise).board
+		candidate = Rules.settle(candidate).board
+		candidate = Rules.spill_after_rotation(candidate,clockwise).board
+		candidate = Rules.resolve_preview(candidate,true,clockwise).board
+	assert(Rules.any_drop(candidate,long_piece))
+	assert(Rules.can_recover_by_rotating(mixed_turn_board,[long_piece]))
+	# Provably blocked boards must still end the game.
+	var blocked: Array = Rules.empty_board()
+	for y in range(8):
+		for x in range(8):
+			blocked[y][x] = Rules.ROCK_MAX
+	assert(not Rules.can_recover_by_rotating(blocked,[long_piece]))
+
 	# The existing save schema stays compatible with old alpha checkpoints.
 	var state: Dictionary = {
 		"board":board,
