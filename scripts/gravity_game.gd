@@ -1512,6 +1512,8 @@ func _draw_header() -> void:
 		COINS_OPEN.position.y+36,23,68,Color("#273750"))
 	for slot in [SHOP_OPEN,PROFILE_OPEN,SETTINGS_OPEN,LANG_RECT]:
 		_neon_panel(slot,Color.WHITE)
+	for slot in [SHOP_OPEN,PROFILE_OPEN,SETTINGS_OPEN,LANG_RECT]:
+		draw_circle(slot.position+Vector2(slot.size.x*0.5,21),21,Color("#EAF2F9"))
 	_draw_icon(ICON_SHOP,SHOP_OPEN.get_center(),35)
 	_draw_icon(ICON_PROFILE,PROFILE_OPEN.get_center(),35)
 	_draw_icon(ICON_SETTINGS,SETTINGS_OPEN.get_center(),35)
@@ -1593,31 +1595,27 @@ func _draw() -> void:
 
 
 func _draw_praise() -> void:
-	var progress: float = clampf((praise_length-praise_timer)/0.20,0.0,1.0)
-	var bounce: float = 1.0+0.16*sin(progress*PI)
+	var progress: float = clampf((praise_length-praise_timer)/0.22,0.0,1.0)
+	var bounce: float = 1.0+0.13*sin(progress*PI)
 	var opacity: float = minf(1.0,praise_timer*4.0)
 	var center: Vector2 = Vector2(360,560)
-	for i in range(3):
-		var radius: float = (142.0+float(i)*44.0)*(0.8+progress*0.25)
-		draw_arc(center,radius,clock*0.42+float(i)*0.6,
-			clock*0.42+float(i)*0.6+PI*1.35,64,
-			Color(praise_color.r,praise_color.g,praise_color.b,
-				(0.21-float(i)*0.045)*opacity),3.5,true)
-	draw_circle(center,188.0,Color(praise_color.r,praise_color.g,praise_color.b,0.10*opacity))
-	var w: float = 420.0*bounce
-	var h: float = 109.0*bounce
-	var rect: Rect2 = Rect2(center-Vector2(w,h)*0.5,Vector2(w,h))
-	_box(Rect2(rect.position+Vector2(0,7),rect.size),Color("#030916"),30)
-	_box(rect,Color("#14142b"),29,Color(praise_color.r,praise_color.g,praise_color.b,0.85),3)
-	_box(Rect2(rect.position+Vector2(8,8),rect.size-Vector2(16,16)),
-		Color("#30204b"),23)
-	_spark(rect.position+Vector2(20,14),12,praise_color,opacity)
-	_spark(rect.end-Vector2(21,12),10,praise_color,opacity)
-	_fit_center(praise,360,center.y+16,54,370,
-		Color(praise_color.r,praise_color.g,praise_color.b,opacity))
-	if chain_depth > 1:
-		_fit_center("COMBO ×%d" % chain_depth,360,center.y-31,16,310,
-			Color("#ffdaaa",opacity))
+	# One celebratory burst, not a permanent nightclub glow.
+	for i in range(18):
+		var angle: float = TAU*float(i)/18.0+clock*0.1
+		var travel: float = 150.0+progress*(55.0+float(i%4)*12.0)
+		var at: Vector2 = center+Vector2.from_angle(angle)*travel
+		var tint: Color = COLORS[i%3]
+		draw_circle(at,5.0+float(i%3),
+			Color(tint.r,tint.g,tint.b,opacity*(1.0-progress*0.35)))
+	var rect: Rect2 = Rect2(center-Vector2(215,58)*bounce,
+		Vector2(430,116)*bounce)
+	_box(Rect2(rect.position+Vector2(0,9),rect.size),Color("#A9A0BF",0.22*opacity),33)
+	_box(rect,Color("#FFFFFF",0.98*opacity),32)
+	_fit_center(praise,360,center.y+17,54,384,
+		Color("#D94775",opacity))
+	if chain_depth>1:
+		_fit_center("COMBO ×%d" % chain_depth,360,center.y-29,19,326,
+			Color("#2EA79B",opacity))
 func _charged_cells() -> Array:
 	if pending_group.is_empty():
 		return []
@@ -1827,10 +1825,10 @@ func _draw_particles() -> void:
 		draw_string(BOLD,at+Vector2(1,3),label,HORIZONTAL_ALIGNMENT_LEFT,-1,points,
 			Color(0.02,0.07,0.17,0.8*fade))
 		draw_string(BOLD,at,label,HORIZONTAL_ALIGNMENT_LEFT,-1,points,
-			Color(1.0,0.88,0.55,fade))
+			Color("#D84A7A",fade))
 		if int(item.combo)>1:
 			var combo_label: String = "×%d" % int(item.combo)
-			_center(combo_label,location.x,location.y+27,24,Color(0.65,0.98,1.0,fade))
+			_center(combo_label,location.x,location.y+27,24,Color("#2D8EAA",fade))
 
 
 func _draw_status() -> void:
@@ -2044,42 +2042,21 @@ func _draw_level_celebration() -> void:
 	var alpha: float = clampf(level_fx_time/0.42,0.0,1.0)
 	var dy: float = 18.0*sin(progress*PI)
 	var center: Vector2 = Vector2(360,508-dy)
-	_box(Rect2(center-Vector2(255,100),Vector2(510,200)),Color("#29214c",0.92*alpha),
-		33,Color("#ffe29a",0.88*alpha),3)
-	draw_circle(center,94.0+6.0*sin(clock*4.0),Color("#ffe4ae",0.12*alpha))
-	_fit_center("✦ " + ("NOWY POZIOM!" if language == "pl" else "LEVEL UP!") + " ✦",
-		360,center.y-22,29,466,Color(1.0,0.90,0.68,alpha))
-	_fit_center(str(level_fx_number),360,center.y+65,80,354,Color(1,1,1,alpha))
+	_box(Rect2(center-Vector2(255,91),Vector2(510,182)),
+		Color("#FFFFFF",0.96*alpha),32)
+	_fit_center("✦ " + ("NOWY POZIOM!" if language=="pl" else "LEVEL UP!") + " ✦",
+		360,center.y-22,30,467,Color("#F36A89",alpha))
+	_fit_center(str(level_fx_number),360,center.y+65,81,354,Color("#2FAEAA",alpha))
 	for i in range(24):
-		var angle: float = float(i)*TAU/24.0+clock*0.36
-		var dist: float = 128.0+progress*186.0
+		var angle: float = float(i)*TAU/24.0+clock*0.25
+		var dist: float = 132.0+progress*179.0
 		var at: Vector2 = center+Vector2.from_angle(angle)*dist
-		_spark(at,3.0+float(i%4),Color("#ffe6bb"),0.68*alpha*(1.0-progress*0.4))
-
-
-
+		_spark(at,4.0+float(i%4),COLORS[i%3],0.72*alpha*(1.0-progress*0.3))
 func _draw_mission_toast() -> void:
 	var strength: float = minf(1.0,mission_notice_time/0.24)
-	_box(Rect2(166,755,388,56),Color("#162943",0.94*strength),22,
-		Color("#f8d99e",0.7*strength),2)
-	_fit_center(mission_notice,360,792,24,359,
-		Color(1.0,0.91,0.66,strength))
-
-const BADGE_NAMES_PL := {
-	"first_drop":"PIERWSZY RUCH","drops_25":"ROZGRZEWKA","drops_100":"WETERAN",
-	"pop_1":"PIERWSZY POP","pop_50":"ŁOWCA POPÓW","pop_200":"MISTRZ POP",
-	"combo_2":"PODWÓJNA KASKADA","combo_4":"SUPERKASKADA",
-	"score_10000":"10 TYS. PUNKTÓW","rounds_10":"WYTRWAŁY",
-	"streak_3":"TRZY DNI Z RZĘDU","streak_7":"TYDZIEŃ GRY"
-}
-const BADGE_NAMES_EN := {
-	"first_drop":"FIRST DROP","drops_25":"WARM-UP","drops_100":"VETERAN",
-	"pop_1":"FIRST POP","pop_50":"POP HUNTER","pop_200":"POP MASTER",
-	"combo_2":"DOUBLE CASCADE","combo_4":"MEGA CASCADE",
-	"score_10000":"10K POINTS","rounds_10":"PERSISTENT",
-	"streak_3":"THREE-DAY STREAK","streak_7":"WEEKLY HERO"
-}
-
+	_box(Rect2(166,761,388,56),Color("#80A6BA",0.15*strength),23)
+	_box(Rect2(166,755,388,56),Color("#FFFFFF",0.98*strength),22)
+	_fit_center(mission_notice,360,792,24,362,Color("#249988",strength))
 func _draw_profile() -> void:
 	draw_rect(Rect2(0,0,720,1280),Color("#E8F0FA",0.97))
 	_box(Rect2(PROFILE_CARD.position+Vector2(0,8),PROFILE_CARD.size),
@@ -2160,10 +2137,9 @@ func _draw_profile() -> void:
 	_fit_center(profile_t("autoclaim"),360,1091,16,520,Color("#879DB2"))
 func _draw_shop_notice() -> void:
 	var alpha: float = minf(1.0,shop_notice_time/0.25)
-	_box(Rect2(198,739,324,56),Color("#252740",0.94*alpha),19,
-		Color("#f9dba4",0.73*alpha),2)
-	_fit_center(shop_notice,360,774,23,303,Color(1,0.93,0.72,alpha))
-
+	_box(Rect2(198,744,324,56),Color("#6989A4",0.16*alpha),21)
+	_box(Rect2(198,739,324,56),Color("#FFFFFF",0.98*alpha),21)
+	_fit_center(shop_notice,360,774,23,305,Color("#C44D78",alpha))
 func _draw_boost_controls() -> void:
 	if phase=="over":
 		return
