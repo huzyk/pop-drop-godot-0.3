@@ -10,6 +10,7 @@ const ROCK_MAX := 5
 const GOLD_ROCK_MIN := 6
 const GOLD_ROCK_MAX := 8
 const GOLD_ROCK_CHANCE := 6 # Every new rock has a 1-in-6 chance to glow gold.
+const MAX_ACTIVE_ROCKS := 12 # Prevent unlimited rock walls.
 
 static func is_gold_rock(cell: int) -> bool:
 	return cell >= GOLD_ROCK_MIN and cell <= GOLD_ROCK_MAX
@@ -66,6 +67,8 @@ static func rock_count(board: Array) -> int:
 
 static func spawn_rock(board: Array, rng: RandomNumberGenerator) -> Dictionary:
 	var result: Array = copy_board(board)
+	if rock_count(result) >= MAX_ACTIVE_ROCKS:
+		return {"board":result,"spawned":false}
 	var spots: Array = []
 	for y in range(3,7):
 		for x in range(SIZE):
