@@ -59,6 +59,7 @@ const COLORS := [Color("#ff7096"),Color("#55dcad"),Color("#62b5ff")]
 const FLOW_WINDOW := 8.0 # Player decision time, paused during animations or menus.
 const FREE_PLAY_BETA := true # Free rounds for retention testing; energy remains saved for later experiments.
 const SAVE_FILE := "user://pop_drop_gravity.json"
+const TUTORIAL_SEEN_FILE := "user://gravity_tutorial_seen_v1.txt"
 const LOCALES := ["pl","en","es","pt","de","fr","ru"]
 const TR := {
 	"pl":{"life":"ŻYCIA","tap_short":"DOTKNIJ KOLUMNY","score":"WYNIK","best":"REKORD","move":"RUCH","drop":"DOTKNIJ KOLUMNĘ, ABY ZRZUCIĆ","turn":"OBRÓĆ PLANSZĘ LUB GRAJ DALEJ","left":"W LEWO","right":"W PRAWO","skip":"DALEJ","next":"WYBIERZ KSZTAŁT","ready":"5 KULEK POŁĄCZONYCH BOKAMI = POP  •  BRAK RUCHÓW = KONIEC GRY","over":"KONIEC RUNDY","again":"ZAGRAJ PONOWNIE","rescue":"TEST: +1 ŻYCIE","lost":"STRATA ŻYCIA","rotate_controls":"OBRACAJ PRZYCISKAMI PONIŻEJ","rotate_help":"SPRÓBUJ OBRÓCIĆ PLANSZĘ","charge":"GRUPA","danger":"WYSOKOŚĆ","danger_soon":"UWAGA: GÓRNA LINIA!","overflow":"UTRATA ŻYCIA!","hint":"Wybierz kolumnę dla spadającego kształtu"},
@@ -212,7 +213,7 @@ var wave_queued: bool = false
 var loss_reason: String = "" # Exact reason displayed after the game ends
 
 func _ready() -> void:
-	var fresh_user: bool = not FileAccess.file_exists(SAVE_FILE) and not FileAccess.file_exists(Session.PATH)
+	var fresh_user: bool = not FileAccess.file_exists(TUTORIAL_SEEN_FILE)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	rng.randomize()
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
@@ -1200,6 +1201,10 @@ func _gui_input(event: InputEvent) -> void:
 	if tutorial_open:
 		if TUTORIAL_ACK.has_point(pt) or Rect2(559,290,79,75).has_point(pt):
 			tutorial_open = false
+			var tutorial_flag: FileAccess = FileAccess.open(TUTORIAL_SEEN_FILE,FileAccess.WRITE)
+			if tutorial_flag != null:
+				tutorial_flag.store_string("seen")
+				tutorial_flag.close()
 			telemetry.track("tutorial_completed",{"run_id":run_id})
 			queue_redraw()
 		return
