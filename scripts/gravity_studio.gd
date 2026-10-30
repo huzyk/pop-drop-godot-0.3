@@ -678,44 +678,45 @@ func _draw_shop() -> void:
 		_center(game.shop_t("boosts") if i==0 else game.shop_t("skins"),
 			rect.get_center().x,447,22,WHITE if selected else INK,222)
 	var items: Array = game._shop_items()
+	# Compact two-column gallery: four full skins per page, with artwork
+	# dominant and every purchase target contained inside its own card.
 	for i in range(items.size()):
 		var id: String = str(items[i])
 		var rect: Rect2 = game._shop_card(i)
-		var special: bool = id==Shop.SPECIAL_SKIN
+		var special: bool = id == Shop.SPECIAL_SKIN
 		var offer: Dictionary = {"kind":"skin","price":0} if id=="default" or special else Shop.item(id)
-		var is_skin: bool = str(offer.get("kind",""))=="skin"
+		var is_skin: bool = str(offer.get("kind","")) == "skin"
 		var owned: bool = (id=="default" or game.shop.owns_skin(id)) if is_skin else false
 		var equipped: bool = is_skin and game.shop.equipped_skin==id
 		var can_buy: bool = game.shop.can_purchase(id)
-		_card(rect,Color("#E9EEFA") if i==0 else Color("#F8EAF2"),24,6)
-		var orb_place: Vector2 = rect.position+Vector2(82,85)
-		draw_circle(orb_place,61,WHITE)
+		_card(rect,Color("#EFF5FC") if i%2==0 else Color("#FDF2F6"),22,4)
+		var orb_place: Vector2 = rect.position+Vector2(rect.size.x*.5,55)
+		draw_texture_rect(UTILITY_ART,Rect2(orb_place-Vector2(51,49),Vector2(102,98)),false)
 		if is_skin:
-			game.preview_skin=id
-			_orb(orb_place,39,0)
-			game.preview_skin=""
+			game.preview_skin = id
+			_orb(orb_place,35,0)
+			game.preview_skin = ""
 		else:
-			_icon(id,orb_place,95)
-		_center("JUICY ORBS" if id=="default" else game.shop_t(id),
-			rect.position.x+331,rect.position.y+57,27,INK,345)
+			_icon(id,orb_place,73)
+		var name: String = "JUICY ORBS" if id=="default" else game.shop_t(id)
+		_center(name,rect.get_center().x,rect.position.y+118,21,INK,rect.size.x-24)
 		var description: String = game.shop_t(id+"_desc")
 		if id=="default":
 			description = "BAZOWA • GRATIS" if game.language=="pl" else "BASE • FREE"
 		elif special:
-			description = "NAGRODA ZA 7 DNI" if game.language=="pl" else "PLAY 7 DAYS TO UNLOCK"
-		_center(description,rect.position.x+333,rect.position.y+99,17,Color("#687992"),374)
+			description = "NAGRODA ZA 7 DNI" if game.language=="pl" else "DAY 7 REWARD"
+		elif not is_skin:
+			description = "%s: %d" % [game.shop_t("stock"),game.shop.stock(id)]
+		_center(description,rect.get_center().x,rect.position.y+144,14,Color("#687992"),rect.size.x-18)
 		var enabled: bool = can_buy or owned
-		var action: Rect2 = Rect2(rect.position+Vector2(199,134),Vector2(311,61))
+		var action: Rect2 = Rect2(rect.position+Vector2(19,158),Vector2(rect.size.x-38,44))
 		_button(action,AQUA if enabled else Color("#C7D2E2"),Color("#368E95"))
 		var wording: String = game.shop_t("active") if equipped else (
 			game.shop_t("equip") if owned else
 			("7 DNI" if game.language=="pl" else "DAY 7") if special else
 			"%s  %d" % [game.shop_t("buy"),int(offer["price"])])
-		_center(wording,action.get_center().x,action.position.y+41,22,
-			INK if enabled else Color("#65748B"),284)
-		if not is_skin:
-			_center(game.shop_t("stock")+": "+str(game.shop.stock(id)),
-				rect.position.x+82,rect.position.y+180,18,INK,172)
+		_center(wording,action.get_center().x,action.position.y+29,18,
+			INK if enabled else Color("#65748B"),action.size.x-15)
 	_round(Rect2(105,970,113,55),Color("#DFE7F5"),16)
 	_round(Rect2(502,970,113,55),Color("#DFE7F5"),16)
 	_center("<",162,1007,27,INK,85)
