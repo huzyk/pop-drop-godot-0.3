@@ -1,3 +1,11 @@
+# POP DROP Gravity 0.15 alpha — nowy system presji
+
+**Brak linii śmierci, brak limitu skał, brak trzech serc.** Porażka następuje dopiero wtedy, gdy żaden z dostępnych kształtów nie może być położony — także po możliwych obrotach. Fale co 18/16/14 sekund wrzucają z góry po 3/4/5 kulek do wolnych kolumn. Co trzecia fala może dodać skałę. Jeden ratunek za monety albo reklamę zapewnia ponownie możliwy ruch. Zamiast życia w HUD jest licznik wolnych pól, a koniec rundy wyjaśnia powód porażki.
+
+Szczegóły i parametry: [docs/PRESSURE.md](docs/PRESSURE.md).
+
+---
+
 # POP DROP Gravity 0.14 alpha — szybsza rozgrywka, czysty HUD
 
 Nowe fale: **12, 11, 10, 9, 8 sekund** (potem co 8 s), maksymalnie **8 skał**, pierwsza fala dodaje jedną, kolejne próbują po dwie. Ze sklepu i interfejsu usunięto **Magiczny Kolor**; zakupione wcześniej sztuki są jednorazowo refundowane po 220 monet. Ilustrowane pole gry nie wyświetla już koordynatów A–H/1–8, a rząd mocy został zaprojektowany dla dwóch przycisków. Szczegóły w [docs/PRESSURE.md](docs/PRESSURE.md).
