@@ -32,6 +32,7 @@ const ENERGY_OFF = preload("res://assets/atelier_v5/energy_off.svg")
 const CTA_MINT = preload("res://assets/atelier_v5/cta_mint.svg")
 const CTA_MUTED = preload("res://assets/atelier_v5/cta_muted.svg")
 const ROCK_ART = preload("res://assets/atelier_v5/rock.svg")
+const PANEL_ART = preload("res://assets/atelier_v5/panel.svg")
 const FONT = preload("res://fonts/ClearSans-Regular.ttf")
 const BOLD = preload("res://fonts/ClearSans-Bold.ttf")
 const ICONS = {
@@ -74,7 +75,27 @@ func _notification(what: int) -> void:
 func _moved(rect: Rect2, distance: Vector2) -> Rect2:
 	return Rect2(rect.position+distance,rect.size)
 
+func _nine_panel(rect: Rect2, tint: Color, radius: float=27.0) -> void:
+	# Author-designed material with 9-slice stretching: round corners never become rectangles.
+	var c: float = minf(radius,minf(rect.size.x,rect.size.y)*.46)
+	var src: Array = [0.0,64.0,192.0,256.0]
+	var dx: Array = [rect.position.x,rect.position.x+c,rect.end.x-c,rect.end.x]
+	var dy: Array = [rect.position.y,rect.position.y+c,rect.end.y-c,rect.end.y]
+	for y in range(3):
+		for x in range(3):
+			var to_rect: Rect2 = Rect2(
+				Vector2(float(dx[x]),float(dy[y])),
+				Vector2(float(dx[x+1])-float(dx[x]),float(dy[y+1])-float(dy[y])))
+			var from_rect: Rect2 = Rect2(
+				Vector2(float(src[x]),float(src[y])),
+				Vector2(float(src[x+1])-float(src[x]),float(src[y+1])-float(src[y])))
+			draw_texture_rect_region(PANEL_ART,to_rect,from_rect,tint)
+
 func _round(rect: Rect2, color: Color, radius: int=18, stroke: Color=Color.TRANSPARENT, stroke_width: int=0) -> void:
+	# Large opaque controls use authored nine-sliced artwork; only micro geometry stays procedural.
+	if stroke_width==0 and radius>=15 and rect.size.x>=70 and rect.size.y>=42 and color.a>=.83:
+		_nine_panel(rect,color,float(radius))
+		return
 	# Explicit radius: no automatic pill conversion of large cards or sheets.
 	var smooth: int = maxi(0,radius)
 	var key: String = "%s|%d|%s|%d" % [color.to_html(true),smooth,stroke.to_html(true),stroke_width]
@@ -90,11 +111,8 @@ func _round(rect: Rect2, color: Color, radius: int=18, stroke: Color=Color.TRANS
 		styles[key] = s
 	draw_style_box(styles[key],rect)
 
-func _card(rect: Rect2, color: Color, radius: int=23, lift: int=7) -> void:
-	_round(_moved(rect,Vector2(0,lift)),Color("#0B0A20",0.27),radius+1)
-	_round(rect,color,radius,Color("#FFFFFF",0.11),1)
-	_round(Rect2(rect.position+Vector2(radius,5),Vector2(maxf(1,rect.size.x-2*radius),2)),
-		Color("#FFFFFF",0.07),1)
+func _card(rect: Rect2, color: Color, radius: int=23, _lift: int=7) -> void:
+	_nine_panel(rect,color,float(radius))
 
 func _bubble(center: Vector2, radius: float, fill: Color, edge: Color, shadow: bool=true) -> void:
 	if shadow:
@@ -443,9 +461,7 @@ func _overlay() -> void:
 
 func _window(rect: Rect2, title: String, title_y: float, close: Rect2) -> void:
 	_overlay()
-	_round(_moved(rect,Vector2(0,12)),Color("#070F29",.57),46)
-	_round(rect,Color("#F4F3FE"),44)
-	_round(Rect2(rect.position+Vector2(17,15),Vector2(rect.size.x-34,5)),Color("#FFFFFF",.86),3)
+	_nine_panel(rect,Color("#F4F3FE"),44.0)
 	_center(title,300,title_y,42,INK,364)
 	_round(close,Color("#DBE2F4"),17)
 	_center("X",close.get_center().x,close.position.y+35,26,INK,90)

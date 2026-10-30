@@ -60,7 +60,7 @@ Wszelkie nowe ekrany utrzymują regułę: **pełna forma > granica prostokąta, 
 
 CI wykonuje zrzuty **pięciu rzeczywistych ekranów**: gameplay, sklep, profil, ustawienia, koniec rundy. Sprawdzamy je wizualnie przed zatwierdzeniem pracy, oprócz testów mechaniki i importu grafik.
 
-## Studio v4 — Midnight Jelly (aktualny standard)
+## Studio v4 — Midnight Jelly (poprzedni standard)
 
 **Zasada nadrzędna:** ekran musi wyglądać jak jedna dopracowana gra, a nie kolekcja widżetów. Nie dodajemy kolejnych gradientów i ramek, jeżeli da się poprawić sylwetkę, hierarchię lub rozkład przestrzeni.
 
@@ -77,3 +77,15 @@ CI wykonuje zrzuty **pięciu rzeczywistych ekranów**: gameplay, sklep, profil, 
 
 Pytania kontrolne: czy wzór jest rozpoznawalny przy 42–46 px? Czy zachowuje sylwetkę i wyraz przy ruchu i obrocie? Czy każdy z trzech kolorów nadal różni się wyraźnie? Czy motyw jest obecny w kulce, nie wymusza przemalowania mechaniki? Czy teksturę eksportujemy bez białej obwódki na przezroczystym tle?
 
+
+## Atelier v5 — asset-first UI (30.10.2026)
+
+**Aktualny standard:** główne elementy ekranu są pełnymi grafikami, a nie kompozycją proceduralnych okręgów, prostokątów i cieni.
+Katalog `assets/atelier_v5/` zawiera niezależnie przygotowane SVG dla: świata, ramy planszy, gniazd, HUD, statusu, monet, przycisków narzędziowych, wskaźników energii, wyboru kształtów, obrotu, trzech dopalaczy, CTA i skał. Modalne panele mają materiał `panel.svg` rozciągany dziewięciopolowo (9-slice), aby zachować rzeźbione narożniki niezależnie od rozmiaru.
+
+- Mechanika nadal jest w `gravity_game.gd`; `gravity_studio.gd` renderuje tekstury. Nie zmieniamy punktów dotyku, wymiarów planszy ani modelu zapisu.
+- Proceduralne `draw_*` jest dozwolone dla danych dynamicznych (przebieg timera, grupy, trajektorie, iskry, podświetlenie celowania), a nie dla pełnych przycisków/paneli.
+- Każdy nowy element wizualny projektujemy w źródłowym pliku osobno, z alfa i z wewnętrznym cieniowaniem; nie robimy „nowego designu” wyłącznie za pomocą zmiany kolorów kształtów w kodzie.
+- SVG mają zdefiniowane rozdzielczości: world 720×1280, board 720×720, socket 256×256, elementy UI według dedykowanych wymiarów. Wszystkie testowane w `test_gravity_skin_art.gd`.
+- `SkinArt.PACKS` pozostaje jedynym katalogiem kupowanych skórek. Przyszłe skórki nie powinny kopiować wyglądu przycisków za pomocą przypadkowych zmian kolorów.
+- Ocena artystyczna wymaga klatek z działającego Godota na 450×800; same SVG i zielony pipeline nie potwierdzają, że kompozycja wizualna została zaakceptowana.
