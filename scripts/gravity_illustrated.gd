@@ -24,6 +24,10 @@ func _draw_top() -> void:
 	# The title and shop/profile/settings buttons are already clean high-resolution artwork.
 	# Only game data are drawn at runtime; nothing bakes wallet values into the scene.
 	_center(str(game.shop.coins),508,51,26,CREAM,87)
+	var selector: Rect2 = game.LANG_RECT
+	_round(selector,Color("#0A6371"),16,Color("#96F5D7"),2)
+	_center(game.language_button_text(),selector.get_center().x,
+		selector.position.y+26,17,CREAM,selector.size.x-8)
 
 func _draw_stats() -> void:
 	# Labels and artwork are designed once. These are the live values.
@@ -51,8 +55,7 @@ func _orb(center: Vector2, radius: float, index: int, alpha: float=1.0, squish: 
 func _draw_rock(center: Vector2, value: int) -> void:
 	draw_texture_rect(STONE,Rect2(center-Vector2(39,39),Vector2(78,78)),false)
 	var hp: int = clampi(value-Rules.ROCK_MIN+1,1,3)
-	if hp<3:
-		_center(str(hp),center.x+23,center.y+25,16,CREAM,24)
+	_draw_rock_damage(center,hp)
 
 func _draw_board() -> void:
 	# The full illustrated enamel frame and blank 8x8 ceramic grid are in SCENE_ART.
@@ -106,6 +109,29 @@ func _draw_board() -> void:
 				_orb(pt,CELL*.468,int(movement["color"]),0.55)
 		else:
 			draw_rect(Rect2(BOARD.position+Vector2(hovering*CELL,0),Vector2(CELL,BOARD.size.y)),Color("#F26275",.11))
+
+func _draw_fx() -> void:
+	super._draw_fx()
+	if game.pop_impact_time <= 0.0:
+		return
+	var age: float = 1.0-game.pop_impact_time/game.pop_impact_max
+	var fade: float = pow(1.0-age,1.8)
+	var center: Vector2 = game.pop_impact_at
+	var tint: Color = game.pop_impact_color
+	var power: float = game.pop_impact_power
+	# Fleeting, softly glowing concentric flashes rather than a blocking card.
+	draw_circle(center,14.0+age*(42.0+power*12.0),
+		Color(tint.r,tint.g,tint.b,0.12*fade))
+	draw_arc(center,35.0+age*(94.0+power*17.0),0,TAU,88,
+		Color(1.0,0.98,0.87,0.88*fade),4.5,true)
+	draw_arc(center,17.0+age*(63.0+power*15.0),0,TAU,72,
+		Color(tint.r,tint.g,tint.b,0.72*fade),3.2,true)
+	for ray in range(8):
+		var direction: Vector2 = Vector2.from_angle(float(ray)*TAU/8.0+0.13)
+		var inner: float = 22.0+age*35.0
+		var outer: float = inner+(30.0+power*9.0)*(1.0-age)
+		draw_line(center+direction*inner,center+direction*outer,
+			Color(1.0,0.97,0.80,fade*0.78),3.0,true)
 
 func _draw_status() -> void:
 	# All status values must be live. The concept art showed two earned stars
