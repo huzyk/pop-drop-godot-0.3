@@ -1,4 +1,4 @@
-# POP DROP Gravity — Studio v2 / production art direction
+# POP DROP Gravity — Studio v3 / organic production art direction
 
 ## Fundament (od 30 października 2026)
 Studio jest **jedynym rendererem produkcyjnym**. Gameplay i input należą do `gravity_game.gd`, 
@@ -47,3 +47,15 @@ Przy projektowaniu nowej skórki:
 - Obowiązkowy screenshot **realnej klatki Godota** przy 450×800 (GitHub Actions artifact `pop-drop-actual-godot-preview`).
 - Ogląd rzeczywistej klatki i test na urządzeniu są warunkiem zatwierdzenia art direction; projekt SVG lub mockup nie zastępuje działającej gry.
 - Zakupy, zapis monet i wybrane skórki muszą działać po aktualizacji, bez resetowania zapisanych danych.
+
+## Studio v3 — zakaz prostokątnych atrap (30.10.2026)
+W grze nie wolno udawać zaawansowanego wyglądu przez samo ustawianie `border_radius` na stercie prostokątów.
+Małe przyciski, HUD, etykiety i akcje mają sylwetkę kapsuły lub pęcherzyka. Koniec z wielkim białym prostokątnym dockiem pod wyborem kształtów.
+Plansza musi zachować kwadratową siatkę 8×8 **wyłącznie z powodów mechaniki**; tło jest miękką silikonową tacką, a gniazda to autorskie tekstury 256 px.
+Każdy wybierany klocek jest na odrębnej, organicznej wysepce z promieniami światła i cieniem kontaktowym.
+Przyciski obrotu są rzeźbionymi, asymetrycznie miękkimi bryłami gradientowymi, a moce osobnymi żelkowymi kapsułami.
+
+Jedynymi grafikami pod UI v3 są źródła z `assets/visual_v3/`, preładowane przez `scripts/gravity_studio.gd`.
+Wszelkie nowe ekrany utrzymują regułę: **pełna forma > granica prostokąta, materiał > płaski kolor, oddech > zagęszczenie, czytelność > ozdobnik**.
+
+CI wykonuje zrzuty **pięciu rzeczywistych ekranów**: gameplay, sklep, profil, ustawienia, koniec rundy. Sprawdzamy je wizualnie przed zatwierdzeniem pracy, oprócz testów mechaniki i importu grafik.
