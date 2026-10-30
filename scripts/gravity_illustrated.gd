@@ -59,7 +59,7 @@ func _orb(center: Vector2, radius: float, index: int, alpha: float=1.0, squish: 
 
 func _draw_rock(center: Vector2, value: int) -> void:
 	draw_texture_rect(STONE,Rect2(center-Vector2(39,39),Vector2(78,78)),false)
-	var hp: int = clampi(value-Rules.ROCK_MIN+1,1,3)
+	var hp: int = Rules.rock_health(value)
 	if Rules.is_gold_rock(value):
 		var breath: float = 0.5+0.5*sin(game.clock*3.5+center.x*.023)
 		draw_circle(center,34.0,Color("#F7C75B",.12+breath*.11))
