@@ -7,6 +7,7 @@ const Ads = preload("res://scripts/gravity_ads.gd")
 const Progression = preload("res://scripts/gravity_progression.gd")
 const Feedback = preload("res://scripts/gravity_feedback.gd")
 const Shop = preload("res://scripts/gravity_shop.gd")
+const SkinArt = preload("res://scripts/gravity_skin_art.gd")
 const BACKDROP = preload("res://assets/ui/arcade_backdrop.svg")
 const ICON_COIN = preload("res://assets/ui/icons/coin.svg")
 const ICON_SHOP = preload("res://assets/ui/icons/shop.svg")
@@ -1405,11 +1406,12 @@ func _ball(center: Vector2, radius: float, color_index: int,
 	var tint: Color = COLORS[clampi(color_index,0,2)]
 	var marble_skin: String = preview_skin if not preview_skin.is_empty() else (
 		shop.equipped_skin if shop != null else "default")
-	if marble_skin == "default":
-		# Every expression, reflection and outline lives in the SVG itself.
+	var authored_sprite: Texture2D = SkinArt.sprite_for(marble_skin,color_index)
+	if authored_sprite != null:
+		# Real art pack: one texture owns all reflections, expression and silhouette.
 		var diameter: Vector2 = Vector2(radius*2.55*stretch.x,radius*2.55*stretch.y)
 		var top_left: Vector2 = center-diameter*0.5
-		draw_texture_rect(marble,Rect2(top_left,diameter),false,Color(1,1,1,alpha))
+		draw_texture_rect(authored_sprite,Rect2(top_left,diameter),false,Color(1,1,1,alpha))
 		return
 	# Older store skins remain compatible; future skins use three authored sprites.
 	marble = LEGACY_MARBLE_TEXTURES[clampi(color_index,0,2)]
