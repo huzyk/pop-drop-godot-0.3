@@ -16,7 +16,7 @@ func _initialize() -> void:
 		for color in range(3):
 			var sprite: Texture2D = SkinArt.sprite_for(id,color)
 			assert(sprite != null)
-			assert(sprite.get_size() == Vector2(512,512))
+			assert(sprite.get_size() == Vector2(256,256))
 			# Each skin owns three genuinely different authored files.
 			assert(sprite.resource_path.begins_with("res://assets/"))
 		assert(SkinArt.sprite_for(id,0) != SkinArt.sprite_for(id,1))
@@ -36,6 +36,7 @@ func _initialize() -> void:
 	assert(SkinArt.sprite_for("unknown",0)==null)
 	# The Android Godot editor should never load the whole cosmetic catalog.
 	assert(SkinArt.resident_count() <= SkinArt.MAX_RESIDENT_SPRITES)
+	assert(SkinArt.MAX_RESIDENT_SPRITES <= 12)
 	SkinArt.release_unused()
 	assert(SkinArt.resident_count() == 0)
 	assert(SkinArt.sprite_for("dragon",0) != null)
