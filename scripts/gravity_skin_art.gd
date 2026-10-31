@@ -132,7 +132,7 @@ const PACK_PATHS = {
 # A mobile Godot editor has a strict memory budget. Do NOT preload every 512px
 # skin sprite: that decoded over 69 textures before the first frame.
 # Load only what is displayed (board colours + four store thumbnails).
-const MAX_RESIDENT_SPRITES := 12
+const MAX_RESIDENT_SPRITES := 18
 static var _resident: Dictionary = {}
 static var _order: Array = []
 
