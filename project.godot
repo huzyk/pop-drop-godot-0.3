@@ -4,7 +4,7 @@ config_version=5
 config/name="POP DROP: Gravity - Illustrated"
 config/description="A lively gravity puzzle with collectible marble characters."
 config/icon="res://assets/ui/app_icon.svg"
-config/version="0.21.0-beta-prep"
+config/version="0.22.0-mobile-art-beta"
 run/main_scene="res://scenes/gravity.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
