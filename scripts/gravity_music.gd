@@ -2,7 +2,7 @@ extends Node
 ## Six original, seamless 8s instrumental loops for POP DROP worlds.
 ## Generated once per chosen habitat: no external music, samples or licenses.
 const PREFS := "user://gravity_music_v1.json"
-const RATE := 22050
+const RATE := 11025 # Still clear for background music, half the PCM memory and CPU.
 const SECONDS := 8.0
 const BEAT := 0.5
 const LOOPS := {
@@ -85,7 +85,10 @@ func _sync() -> void:
 			var error: Error = render_thread.start(Callable(self,"_background_render").bind(theme))
 			if error != OK:
 				render_thread = null
-				streams[theme] = _render_theme(theme) # Safe fallback if threads unavailable.
+				# Never block the Android editor/game thread with an 8-second
+				# PCM synthesizer if the worker could not be started.
+				push_warning("POP DROP: audio worker unavailable, skipping theme audio")
+				return
 		return
 	var next: AudioStreamWAV = streams[theme]
 	if player.stream != next:
