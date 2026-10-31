@@ -157,6 +157,7 @@ var style_cache: Dictionary = {}
 var studio: Control = null
 # Lightweight, procedural VFX. No textures, external assets or gameplay changes.
 var clock: float = 0.0
+var next_energy_poll: float = 0.0
 var display_score: float = 0.0
 var praise_color: Color = Color.WHITE
 var praise_length: float = 1.0
@@ -217,6 +218,8 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	rng.randomize()
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	if OS.get_name() == "Android":
+		Engine.max_fps = 60 # Keep editor-based testing thermally reasonable.
 	var detected: String = OS.get_locale_language().to_lower()
 	language = detected if detected in LOCALES else "en"
 	if FileAccess.file_exists(SAVE_FILE):
@@ -1104,7 +1107,10 @@ func _process(delta: float) -> void:
 	clock += delta
 	if phase=="drop" and not shop_open and not profile_open and not settings_open and not tutorial_open:
 		round_active_seconds += delta
-	if shop != null and int(clock) % 2 == 0:
+	# Beta uses unlimited energy. Poll the wallet only when energy is enabled,
+	# at most once per 30 seconds; never dozens of times per second.
+	if not FREE_PLAY_BETA and shop != null and clock >= next_energy_poll:
+		next_energy_poll = clock+30.0
 		shop.refresh_energy()
 	mission_notice_time = maxf(0.0,mission_notice_time-delta)
 	shop_notice_time = maxf(0.0,shop_notice_time-delta)
