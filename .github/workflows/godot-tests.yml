@@ -23,6 +23,16 @@ jobs:
           version: 4.7.2
           use-dotnet: false
           include-templates: false
+      - name: Ensure addon-free beta has no SDK-only GDScript classes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -f scripts/poing_admob_provider.gd
+          test -f docs/integrations/poing_admob_provider.gd.txt
+          if grep -RnE '(^|[^a-zA-Z])(UserMessagingPlatform|MobileAds|RewardedAdLoader|InterstitialAdLoader|FullScreenContentCallback)\.' --include='*.gd' scripts/; then
+            echo 'SDK-only GDScript leaked into standalone beta; Godot Android editor cannot parse it' >&2
+            exit 1
+          fi
       - name: Import and reject ALL script compilation errors
         shell: bash
         run: |
