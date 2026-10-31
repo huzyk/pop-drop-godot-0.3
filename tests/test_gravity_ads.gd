@@ -18,8 +18,16 @@ class FakeReward:
 		pass
 
 func _initialize() -> void:
+	# Godot's Android editor eagerly parses *all* .gd sources, even when not used.
+	# Optional SDK adapters must be kept as templates until the addon is installed.
+	assert(not ResourceLoader.exists("res://scripts/poing_admob_provider.gd"))
+	assert(FileAccess.file_exists("res://docs/integrations/poing_admob_provider.gd.txt"))
 	var manager = Ads.new()
 	root.add_child(manager)
+	assert(not manager.rewarded_ready())
+	assert(not manager.request_rewarded())
+	assert(manager.pending_transaction == -1)
+	assert(not manager.request_interstitial())
 	var fake = FakeReward.new()
 	root.add_child(fake)
 	manager.attach_provider(fake)
