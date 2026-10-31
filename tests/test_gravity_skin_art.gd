@@ -34,6 +34,12 @@ func _initialize() -> void:
 		assert(Music.LOOPS[name]["melody"].size() == 16)
 	assert(not SkinArt.is_authored("unknown"))
 	assert(SkinArt.sprite_for("unknown",0)==null)
+	# The Android Godot editor should never load the whole cosmetic catalog.
+	assert(SkinArt.resident_count() <= SkinArt.MAX_RESIDENT_SPRITES)
+	SkinArt.release_unused()
+	assert(SkinArt.resident_count() == 0)
+	assert(SkinArt.sprite_for("dragon",0) != null)
+	assert(SkinArt.resident_count() == 1)
 	assert(Studio.WORLD.get_size()==Game.BASE)
 	# Main UI must remain composed of actual high-DPI organic materials.
 	assert(Studio.BOARD_SHELL.get_size()==Vector2(720,720))
