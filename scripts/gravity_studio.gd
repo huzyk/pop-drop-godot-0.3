@@ -698,8 +698,12 @@ func _draw_shop() -> void:
 		var orb_place: Vector2 = rect.position+Vector2(rect.size.x*.5,55)
 		draw_texture_rect(UTILITY_ART,Rect2(orb_place-Vector2(51,49),Vector2(102,98)),false)
 		if is_skin:
+			# A customer must see the *three different playable colours*,
+			# not just a single coral face in a thumbnail.
 			game.preview_skin = id
-			_orb(orb_place,35,0)
+			for tone in [0,2,1]:
+				var shift: Vector2 = Vector2(float(tone-1)*55.0,5 if tone!=1 else -5)
+				_orb(orb_place+shift,28.5,tone)
 			game.preview_skin = ""
 		else:
 			_icon(id,orb_place,73)
