@@ -14,12 +14,20 @@ func _ready() -> void:
 	if not bool(ProjectSettings.get_setting("pop_drop/ads/enable_admob", false)):
 		return
 	if not FileAccess.file_exists("res://addons/admob/plugin.cfg"):
-		push_warning("AdMob enabled but Poing Studios addon is missing")
+		push_warning("AdMob requested, but Poing Studios addon is not installed. Ads remain off.")
 		return
-	var script: Script = load("res://scripts/poing_admob_provider.gd")
-	if script == null:
+	# Godot eagerly parses every .gd script even if no scene references it.
+	# The SDK-dependent adapter is therefore stored as a .gd.txt template until
+	# the native addon has been installed. See docs/integrations/.
+	var adapter_path: String = "res://scripts/poing_admob_provider.gd"
+	if not ResourceLoader.exists(adapter_path):
+		push_warning("AdMob requested, but adapter is not installed. Copy docs/integrations/poing_admob_provider.gd.txt after installing the SDK.")
 		return
-	var adapter: Node = script.new()
+	var loaded: Resource = load(adapter_path)
+	if not (loaded is Script):
+		push_warning("AdMob adapter could not be loaded; rewarded ads remain unavailable.")
+		return
+	var adapter: Node = (loaded as Script).new()
 	add_child(adapter)
 	attach_provider(adapter)
 
