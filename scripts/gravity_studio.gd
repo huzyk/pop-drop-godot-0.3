@@ -599,6 +599,9 @@ func _draw_settings() -> void:
 	_center(game.music.volume_label() if game.language=="pl" else
 		["LOW","MED","HIGH"][game.music.volume_step],
 		volume_rect.get_center().x,volume_rect.position.y+39,17,INK,168)
+	# Visible build identifier: players can verify Git pulls on mobile.
+	_center("POP DROP  •  "+str(ProjectSettings.get_setting("application/config/version","beta")),
+		360,1062,14,Color("#75889D"),500)
 
 func _draw_profile() -> void:
 	_window(Rect2(54,224,612,906),game.profile_t("profile"),305,
