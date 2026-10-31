@@ -29,7 +29,7 @@
 ## 4. Zanim uruchomimy reklamy produkcyjne
 
 - Wybrać nazwę pakietu w Google Play; założyć konto deweloperskie i test wewnętrzny.
-- Dodać **oficjalnie kompatybilny** plugin Poing AdMob/UMP do `addons/admob`; skontrolować zgodność z Godot 4.7 i build Gradle.
+- Dodać **oficjalnie kompatybilny** plugin Poing AdMob/UMP do `addons/admob`; skontrolować zgodność z Godot 4.7 i build Gradle. **Ważne dla edytora Android:** adapter integracyjny jest obecnie w `docs/integrations/poing_admob_provider.gd.txt` (tekstowy szablon). Po instalacji natywnego SDK skopiować go do `scripts/poing_admob_provider.gd`, zweryfikować nazwy klas z konkretną wersją SDK, a dopiero potem włączyć `pop_drop/ads/enable_admob=true`. Bez pluginu plik `.gd` musi pozostać nieobecny, bo mobilny edytor Godota analizuje wszystkie skrypty i zgłasza błędy niezadeklarowanych klas nawet wtedy, gdy reklamy są wyłączone.
 - Ustawić prawdziwy identyfikator aplikacji AdMob w manifeście/pluginie oraz jednostki rewarded/interstitial wyłącznie z konta dewelopera.
 - Potwierdzić UMP consent (w tym możliwość zmiany zgody), reward callback, brak nagród za przerwaną reklamę; testować IDs Google tylko w debug.
 - Po użytecznym teście A/B rozważyć interstitial, nie podczas pierwszej rundy i nie bezpośrednio po porażce bez świadomej kontroli retencji.
