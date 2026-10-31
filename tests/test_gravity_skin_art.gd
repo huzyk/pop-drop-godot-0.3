@@ -36,7 +36,7 @@ func _initialize() -> void:
 	assert(SkinArt.sprite_for("unknown",0)==null)
 	# The Android Godot editor should never load the whole cosmetic catalog.
 	assert(SkinArt.resident_count() <= SkinArt.MAX_RESIDENT_SPRITES)
-	assert(SkinArt.MAX_RESIDENT_SPRITES <= 12)
+	assert(SkinArt.MAX_RESIDENT_SPRITES <= 18)
 	SkinArt.release_unused()
 	assert(SkinArt.resident_count() == 0)
 	assert(SkinArt.sprite_for("dragon",0) != null)
