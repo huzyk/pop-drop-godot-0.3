@@ -1,3 +1,18 @@
+# POP DROP Gravity 0.22 — mobile stability + collectible art (31.10.2026)
+
+**Dlaczego zmieniliśmy ładowanie zasobów:** Godot na telefonie musi jednocześnie utrzymywać mobilny edytor, importowane SVG i grę. Poprzednia implementacja ładowała przy starcie 75 tekstur skórek w pełnym rozmiarze 512 px, a także 12 grafik światów. To było zbędne obciążenie pamięci, zwłaszcza na Androidzie.
+
+- **Pamięć:** grafiki skórek są ładowane dopiero przy wyświetleniu, z pamięcią podręczną ograniczoną do **18 sprite'ów**. Wybrany świat ładuje tylko jeden motyw planszy i jedną ramkę.
+- **Optymalizacja:** ikony skórek importowane są jako 256×256 (wystarczająco dla kulek 40–70 px na ekranie), a nie 512×512. To ~75% mniej pamięci tekstur na pojedynczy sprite. Muzyka syntetyzowana jest w 11 025 Hz poza głównym wątkiem, a przy błędzie uruchomienia wątku nie blokuje renderowania. Android ma limit 60 FPS; portfel nie jest odświeżany dziesiątki razy na sekundę.
+- **Nowe skórki, nie tylko zamiana barw:** 18 modeli zwierząt i postaci bajkowych × trzy odmiany kolorystyczne = **54 nowe pliki SVG**, z własnymi sylwetkami, oczami, pyskami, rogami, grzywami, skrzydłami i dziobami. Pozostałe skórki kosmetyczne zostały dostosowane do nowej rozdzielczości.
+- **Sześć światów:** nowe ilustracje dżungli, safari, lasu, mokradeł, ptasiej krainy i fantasy. Sklep prezentuje jednocześnie trzy wersje kolorystyczne każdej skórki.
+- **Test:** `tests/test_mobile_skin_soak.gd` przełącza wszystkie 23 skórki i renderuje je w prawdziwym widoku Godota. CI sprawdza limit pamięci podręcznej, zgodność assetów, import, mechanikę i APK Androida.
+- **Identyfikacja:** numer kompilacji widoczny na dole ustawień gry: `0.22.0-mobile-art-beta`.
+
+**Ważne:** zielony CI i APK z GitHuba nie dowodzą, że *sam mobilny edytor Godota* przestanie być ubijany przez Androida. Bez `logcat` z urządzenia nie da się odróżnić crashu silnika, sterownika GPU i systemowego ubicia za pamięć. Jeśli problem trwa, patrz `docs/ANDROID_MOBILE_EDITOR.md`.
+
+---
+
 # POP DROP Gravity 0.21 — beta-prep fixes (30.10.2026)
 
 **Wdrożone do main:** poprawa przedwczesnego końca gry (BFS po mieszanych obrotach lewo/prawo; przy niepełnym przeszukaniu nie ogłaszamy porażki), darmowe rundy w okresie testów beta, sklep skórek w układzie 2×2 (maksymalnie cztery na stronę), doprecyzowanie „USUŃ DANE ANALITYKI” oraz ujednolicenie numeru wersji.
