@@ -15,7 +15,8 @@ func _run() -> void:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	var legacy_wallet = Shop.new()
-	legacy_wallet.credit_bonus("seed",500)
+	legacy_wallet.credit_bonus("seed",480)
+	legacy_wallet.credit_bonus("badge:first_drop",20)
 	var legacy_profile = Progression.new()
 	legacy_profile.record_drop("old:1")
 	var old_wallet: String = FileAccess.get_file_as_string(Shop.PATH)
