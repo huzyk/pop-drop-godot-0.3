@@ -1,4 +1,5 @@
 extends RefCounted
+signal save_requested
 ## Offline-only player progression. No login, device identifier, network or ads.
 ## All progression is cosmetic; neither rewarded ads nor paid purchases give XP.
 signal mission_completed(mission_id: String, bonus_xp: int)
@@ -84,9 +85,9 @@ func select_skin(skin_id: String) -> bool:
 	_save()
 	return true
 
-func load_data() -> void:
-	if FileAccess.file_exists(PATH):
-		var raw: Variant = JSON.parse_string(FileAccess.get_file_as_string(PATH))
+func load_data(snapshot_data: Dictionary = {}) -> void:
+	if not snapshot_data.is_empty() or FileAccess.file_exists(PATH):
+		var raw: Variant = snapshot_data if not snapshot_data.is_empty() else JSON.parse_string(FileAccess.get_file_as_string(PATH))
 		if raw is Dictionary and int(raw.get("version", 0)) == VERSION:
 			xp = clampi(int(raw.get("xp", 0)), 0, MAX_XP)
 			last_play_day = str(raw.get("last_play_day", ""))
@@ -243,10 +244,8 @@ func _grant_xp(amount: int) -> void:
 	if level() > before:
 		level_reached.emit(level())
 
-func _save() -> bool:
-	if not persist_enabled:
-		return true
-	var data: Dictionary = {
+func snapshot() -> Dictionary:
+	return {
 		"version": VERSION,"xp": xp,
 		"last_play_day":last_play_day,"streak":streak,
 		"daily_day":daily_day,"daily":daily,"claimed":claimed,
@@ -255,6 +254,12 @@ func _save() -> bool:
 		"total_pop_points":total_pop_points,"unlocked_achievements":unlocked_achievements,
 		"recent_event_ids":recent_event_ids
 	}
+
+func _save() -> bool:
+	save_requested.emit()
+	if not persist_enabled:
+		return true
+	var data: Dictionary = snapshot()
 	var file: FileAccess = FileAccess.open(TEMP, FileAccess.WRITE)
 	if file == null:
 		return false
@@ -266,4 +271,5 @@ func _save() -> bool:
 		ProjectSettings.globalize_path(PATH)
 	)
 	return code == OK
+
 

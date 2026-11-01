@@ -1,4 +1,5 @@
 extends RefCounted
+signal save_requested
 ## Offline soft-currency store and regenerating energy for POP DROP.
 ## All rewards are idempotent locally; real ad rewards require the SDK callback.
 const PATH := "user://gravity_shop_v1.json"
@@ -223,10 +224,12 @@ func claim_daily(day_override: String = "") -> Dictionary:
 	_save()
 	return {"day":daily_streak,"coins":granted,"skin":SPECIAL_SKIN if special else ""}
 
-func load_data() -> void:
-	if not FileAccess.file_exists(PATH):
-		return
-	var value: Variant = JSON.parse_string(FileAccess.get_file_as_string(PATH))
+func load_data(snapshot_data: Dictionary = {}) -> void:
+	var value: Variant = snapshot_data
+	if snapshot_data.is_empty():
+		if not FileAccess.file_exists(PATH):
+			return
+		value = JSON.parse_string(FileAccess.get_file_as_string(PATH))
 	if not (value is Dictionary) or int(value.get("version",0)) not in [1,2,3,4,VERSION]:
 		return
 	coins = clampi(int(value.get("coins",0)),0,MAX_COINS)
@@ -278,10 +281,8 @@ func load_data() -> void:
 		_save() # One-time migrations never repeat on the next startup.
 	refresh_energy()
 
-func _save() -> bool:
-	if not persist_enabled:
-		return true
-	var contents: Dictionary = {
+func snapshot() -> Dictionary:
+	return {
 		"version":VERSION,"coins":coins,
 		"total_earned":total_earned,"total_spent":total_spent,
 		"inventory":inventory,"owned_skins":owned_skins,
@@ -290,6 +291,12 @@ func _save() -> bool:
 		"energy_anchor":energy_anchor,
 		"daily_last_claim":daily_last_claim,"daily_streak":daily_streak
 	}
+
+func _save() -> bool:
+	save_requested.emit()
+	if not persist_enabled:
+		return true
+	var contents: Dictionary = snapshot()
 	var file: FileAccess = FileAccess.open(TEMP,FileAccess.WRITE)
 	if file == null:
 		return false
@@ -301,4 +308,5 @@ func _save() -> bool:
 		ProjectSettings.globalize_path(PATH)
 	)
 	return result == OK
+
 

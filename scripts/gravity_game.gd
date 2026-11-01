@@ -1,5 +1,6 @@
 extends Control
 ## POP DROP Gravity / isolated gameplay experiment. NO real ads in this scene.
+const Copy = preload("res://scripts/gravity_copy.gd")
 const Rules = preload("res://scripts/gravity_rules.gd")
 const Session = preload("res://scripts/gravity_session.gd")
 const Telemetry = preload("res://scripts/gravity_telemetry.gd")
@@ -48,7 +49,7 @@ const COINS_OPEN := Rect2(415,18,173,57)
 const SHOP_OPEN := Rect2(414,88,71,66)
 const PROFILE_OPEN := Rect2(505,88,71,66)
 const SETTINGS_OPEN := Rect2(595,88,71,66)
-const LANG_RECT := Rect2(582,156,124,39)
+const LANG_RECT := Rect2(275,155,118,37)
 const SETTINGS_LANGUAGE := Rect2(120,792,480,51)
 const SETTINGS_MUSIC := Rect2(120,850,290,60)
 const SETTINGS_MUSIC_VOLUME := Rect2(420,850,180,60)
@@ -211,9 +212,11 @@ var game_over_reported: bool = false
 var wave_number: int = 0
 var wave_time_left: float = 12.0
 var wave_queued: bool = false
+var checkpoint_queued: bool = false
 var loss_reason: String = "" # Exact reason displayed after the game ends
 
 func _ready() -> void:
+	var previous: Dictionary = Session.read_progress()
 	var fresh_user: bool = not FileAccess.file_exists(TUTORIAL_SEEN_FILE)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	rng.randomize()
@@ -222,7 +225,7 @@ func _ready() -> void:
 		Engine.max_fps = 60 # Keep editor-based testing thermally reasonable.
 	var detected: String = OS.get_locale_language().to_lower()
 	language = detected if detected in LOCALES else "en"
-	if FileAccess.file_exists(SAVE_FILE):
+	if not Session.has_current_storage() and FileAccess.file_exists(SAVE_FILE):
 		var saved = JSON.parse_string(FileAccess.get_file_as_string(SAVE_FILE))
 		if saved is Dictionary:
 			best = int(saved.get("best",0))
@@ -230,6 +233,13 @@ func _ready() -> void:
 			var remembered: String = str(saved.get("language",language))
 			if remembered in LOCALES:
 				language = remembered
+	if previous.has("meta"):
+		var meta: Dictionary = previous["meta"]
+		best = int(meta.get("best",0))
+		rounds_played = int(meta.get("rounds_played",0))
+		language = str(meta.get("language",language))
+		if language not in LOCALES:
+			language = "en"
 	telemetry = Telemetry.new()
 	add_child(telemetry)
 	ads = Ads.new()
@@ -238,12 +248,20 @@ func _ready() -> void:
 	feedback = Feedback.new()
 	add_child(feedback)
 	progression = Progression.new()
-	progression.load_data()
+	progression.persist_enabled = false
+	if previous.has("profile") or not Session.has_current_storage():
+		progression.load_data(previous.get("profile",{}))
+	else:
+		progression.ensure_day()
+	progression.save_requested.connect(_request_checkpoint)
 	progression.mission_completed.connect(_on_mission_completed)
 	progression.level_reached.connect(_on_level_reached)
 	progression.achievement_unlocked.connect(_on_achievement_unlocked)
 	shop = Shop.new()
-	shop.load_data()
+	shop.persist_enabled = false
+	if previous.has("wallet") or not Session.has_current_storage():
+		shop.load_data(previous.get("wallet",{}))
+	shop.save_requested.connect(_request_checkpoint)
 	music = Music.new()
 	add_child(music)
 	_update_music_for_skin()
@@ -257,11 +275,11 @@ func _ready() -> void:
 		var badge_id: String = str(achievement["id"])
 		if bool(progression.unlocked_achievements.get(badge_id,false)):
 			shop.credit_bonus("badge:"+badge_id,int(achievement["coins"]))
-	var previous: Dictionary = Session.read_progress()
 	if previous.is_empty():
 		new_game()
 	else:
 		_restore_progress(previous)
+		_save_progress() # Migrate legacy independent files into a single commit.
 	studio = Studio.new()
 	studio.game = self
 	add_child(studio)
@@ -276,7 +294,7 @@ func fx_t(key: String) -> String:
 	return str(FX_TR.get(language,FX_TR["en"]).get(key,key))
 
 func language_button_text() -> String:
-	return ("JĘZYK" if language=="pl" else "LANG") + ": " + language.to_upper()
+	return language.to_upper()
 
 func language_name() -> String:
 	return str({"pl":"POLSKI","en":"ENGLISH","es":"ESPAÑOL",
@@ -312,7 +330,7 @@ const BADGES_EN := {
 }
 
 func badge_t(id: String) -> String:
-	return str((BADGES_PL if language=="pl" else BADGES_EN).get(id,id))
+	return live_t("badge_"+id)
 
 func badge_icon(id: String) -> String:
 	if id.begins_with("streak"):
@@ -707,7 +725,16 @@ const UI_I18N := {
 func ui_t(key: String) -> String:
 	return str(UI_I18N.get(language,UI_I18N["en"]).get(key,UI_I18N["en"].get(key,key)))
 
+func live_t(key: String) -> String:
+	return Copy.text(language,key)
+
 func shop_t(key: String) -> String:
+	if Copy.TEXT["en"].has(key):
+		return live_t(key)
+	if key.ends_with("_desc"):
+		var world: String = Themes.for_skin(key.trim_suffix("_desc"))
+		if not world.is_empty():
+			return live_t(world)
 	if language=="pl":
 		return str(SHOP_PL.get(key,key))
 	if SHOP_CORE_LOCALES.has(language) and SHOP_CORE_LOCALES[language].has(key):
@@ -752,7 +779,7 @@ func _shop_activate(id: String) -> void:
 			_update_music_for_skin()
 			shop_notice = shop_t("active")
 		else:
-			shop_notice = "7 DNI GRY" if language=="pl" else "PLAY 7 DAYS"
+			shop_notice = live_t("day7")
 		shop_notice_time = 2.0
 		queue_redraw()
 		return
@@ -887,10 +914,19 @@ func _on_level_reached(new_level: int) -> void:
 	telemetry.track("level_reached", {"level":new_level})
 
 
+func _request_checkpoint() -> void:
+	# Coalesce model callbacks until the current input/callback completes.
+	# During animations only the last complete action remains on disk.
+	if not checkpoint_queued:
+		checkpoint_queued = true
+		call_deferred("_commit_requested_checkpoint")
+
+func _commit_requested_checkpoint() -> void:
+	checkpoint_queued = false
+	_save_progress()
+
 func _save() -> void:
-	var f: FileAccess = FileAccess.open(SAVE_FILE,FileAccess.WRITE)
-	if f:
-		f.store_string(JSON.stringify({"best":best,"language":language,"rounds_played":rounds_played}))
+	_request_checkpoint()
 
 func new_game() -> void:
 	if not FREE_PLAY_BETA and not shop.spend_energy():
@@ -976,7 +1012,7 @@ func new_game() -> void:
 
 func _save_progress() -> void:
 	# Never checkpoint a partially animated cascade or transient rotated board.
-	if phase not in ["drop","over"]:
+	if phase not in ["drop","over"] or shop == null or progression == null or pieces.size() != 3:
 		return
 	Session.write_progress({
 		"board": Rules.copy_board(board), "pieces": pieces.duplicate(true),
@@ -991,7 +1027,9 @@ func _save_progress() -> void:
 		"wave_time_left":wave_time_left,
 		"flow_streak":flow_streak,
 		"flow_time_left":flow_time_left,
-		"loss_reason":loss_reason
+		"loss_reason":loss_reason,
+		"wallet":shop.snapshot(), "profile":progression.snapshot(),
+		"meta":{"best":best,"language":language,"rounds_played":rounds_played}
 	})
 
 func _restore_progress(data: Dictionary) -> void:
@@ -1402,7 +1440,7 @@ func _play_drop(column: int) -> void:
 	progression.record_drop(action_id+":drop")
 	var daily_bonus: Dictionary = shop.claim_daily()
 	if not daily_bonus.is_empty():
-		mission_notice = ("DZIEŃ" if language=="pl" else "DAY")+" %d · +%d ◉" % [
+		mission_notice = live_t("day")+" %d · +%d ◉" % [
 			int(daily_bonus["day"]),int(daily_bonus["coins"])]
 		if not str(daily_bonus["skin"]).is_empty():
 			mission_notice += " ★ "+shop_t("star_capybara")
@@ -1871,5 +1909,6 @@ func _drop_column_at(pt: Vector2) -> int:
 	var width: int = _piece_span(pieces[clampi(selected_piece,0,pieces.size()-1)]).x
 	var x: float = (pt.x-BOARD.position.x)/CELL
 	return clampi(int(floor(x-float(width)*0.5+0.5)),0,8-width)
+
 
 

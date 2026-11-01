@@ -1,58 +1,55 @@
 extends "res://scripts/gravity_studio.gd"
-## Illustrated Edition v7 — the exact commissioned scene as an asset, not a procedural approximation.
+## Illustrated v24: authored vector surfaces with live, localized typography.
 ## Game rules, analytics, shop, save and event handling are still owned by gravity_game.gd.
 ## Geometry mirrors the illustration; every gameplay piece is composited dynamically.
-const SCENE_ART = preload("res://assets/illustrated_v7/illustrated_scene.webp")
-const CLEAN_OVERLAY = preload("res://assets/illustrated_v7/clean_hud_overlay.svg")
-const SELECTED_CARD = preload("res://assets/illustrated_v7/selected_card.png")
-const GLASS_PINK = preload("res://assets/illustrated_v7/orb_pink.webp")
-const GLASS_GREEN = preload("res://assets/illustrated_v7/orb_green.webp")
-const GLASS_BLUE = preload("res://assets/illustrated_v7/orb_blue.webp")
+const SHELL = preload("res://assets/ui/v24/game_shell.svg")
 const STONE = preload("res://assets/illustrated_v7/stone.webp")
-const TOKENS = [GLASS_PINK,GLASS_GREEN,GLASS_BLUE]
 const DARK := Color("#17374D")
 const CREAM := Color("#FFF8EA")
 const BOARD_LIGHT := Color("#C2FFF4")
 
 func _draw_world() -> void:
-	# One artist-made source scene. Textures are imported by Godot and sampled linearly.
-	draw_texture_rect(SCENE_ART,Rect2(Vector2.ZERO,BASE),false)
-	# Cover coordinates baked into the illustration and the obsolete 3-power dock.
-	draw_texture_rect(CLEAN_OVERLAY,Rect2(Vector2.ZERO,BASE),false)
+	draw_texture_rect(SHELL,Rect2(Vector2.ZERO,BASE),false)
 	if game.shop != null:
 		var world_frame: Texture2D = Themes.frame_for_skin(game.shop.equipped_skin)
 		if world_frame != null:
 			draw_texture_rect(world_frame,Rect2(Vector2.ZERO,BASE),false)
 
 func _draw_top() -> void:
-	# The title and shop/profile/settings buttons are already clean high-resolution artwork.
-	# Only game data are drawn at runtime; nothing bakes wallet values into the scene.
-	_center(str(game.shop.coins),508,51,26,CREAM,87)
-	var selector: Rect2 = game.LANG_RECT
-	_round(selector,Color("#0A6371"),16,Color("#96F5D7"),2)
-	_center(game.language_button_text(),selector.get_center().x,
-		selector.position.y+26,17,CREAM,selector.size.x-8)
+	# Wordmark, buttons and copy are live; there are no Polish labels in art.
+	_label("POP",39,89,78,Color("#176F76"))
+	_label("POP",36,84,78,Color("#FFBF67"))
+	_label("DROP",39,157,78,Color("#176F76"))
+	_label("DROP",36,152,78,Color("#2BACA4"))
+	_label("GRAVITY",41,181,17,Color("#396A70"))
+	_icon("coins",Vector2(439,46),36)
+	_center(str(game.shop.coins),513,55,26,CREAM,124)
+	for entry in [["shop",game.SHOP_OPEN,game.shop_t("shop")],
+		["user",game.PROFILE_OPEN,game.profile_t("profile")],
+		["settings",game.SETTINGS_OPEN,game.ui_t("settings")]]:
+		var rect: Rect2 = entry[1]
+		_icon(str(entry[0]),rect.get_center(),43)
+		_center(str(entry[2]),rect.get_center().x,169,13,DARK,86)
+	_round(game.LANG_RECT,Color("#E6F5E8"),16,Color("#87CBBE"),1)
+	_icon("globe",game.LANG_RECT.position+Vector2(24,20),22)
+	_center(game.language_button_text(),game.LANG_RECT.get_center().x+14,182,15,DARK,65)
 
 func _draw_stats() -> void:
-	# Labels and artwork are designed once. These are the live values.
-	_center(str(int(round(game.display_score))),131,257,28,CREAM,88)
-	_center(str(game.best),256,257,28,CREAM,94)
-	_center(str(game.wave_number+1),383,257,28,CREAM,70)
 	var seconds: int = maxi(0,int(ceil(game.wave_time_left)))
-	_center("%02d:%02d" % [int(seconds/60),seconds%60],513,257,27,CREAM,90)
-	# The matching illustrated panel is part of CLEAN_OVERLAY at x554..672.
-	# It fully masks the old ŻYCIA text and hearts without hanging off the HUD.
-	_center("WOLNE" if game.language=="pl" else "FREE",
-		613,231,15,CREAM,108)
-	_center(str(Rules.SIZE*Rules.SIZE-Rules.filled(game.board)),
-		613,264,29,CREAM,108)
+	var labels: Array = [game.t("score"),game.t("best"),game.live_t("wave"),game.live_t("time"),game.live_t("free")]
+	var values: Array = [str(int(round(game.display_score))),str(game.best),str(game.wave_number+1),
+		"%02d:%02d" % [int(seconds/60),seconds%60],str(64-Rules.filled(game.board))]
+	var centers: Array = [126,272,390,498,612]
+	for i in range(5):
+		_center(str(labels[i]),centers[i],226,13,Color("#BCEBE0"),93)
+		_center(str(values[i]),centers[i],254,25,CREAM,129 if i==0 else 92)
 
 func _orb(center: Vector2, radius: float, index: int, alpha: float=1.0, squish: Vector2=Vector2.ONE) -> void:
 	var skin_id: String = game.preview_skin if not game.preview_skin.is_empty() else game.shop.equipped_skin
 	if skin_id != "default":
 		super._orb(center,radius,index,alpha,squish)
 		return
-	var art: Texture2D = TOKENS[clampi(index,0,2)]
+	var art: Texture2D = SkinArt.sprite_for("default",index)
 	var bounds: Vector2 = Vector2(radius*2.35*squish.x,radius*2.35*squish.y)
 	draw_texture_rect(art,Rect2(center-bounds*.5,bounds),false,Color(1,1,1,alpha))
 	# Level rewards decorate the base marbles, preserving their gameplay colours.
@@ -169,19 +166,16 @@ func _draw_status() -> void:
 			Color("#79F4C6") if game.flow_streak<3 else Color("#FFCF78"),3)
 	elif surge_next and game.phase == "drop":
 		var secs: int = maxi(0,int(ceil(game.wave_time_left)))
-		_center(("NAWAŁNICA %ds" if game.language=="pl" else "SURGE IN %ds") % secs,
+		_center(game.fx_t("surge")+" %ds" % secs,
 			174,916,19,Color("#FFE39A"),192)
 	else:
-		_center("GRUPA %d/%d" % [collected,Rules.POP_THRESHOLD] if game.language=="pl" else
-			"GROUP %d/%d" % [collected,Rules.POP_THRESHOLD],174,916,20,CREAM,192)
+		_center(game.t("charge")+" %d/%d" % [collected,Rules.POP_THRESHOLD],174,916,20,CREAM,192)
 	if surge_next and flow_active:
-		_center("NAWAŁNICA!" if game.language=="pl" else "SURGE NEXT!",
+		_center(game.fx_t("surge"),
 			366,916,16,Color("#FFE39A"),178)
 	else:
-		_center("RUCH %d" % [game.moves+1] if game.language=="pl" else
-			"MOVE %d" % [game.moves+1],366,916,20,CREAM,178)
-	_center("WOLNE %d" % free_cells if game.language=="pl" else
-		"FREE %d" % free_cells,558,916,19,CREAM,176)
+		_center(game.t("move")+" %d" % [game.moves+1],366,916,20,CREAM,178)
+	_center(game.live_t("free")+" %d" % free_cells,558,916,19,CREAM,176)
 
 # Layout metrics shared by renderer and tests so even tall pieces
 # cannot overlap the labels printed at the foot of each card.
@@ -194,7 +188,7 @@ func _draw_shapes() -> void:
 	for i in range(game.pieces.size()):
 		var rect: Rect2 = game._piece_card_rect(i)
 		if i == game.selected_piece:
-			draw_texture_rect(SELECTED_CARD,rect,false)
+			_round(rect,Color("#EEFFF1"),25,Color("#37B69F"),3)
 		var selected: bool = i==game.selected_piece
 		# The tactile card itself is part of the commissioned illustration.
 		# The selected state is expressed by the live piece rather than drawn outlines.
@@ -207,15 +201,14 @@ func _draw_shapes() -> void:
 		for bead in piece:
 			var center: Vector2 = origin+Vector2(float(bead[0]),float(bead[1]))*step
 			_orb(center,radius,int(bead[2]),.45 if selected and game.dragging_piece else 1.0)
-		_center(("Kolejny %d" if game.language=="pl" else "Next %d") % [i+1],rect.get_center().x,rect.end.y-16,18,DARK,170)
+		_center(game.live_t("piece") % [i+1],rect.get_center().x,rect.end.y-16,18,DARK,170)
 
 func _draw_turns() -> void:
-	# Full illustration already provides the smooth, professional rotate arrows and captions.
-	# Subtle press feedback is deliberately the only runtime effect here.
-	if game.tap_time>0:
-		var r: Rect2 = game.LEFT_RECT if game.LEFT_RECT.has_point(game.tap_point) else game.RIGHT_RECT
-		if r.has_point(game.tap_point):
-			draw_arc(r.get_center(),52,PI*.2,PI*.8,28,Color("#FFFFFF",.65),3.0,true)
+	for entry in [[game.LEFT_RECT,"left"],[game.RIGHT_RECT,"right"]]:
+		var rect: Rect2 = entry[0]
+		var pressed: bool = game.tap_time>0 and rect.has_point(game.tap_point)
+		_icon(str(entry[1]),rect.get_center()+Vector2(0,-12 if not pressed else -9),64)
+		_center(game.t(str(entry[1])),rect.get_center().x,rect.end.y-19,18,CREAM,rect.size.x-12)
 
 func _draw_boosters() -> void:
 	# Two large illustrated buttons; old MAGIC art and red badges are hidden by overlay.
@@ -227,9 +220,7 @@ func _draw_boosters() -> void:
 		var count: int = game.shop.stock(id)
 		var at: Vector2 = Vector2(r.get_center().x,r.position.y+48)
 		_icon(id,at,60,1.0 if count>0 else .65)
-		_center("BOMBA" if id=="bomb" and game.language=="pl" else
-			"BOMB" if id=="bomb" else
-			"ZAMIEŃ" if game.language=="pl" else "SWAP",
+		_center(game.shop_t("bomb") if id=="bomb" else game.live_t("swap"),
 			r.get_center().x,r.position.y+96,19,DARK,135)
 		var badge: Vector2 = Vector2(r.end.x-21,r.position.y+12)
 		draw_circle(badge,17,Color("#008E87"))
@@ -237,4 +228,5 @@ func _draw_boosters() -> void:
 		_center(str(count) if count>0 else "+",badge.x,badge.y+6,17,CREAM,30)
 		if id=="bomb" and game.bomb_aim:
 			draw_arc(at,40,0,TAU,64,Color("#FFF3B3"),4,true)
+
 

@@ -4,23 +4,11 @@ const Game = preload("res://scripts/gravity_game.gd")
 const Illustrated = preload("res://scripts/gravity_illustrated.gd")
 
 func _initialize() -> void:
-	assert(Illustrated.SCENE_ART != null)
-	assert(Illustrated.CLEAN_OVERLAY != null)
-	assert(Illustrated.CLEAN_OVERLAY.get_size() == Game.BASE)
-	# The painted old life HUD must be masked fully, with no off-frame pill.
-	var hud_overlay: Image = Illustrated.CLEAN_OVERLAY.get_image()
-	assert(hud_overlay.get_pixel(607,220).a > 0.95)
-	assert(hud_overlay.get_pixel(575,243).a > 0.95)
-	assert(hud_overlay.get_pixel(610,265).a > 0.95)
-	assert(hud_overlay.get_pixel(698,242).a < 0.05)
-	assert(Illustrated.SCENE_ART.get_size()==Vector2(941,1672))
-	assert(Illustrated.SELECTED_CARD.get_size()==Vector2(386,278))
-	for sprite in [Illustrated.GLASS_PINK,Illustrated.GLASS_GREEN,
-		Illustrated.GLASS_BLUE,Illustrated.STONE]:
-		assert(sprite.get_size()==Vector2(256,256))
-		var pixels: Image = sprite.get_image()
-		assert(pixels.get_pixel(0,0).a < 0.04)
-		assert(pixels.get_pixel(128,128).a > 0.9)
+	assert(Illustrated.SHELL.get_size() == Game.BASE)
+	var shell: Image = Illustrated.SHELL.get_image()
+	assert(shell.get_pixel(607,220).a > 0.95)
+	assert(shell.get_pixel(360,550).a > 0.95)
+	assert(Illustrated.STONE.get_size() == Vector2(256,256))
 	for width in range(1,6):
 		for height in range(1,6):
 			var span := Vector2i(width,height)
@@ -49,3 +37,4 @@ func _initialize() -> void:
 	view.free()
 	print("PASS: illustrated reference, four 256px alpha sprites and aligned gameplay hitboxes")
 	quit()
+

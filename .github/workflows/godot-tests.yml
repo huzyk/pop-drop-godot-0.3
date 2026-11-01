@@ -57,6 +57,8 @@ jobs:
           for test in \
             test_gravity_rules \
             test_gravity_session \
+            test_unified_save \
+            test_live_copy \
             test_gravity_ads \
             test_gravity_telemetry \
             test_gravity_progression \
@@ -111,6 +113,17 @@ jobs:
             test -s "artifacts/$picture"
             file "artifacts/$picture"
           done
+      - name: Expose compact rendered previews for review
+        shell: bash
+        run: |
+          python3 - <<'PYCODE'
+          import base64
+          from pathlib import Path
+          for name in ['preview-phone.png','preview-shop.png','preview-fantasy.png']:
+              print('REVIEW_IMAGE_START:'+name)
+              print(base64.b64encode(Path('artifacts',name).read_bytes()).decode())
+              print('REVIEW_IMAGE_END:'+name)
+          PYCODE
       - name: Publish eight real Godot screen renders for visual QA
         uses: actions/upload-artifact@v4
         with:

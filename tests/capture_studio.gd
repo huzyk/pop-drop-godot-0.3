@@ -30,6 +30,7 @@ func _capture() -> void:
 		await process_frame
 	# Hide first-run tutorial only for the main game screenshot; render it explicitly.
 	game.tutorial_open = false
+	game.language = "pl"
 	if not await _save_frame(game,"preview-phone.png"):
 		quit(1)
 		return
@@ -68,3 +69,4 @@ func _capture() -> void:
 		quit(1)
 		return
 	quit()
+

@@ -122,7 +122,8 @@ func _round(rect: Rect2, color: Color, radius: int=18, stroke: Color=Color.TRANS
 	draw_style_box(styles[key],rect)
 
 func _card(rect: Rect2, color: Color, radius: int=23, _lift: int=7) -> void:
-	_nine_panel(rect,color,float(radius))
+	_round(Rect2(rect.position+Vector2(0,4),rect.size),Color("#C5D5D2"),radius)
+	_round(rect,color,radius,Color.WHITE,2)
 
 func _bubble(center: Vector2, radius: float, fill: Color, edge: Color, shadow: bool=true) -> void:
 	if shadow:
@@ -596,8 +597,7 @@ func _draw_settings() -> void:
 	_round(volume_rect,Color("#E6F0FA"),17)
 	_center(game.ui_t("music_on" if game.music.music_enabled else "music_off"),
 		music_rect.get_center().x,music_rect.position.y+39,19,INK,275)
-	_center(game.music.volume_label() if game.language=="pl" else
-		["LOW","MED","HIGH"][game.music.volume_step],
+	_center(game.live_t(["low","medium","high"][game.music.volume_step]),
 		volume_rect.get_center().x,volume_rect.position.y+39,17,INK,168)
 	# Visible build identifier: players can verify Git pulls on mobile.
 	_center("POP DROP  •  "+str(ProjectSettings.get_setting("application/config/version","beta")),
@@ -666,7 +666,7 @@ func _draw_profile() -> void:
 			18,AQUA if selected else Color("#CED8E9"),2)
 		_center(game.profile_t(id),x+82,1005,20,INK if unlocked else Color("#99A8BF"),146)
 		_center(game.profile_t("selected") if selected else
-			("POZ. %d" % [int(item["level"])] if not unlocked else "✓"),
+			(game.profile_t("short")+" %d" % [int(item["level"])] if not unlocked else "✓"),
 			x+82,1032,16,Color("#198C8A") if selected else Color("#7788A5"),140)
 	_center(game.profile_t("autoclaim"),360,1092,16,Color("#8390A8"),530)
 
@@ -714,9 +714,9 @@ func _draw_shop() -> void:
 		_center(name,rect.get_center().x,rect.position.y+118,21,INK,rect.size.x-24)
 		var description: String = game.shop_t(id+"_desc")
 		if id=="default":
-			description = "BAZOWA • GRATIS" if game.language=="pl" else "BASE • FREE"
+			description = game.live_t("base")
 		elif special:
-			description = "NAGRODA ZA 7 DNI" if game.language=="pl" else "DAY 7 REWARD"
+			description = game.live_t("day7")
 		elif not is_skin:
 			description = "%s: %d" % [game.shop_t("stock"),game.shop.stock(id)]
 		_center(description,rect.get_center().x,rect.position.y+144,14,Color("#687992"),rect.size.x-18)
@@ -725,7 +725,7 @@ func _draw_shop() -> void:
 		_button(action,AQUA if enabled else Color("#C7D2E2"),Color("#368E95"))
 		var wording: String = game.shop_t("active") if equipped else (
 			game.shop_t("equip") if owned else
-			("7 DNI" if game.language=="pl" else "DAY 7") if special else
+			game.live_t("seven") if special else
 			"%s  %d" % [game.shop_t("buy"),int(offer["price"])])
 		_center(wording,action.get_center().x,action.position.y+29,18,
 			INK if enabled else Color("#65748B"),action.size.x-15)
@@ -753,4 +753,5 @@ func _draw_tutorial() -> void:
 		_label(game.ui_t(str(steps[i][0])),216,y-7,25,INK)
 		_center(game.ui_t(str(steps[i][1])),411,y+34,18,Color("#567184"),392,false)
 	_center(game.ui_t("tutorial_go"),360,996,30,INK,396)
+
 

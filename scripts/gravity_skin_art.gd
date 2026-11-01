@@ -3,9 +3,9 @@ extends RefCounted
 ## Never fake an owned cosmetic with circles or a recolor of the base sprite.
 const PACK_PATHS = {
 	"default": [
-		"res://assets/atelier_v6/orb_coral.svg",
-		"res://assets/atelier_v6/orb_mint.svg",
-		"res://assets/atelier_v6/orb_violet.svg"
+		"res://assets/skins/default_v24/coral.svg",
+		"res://assets/skins/default_v24/mint.svg",
+		"res://assets/skins/default_v24/blue.svg"
 	],
 	"neon": [
 		"res://assets/skins/neon/coral.svg",
@@ -165,3 +165,4 @@ static func resident_count() -> int:
 static func release_unused() -> void:
 	_resident.clear()
 	_order.clear()
+

@@ -1,7 +1,9 @@
 extends RefCounted
 ## Versioned, validated, atomic checkpoint of a stable Gravity turn.
-const PATH := "user://gravity_round_v1.json"
-const TMP := "user://gravity_round_v1.tmp"
+const LEGACY_PATH := "user://gravity_round_v1.json"
+const PATH := "user://gravity_state_v2.json"
+const BACKUP := "user://gravity_state_v2.bak"
+const TMP := "user://gravity_state_v2.tmp"
 const VERSION := 1
 
 static func write_progress(state: Dictionary) -> bool:
@@ -15,7 +17,16 @@ static func write_progress(state: Dictionary) -> bool:
 		return false
 	file.store_string(JSON.stringify(data))
 	file.flush()
+	var write_error: Error = file.get_error()
 	file.close()
+	if write_error != OK:
+		return false
+	# Keep the previous valid generation. Never back up a damaged primary.
+	if not _read_path(PATH).is_empty():
+		var backup_error: Error = DirAccess.copy_absolute(
+			ProjectSettings.globalize_path(PATH),ProjectSettings.globalize_path(BACKUP))
+		if backup_error != OK:
+			return false
 	var status: Error = DirAccess.rename_absolute(
 		ProjectSettings.globalize_path(TMP),
 		ProjectSettings.globalize_path(PATH)
@@ -25,20 +36,36 @@ static func write_progress(state: Dictionary) -> bool:
 		return false
 	return true
 
+static func has_current_storage() -> bool:
+	return FileAccess.file_exists(PATH) or FileAccess.file_exists(BACKUP)
+
 static func read_progress() -> Dictionary:
-	if not FileAccess.file_exists(PATH):
+	var current: Dictionary = _read_path(PATH)
+	if not current.is_empty():
+		return current
+	var backup: Dictionary = _read_path(BACKUP)
+	if not backup.is_empty():
+		push_warning("POP DROP: recovered previous complete save")
+		return backup
+	# Do not resurrect stale legacy balances after migration if both files fail.
+	if FileAccess.file_exists(PATH) or FileAccess.file_exists(BACKUP):
 		return {}
-	var value: Variant = JSON.parse_string(FileAccess.get_file_as_string(PATH))
+	return _read_path(LEGACY_PATH)
+
+static func _read_path(path: String) -> Dictionary:
+	if not FileAccess.file_exists(path):
+		return {}
+	var value: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
 	if not (value is Dictionary) or not valid(value):
-		push_warning("POP DROP: ignoring damaged game checkpoint")
 		return {}
-	if int(value.get("version", 0)) != VERSION:
+	if not _integer(value.get("version"),VERSION,VERSION):
 		return {}
 	return value
 
 static func clear_progress() -> void:
-	if FileAccess.file_exists(PATH):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(PATH))
+	for path in [PATH,BACKUP,TMP,LEGACY_PATH]:
+		if FileAccess.file_exists(path):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 static func _integer(value: Variant, low: int, high: int) -> bool:
 	if typeof(value) not in [TYPE_INT,TYPE_FLOAT]:
@@ -46,7 +73,39 @@ static func _integer(value: Variant, low: int, high: int) -> bool:
 	var n: float = float(value)
 	return is_finite(n) and n >= low and n <= high and n == floor(n)
 
+static func _model_valid(data: Variant, numeric: Array, texts: Array, maps: Array, lists: Array) -> bool:
+	if not (data is Dictionary) or data.is_empty():
+		return false
+	for key in numeric:
+		if key in data and not _integer(data[key],0,2000000000):
+			return false
+	for key in texts:
+		if key in data and not (data[key] is String):
+			return false
+	for key in maps:
+		if not (data.get(key,{}) is Dictionary):
+			return false
+		for value in data.get(key,{}).values():
+			if typeof(value) not in [TYPE_BOOL,TYPE_INT,TYPE_FLOAT]:
+				return false
+	for key in lists:
+		if not (data.get(key,[]) is Array):
+			return false
+	return true
+
 static func valid(s: Dictionary) -> bool:
+	if s.has("wallet") or s.has("profile") or s.has("meta"):
+		if not _model_valid(s.get("wallet"),
+			["version","coins","total_earned","total_spent","energy","energy_anchor","daily_streak"],
+			["equipped_skin","daily_last_claim"],["inventory","owned_skins","paid_badges"],
+			["seen_pop_ids","seen_bonus_ids"]):
+			return false
+		if not _model_valid(s.get("profile"),
+			["version","xp","streak","total_drops","total_pops","total_rounds","best_chain","total_pop_points"],
+			["last_play_day","daily_day","skin"],["daily","claimed","unlocked_achievements"],["recent_event_ids"]):
+			return false
+		if not _model_valid(s.get("meta"),["best","rounds_played"],["language"],[],[]):
+			return false
 	var grid: Variant = s.get("board")
 	var tray: Variant = s.get("pieces")
 	if not (grid is Array) or grid.size() != 8:
@@ -117,4 +176,5 @@ static func valid(s: Dictionary) -> bool:
 		if not is_finite(flow_remaining) or flow_remaining < 0.0 or flow_remaining > 8.0:
 			return false
 	return true
+
 
