@@ -23,6 +23,9 @@ func _run() -> void:
 	assert(not music.player.playing)
 	music.set_music_enabled(true)
 	music.set_theme("fantasy")
-	music.free() # Joins an active worker safely.
+	music.queue_free() # Joins an active worker safely.
+	stream = null
+	for _frame in range(3):
+		await process_frame
 	print("PASS: threaded PCM, main-thread audio resource, theme switch and teardown")
 	quit()
