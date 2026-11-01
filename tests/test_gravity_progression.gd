@@ -81,5 +81,11 @@ func _initialize() -> void:
 	assert(badges.size() == badge_total)
 	assert(profile.achievement_progress("combo_4") == 4)
 	assert(Progression.ACHIEVEMENTS.size() == 12)
+	# Moving the calendar backward cannot reopen completed missions.
+	var saved_daily: Dictionary = profile.daily.duplicate(true)
+	profile.ensure_day("2026-10-30")
+	assert(profile.daily_day == "2026-10-31")
+	assert(profile.daily == saved_daily)
 	print("PASS: Gravity XP, mission once-only rewards, date rollover, streak and skins")
 	quit()
+

@@ -77,5 +77,20 @@ func _initialize() -> void:
 		file.close()
 	else:
 		Session.clear_progress()
+	# Malformed JSON values must be rejected before casting or restoring.
+	for field in ["score","moves","revives","action_serial","wave_number"]:
+		for bad in ["12",{},[],true,1.5,-1]:
+			invalid = original.duplicate(true)
+			invalid[field] = bad
+			assert(not Session.valid(invalid),field+" accepted invalid type/value")
+	invalid = original.duplicate(true)
+	invalid["pieces"][0] = [[0,0,0],[0,0,1]]
+	assert(not Session.valid(invalid))
+	invalid["pieces"][0] = [[0.5,0,0]]
+	assert(not Session.valid(invalid))
+	invalid = original.duplicate(true)
+	invalid["round_active_seconds"] = INF
+	assert(not Session.valid(invalid))
 	print("PASS: Gravity scene dependencies parse and stable checkpoint round-trips")
 	quit()
+

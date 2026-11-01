@@ -69,6 +69,7 @@ jobs:
             test_gravity_skin_art \
             test_mobile_skin_soak \
             test_gravity_layout \
+            test_gravity_music \
             test_gravity_feedback \
             test_illustrated_art; do
             echo "::group::$test"
@@ -117,3 +118,4 @@ jobs:
           path: artifacts/*.png
           if-no-files-found: error
           retention-days: 14
+

@@ -55,6 +55,14 @@ func _orb(center: Vector2, radius: float, index: int, alpha: float=1.0, squish: 
 	var art: Texture2D = TOKENS[clampi(index,0,2)]
 	var bounds: Vector2 = Vector2(radius*2.35*squish.x,radius*2.35*squish.y)
 	draw_texture_rect(art,Rect2(center-bounds*.5,bounds),false,Color(1,1,1,alpha))
+	# Level rewards decorate the base marbles, preserving their gameplay colours.
+	if game.progression.skin == "aurora":
+		draw_arc(center,radius*.92,-PI*.85,PI*.15,32,Color(.65,1.0,.9,alpha*.8),2.0,true)
+	elif game.progression.skin == "starlight":
+		var star: Vector2 = center+Vector2(radius*.45,-radius*.45)
+		var reach: float = radius*.22
+		draw_line(star-Vector2(reach,0),star+Vector2(reach,0),Color(1,.94,.65,alpha),2.0,true)
+		draw_line(star-Vector2(0,reach),star+Vector2(0,reach),Color(1,.94,.65,alpha),2.0,true)
 
 func _draw_rock(center: Vector2, value: int) -> void:
 	draw_texture_rect(STONE,Rect2(center-Vector2(39,39),Vector2(78,78)),false)
@@ -229,3 +237,4 @@ func _draw_boosters() -> void:
 		_center(str(count) if count>0 else "+",badge.x,badge.y+6,17,CREAM,30)
 		if id=="bomb" and game.bomb_aim:
 			draw_arc(at,40,0,TAU,64,Color("#FFF3B3"),4,true)
+

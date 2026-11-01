@@ -53,6 +53,7 @@ var owned_skins: Dictionary = {"neon":false,"gold":false,"donut":false,
 var equipped_skin: String = "default"
 var seen_pop_ids: Array = []
 var seen_bonus_ids: Array = []
+var paid_badges: Dictionary = {}
 var energy: int = MAX_ENERGY
 var energy_anchor: int = 0
 var daily_last_claim: String = ""
@@ -105,11 +106,13 @@ func credit_pop(event_id: String, points: int) -> int:
 	return gained
 
 func credit_bonus(event_id: String, amount: int) -> int:
-	if event_id.is_empty() or event_id in seen_bonus_ids or amount <= 0:
+	if event_id.is_empty() or event_id in seen_bonus_ids or paid_badges.has(event_id) or amount <= 0:
 		return 0
 	var gained: int = _credit(amount)
 	if gained <= 0:
 		return 0
+	if event_id.begins_with("badge:"):
+		paid_badges[event_id] = true
 	seen_bonus_ids.append(event_id)
 	if seen_bonus_ids.size() > MAX_EVENT_HISTORY:
 		seen_bonus_ids.pop_front()
@@ -258,6 +261,14 @@ func load_data() -> void:
 				var out: Array = seen_pop_ids if key == "seen_pop_ids" else seen_bonus_ids
 				if not id.is_empty() and id not in out:
 					out.append(id)
+	var receipts: Variant = value.get("paid_badges",{})
+	if receipts is Dictionary:
+		for id in receipts:
+			if str(id).begins_with("badge:") and receipts[id] == true:
+				paid_badges[str(id)] = true
+	for id in seen_bonus_ids:
+		if str(id).begins_with("badge:"):
+			paid_badges[str(id)] = true
 	energy = clampi(int(value.get("energy",MAX_ENERGY)),0,MAX_ENERGY)
 	energy_anchor = maxi(0,int(value.get("energy_anchor",0)))
 	daily_last_claim = str(value.get("daily_last_claim",""))
@@ -275,7 +286,7 @@ func _save() -> bool:
 		"total_earned":total_earned,"total_spent":total_spent,
 		"inventory":inventory,"owned_skins":owned_skins,
 		"equipped_skin":equipped_skin,"seen_pop_ids":seen_pop_ids,
-		"seen_bonus_ids":seen_bonus_ids,"energy":energy,
+		"seen_bonus_ids":seen_bonus_ids,"paid_badges":paid_badges,"energy":energy,
 		"energy_anchor":energy_anchor,
 		"daily_last_claim":daily_last_claim,"daily_streak":daily_streak
 	}
@@ -290,3 +301,4 @@ func _save() -> bool:
 		ProjectSettings.globalize_path(PATH)
 	)
 	return result == OK
+

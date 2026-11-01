@@ -146,5 +146,14 @@ func _initialize() -> void:
 	result = Rules.explode(board,Vector2i(0,0))
 	assert(result.removed == 3)
 	assert(Rules.find_groups(result.board).is_empty())
+	# Badge payouts survive eviction from the bounded ordinary reward history.
+	var durable = Shop.new()
+	durable.persist_enabled = false
+	assert(durable.credit_bonus("badge:first_drop",20) == 20)
+	for i in range(Shop.MAX_EVENT_HISTORY+1):
+		durable.credit_bonus("gold:%d" % i,1)
+	assert(not "badge:first_drop" in durable.seen_bonus_ids)
+	assert(durable.credit_bonus("badge:first_drop",20) == 0)
 	print("PASS: wallet idempotency, purchases, ownership, powerup stock, 3x3 bomb and rock damage")
 	quit()
+

@@ -850,7 +850,7 @@ func _on_achievement_unlocked(id: String, reward_coins: int) -> void:
 	var gained: int = shop.credit_bonus("badge:"+id,reward_coins)
 	if gained <= 0:
 		return
-	mission_notice = "★ %s  +%d ◉" % [id.replace("_"," ").to_upper(),gained]
+	mission_notice = "★ %s  +%d ◉" % [badge_t(id),gained]
 	mission_notice_time = 3.5
 	glow = 1.0
 	if feedback != null:
@@ -1039,6 +1039,12 @@ func _restore_progress(data: Dictionary) -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_WM_CLOSE_REQUEST:
+		dragging_piece = false
+		drag_column = -1
+		hover_column = -1
+		bomb_aim = false
+		queued_action = ""
+		queued_column = -1
 		_save_progress()
 
 func _on_game_over() -> void:
@@ -1082,11 +1088,14 @@ func _revive() -> bool:
 	return true
 
 func _request_ad_reward(kind: String) -> void:
+	# Set context before calling a provider: its callback may be synchronous.
+	if ads.pending_transaction >= 0:
+		return
+	ad_reward_kind = kind
 	if not ads.request_rewarded():
 		ad_reward_kind = ""
 		ad_note = ui_t("ad_unavailable")
-	else:
-		ad_reward_kind = kind
+	elif not ad_reward_kind.is_empty():
 		ad_note = ui_t("ad_loading")
 	queue_redraw()
 
@@ -1118,7 +1127,7 @@ func _process(delta: float) -> void:
 	tap_time = maxf(0.0,tap_time-delta)
 	pop_impact_time = maxf(0.0,pop_impact_time-delta)
 	# No countdown during interactions, modal screens, or animated cascades.
-	if phase == "drop" and not settings_open and not profile_open and not shop_open and not tutorial_open and not wave_queued:
+	if phase == "drop" and not settings_open and not profile_open and not shop_open and not tutorial_open and not dragging_piece and not bomb_aim and not wave_queued:
 		var elapsed: float = minf(delta,0.15)
 		wave_time_left = maxf(0.0,wave_time_left-elapsed)
 		if flow_time_left > 0.0:
@@ -1250,6 +1259,8 @@ func _gui_input(event: InputEvent) -> void:
 				if Rect2(90+index*181,975,164,75).has_point(pt):
 					var skin_id: String = str(Progression.SKINS[index]["id"])
 					if progression.select_skin(skin_id):
+						shop.equip_skin("default")
+						_update_music_for_skin()
 						telemetry.track("skin_selected",{"skin":skin_id})
 		queue_redraw()
 		return
@@ -1453,7 +1464,7 @@ func _rotate_board(clockwise: bool) -> void:
 
 func _trigger_pressure_wave() -> void:
 	wave_queued = false
-	if phase != "drop":
+	if phase != "drop" or shop_open or profile_open or settings_open or tutorial_open:
 		return
 	phase = "anim"
 	action_serial += 1
@@ -1860,4 +1871,5 @@ func _drop_column_at(pt: Vector2) -> int:
 	var width: int = _piece_span(pieces[clampi(selected_piece,0,pieces.size()-1)]).x
 	var x: float = (pt.x-BOARD.position.x)/CELL
 	return clampi(int(floor(x-float(width)*0.5+0.5)),0,8-width)
+
 

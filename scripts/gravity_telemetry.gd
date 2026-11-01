@@ -83,7 +83,7 @@ func track(event_name: String, properties: Dictionary = {}) -> void:
 		return
 	pending.append(item)
 	if pending.size() > MAX_PENDING:
-		pending.pop_front()
+		pending.remove_at(1 if sending else 0)
 	_persist_pending()
 	_send_next()
 
@@ -125,7 +125,10 @@ func _persist_pending() -> void:
 
 func _append_local(item: Dictionary) -> void:
 	if FileAccess.file_exists(LOCAL_LOG):
-		var size: int = FileAccess.get_file_as_bytes(LOCAL_LOG).size()
+		var existing: FileAccess = FileAccess.open(LOCAL_LOG,FileAccess.READ)
+		var size: int = existing.get_length() if existing != null else 0
+		if existing != null:
+			existing.close()
 		if size > 1024 * 1024:
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(LOCAL_LOG))
 	var mode: int = FileAccess.READ_WRITE if FileAccess.file_exists(LOCAL_LOG) else FileAccess.WRITE
@@ -143,3 +146,4 @@ func _store_prefs() -> void:
 
 func _id() -> String:
 	return Crypto.new().generate_random_bytes(16).hex_encode()
+

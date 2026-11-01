@@ -660,7 +660,7 @@ func _draw_profile() -> void:
 		var item: Dictionary = Progression.SKINS[i]
 		var id: String = str(item["id"])
 		var unlocked: bool = game.progression.level()>=int(item["level"])
-		var selected: bool = game.progression.skin==id
+		var selected: bool = game.progression.skin==id and game.shop.equipped_skin=="default"
 		var x: float = 90+float(i)*181
 		_round(Rect2(x,975,164,75),Color("#D3F8EF") if selected else Color("#E3E9F6"),
 			18,AQUA if selected else Color("#CED8E9"),2)
@@ -753,3 +753,4 @@ func _draw_tutorial() -> void:
 		_label(game.ui_t(str(steps[i][0])),216,y-7,25,INK)
 		_center(game.ui_t(str(steps[i][1])),411,y+34,18,Color("#567184"),392,false)
 	_center(game.ui_t("tutorial_go"),360,996,30,INK,396)
+

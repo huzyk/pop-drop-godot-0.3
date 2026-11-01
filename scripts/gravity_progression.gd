@@ -121,7 +121,7 @@ func load_data() -> void:
 
 func ensure_day(day_override: String = "") -> void:
 	var today: String = day_override if not day_override.is_empty() else Time.get_date_string_from_system(false)
-	if daily_day == today:
+	if not daily_day.is_empty() and today <= daily_day:
 		return
 	daily_day = today
 	daily = {"drops":0,"pops":0,"points":0}
@@ -266,3 +266,4 @@ func _save() -> bool:
 		ProjectSettings.globalize_path(PATH)
 	)
 	return code == OK
+

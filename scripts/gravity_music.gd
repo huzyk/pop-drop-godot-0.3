@@ -1,5 +1,5 @@
 extends Node
-## Six original, seamless 8s instrumental loops for POP DROP worlds.
+## Seven original, seamless 8s instrumental loops for POP DROP worlds.
 ## Generated once per chosen habitat: no external music, samples or licenses.
 const PREFS := "user://gravity_music_v1.json"
 const RATE := 11025 # Still clear for background music, half the PCM memory and CPU.
@@ -36,10 +36,10 @@ func _process(_delta: float) -> void:
 	# Render new 8-second synth tracks in a worker rather than blocking the UI.
 	if render_thread == null or render_thread.is_alive():
 		return
-	var completed: AudioStreamWAV = render_thread.wait_to_finish()
+	var completed: PackedByteArray = render_thread.wait_to_finish()
 	render_thread = null
-	if completed != null:
-		streams[rendering_theme] = completed
+	if not completed.is_empty():
+		streams[rendering_theme] = _stream_from_pcm(completed)
 	rendering_theme = ""
 	_sync()
 
@@ -48,8 +48,9 @@ func _exit_tree() -> void:
 		render_thread.wait_to_finish()
 		render_thread = null
 
-func _background_render(id: String) -> AudioStreamWAV:
-	return _render_theme(id)
+static func _background_render(id: String) -> PackedByteArray:
+	# Workers produce plain PCM only; audio resources belong to the main thread.
+	return _render_pcm(id)
 
 func set_theme(id: String) -> void:
 	var next: String = id if LOOPS.has(id) else "classic"
@@ -101,6 +102,9 @@ static func _frequency(midi: int) -> float:
 	return 440.0*pow(2.0,(float(midi)-69.0)/12.0)
 
 static func _render_theme(id: String) -> AudioStreamWAV:
+	return _stream_from_pcm(_render_pcm(id))
+
+static func _render_pcm(id: String) -> PackedByteArray:
 	var spec: Dictionary = LOOPS.get(id,LOOPS["classic"])
 	var melody: Array = spec["melody"]
 	var bass: Array = spec["bass"]
@@ -136,13 +140,16 @@ static func _render_theme(id: String) -> AudioStreamWAV:
 		var fade: float = minf(1.0,minf(t/.028,(SECONDS-t)/.03))
 		var sample: float = (lead*.25+bass_voice+kick+shaker)*clampf(fade,0.0,1.0)
 		bytes.encode_s16(i*2,int(round(clampf(sample,-.92,.92)*32767.0)))
+	return bytes
+
+static func _stream_from_pcm(bytes: PackedByteArray) -> AudioStreamWAV:
 	var stream: AudioStreamWAV = AudioStreamWAV.new()
 	stream.mix_rate = RATE
 	stream.stereo = false
 	stream.format = AudioStreamWAV.FORMAT_16_BITS
 	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	stream.loop_begin = 0
-	stream.loop_end = count
+	stream.loop_end = bytes.size()/2
 	stream.data = bytes
 	return stream
 
@@ -161,3 +168,4 @@ func _save_prefs() -> void:
 	if file != null:
 		file.store_string(JSON.stringify({"enabled":music_enabled,"volume_step":volume_step}))
 		file.close()
+
